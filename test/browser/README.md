@@ -24,12 +24,13 @@ node test/browser/01-flow.js
 | `07-move-ai.js` | 運動 AI 估算：請求有帶體重、要求淨消耗、數字可先改再存、做過的運動進快速選擇 |
 | `09-floor.js` | 熱量上限語意（減脂顯示「上限」）、目標低於 BMR 的警告與消失條件 |
 | `08-macros.js` | 營養分頁：三大營養素達標判定、蛋白質缺口建議、熱量來源分配、目標可調 |
+| `10-audit-fixes.js` | 2026-07 稽核修正的回歸測試：讀取失敗不留空白天、歷史頁載入=繪製窗口、當天紀錄即時進歷史、Haiku 不送 effort、常吃可刪單筆 |
 
 `06` 需要先跑 `node test/browser/fixtures.js` 產生素材（素材不進 repo）。
 
 ## 測試之間必須隔離
 
-八支測試打的是**同一個本機 server**，不重置的話前一支留下的飲食會累加到同一天，
+所有測試打的是**同一個本機 server**，不重置的話前一支留下的飲食會累加到同一天，
 後一支的斷言就會噴假警報（踩過）。`_setup.js` 提供：
 
 - `clearAll()` — 刪光所有使用者，給「測建立流程」的測試（01–04）
@@ -53,4 +54,7 @@ node test/browser/01-flow.js
 - 真手機相機拍的照片（EXIF 轉正走 `createImageBitmap`，程式碼有處理，但沒有實機驗過）
 - 真實 Anthropic API 的 request 形狀（沒有 key 驗不了；`ai.js` 有 400 降級路徑當保險）
 - Service worker 的更新／離線行為
+  （註：`10-audit-fixes.js` 開 context 時用 `serviceWorkers:'block'`——
+  SW 接手之後 fetch 不經過 `page.route`，攔不到就製造不出「讀取失敗」的情境。
+  其他要攔本機 `/api` 的測試也要照做。）
 - GitHub Pages 子路徑（`/lose-weight-helper/`）實際部署

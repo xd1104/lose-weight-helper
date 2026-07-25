@@ -152,6 +152,14 @@ function aiMsgForStatus(status, body){
   return "AI 錯誤 "+status+"："+m;
 }
 
+/* output_config 的 effort 目前只有推理型模型吃得下，Haiku 4.5 會直接回 400。
+ * 不先擋掉的話，選 Haiku 的人每次都會白打一次請求才降級（慢、又多算一次 usage）。 */
+function outputConfigFor(model, schema){
+  var cfg={ format:{ type:"json_schema", schema:schema } };
+  if(!/^claude-haiku/.test(String(model||""))) cfg.effort="low"; /* 簡單估算，不需要深度推理；省時間也省錢 */
+  return cfg;
+}
+
 /* 送出一次 Messages 請求，回傳 parse 過的結果。
  * plain=true 時不用 structured outputs，改在 system 裡要求純 JSON。
  * 這是降級路徑：萬一 output_config 的形狀被 API 拒絕（400），
@@ -166,12 +174,7 @@ function aiRequest(model, contentBlocks, plain){
     system: AI_SYSTEM + (plain ? "\n\n" + AI_JSON_FALLBACK : ""),
     messages: [{ role:"user", content: contentBlocks }]
   };
-  if(!plain){
-    body.output_config = {
-      effort: "low",            /* 這是簡單估算，不需要深度推理；省時間也省錢 */
-      format: { type:"json_schema", schema: AI_SCHEMA }
-    };
-  }
+  if(!plain) body.output_config = outputConfigFor(model, AI_SCHEMA);
 
   return fetch("https://api.anthropic.com/v1/messages", {
     method:"POST",
@@ -265,9 +268,7 @@ function aiMoveRequest(model, userText, plain){
     system: AI_MOVE_SYSTEM + (plain ? "\n\n" + AI_MOVE_JSON_FALLBACK : ""),
     messages: [{ role:"user", content:[{ type:"text", text:userText }] }]
   };
-  if(!plain){
-    body.output_config = { effort:"low", format:{ type:"json_schema", schema: AI_MOVE_SCHEMA } };
-  }
+  if(!plain) body.output_config = outputConfigFor(model, AI_MOVE_SCHEMA);
   return fetch("https://api.anthropic.com/v1/messages", {
     method:"POST",
     headers:{

@@ -418,6 +418,21 @@ var GitHubStore = {
     }
     return this._getRaw(pathRel);
   },
+  /* 跟 _readText 一樣，但「檔案不存在」與「讀失敗」分得開：
+   * 只有真的 404 才回 null（＝這天沒紀錄），其他錯誤往外丟。
+   * 讀日記錄一定要用這個——把網路錯誤當成「這天沒吃東西」，
+   * 接著一存檔就會把雲端真正的紀錄蓋成空的。 */
+  _readTextStrict:function(pathRel){
+    if(this.canWrite()){
+      return this._getFile(pathRel).then(function(f){ return f?f.text:null; });
+    }
+    var self=this;
+    return fetch(this.rawBase+"/"+pathRel+"?t="+Date.now()).then(function(r){
+      if(r.ok) return r.text();
+      if(r.status===404) return null;
+      throw uiError(self._msgForStatus(r.status, null));
+    },function(){ throw uiError("目前離線或連不到 GitHub。"); });
+  },
   _putFile:function(pathRel, contentB64, message, sha){
     var self=this;
     var body={ message:message, content:contentB64, branch:GH.branch };
@@ -496,13 +511,21 @@ var GitHubStore = {
   },
   loadDays:function(u, dates){
     var self=this;
-    /* 一天一個請求、平行打。刻意不列整個 days 資料夾：
-     * 那會隨著使用月數線性增加請求數，手機上會越用越慢。 */
-    return Promise.all(dates.map(function(dk){
-      return self._readText(pathDay(u, dk))
-        .then(function(txt){ return txt ? parseDay(dk, txt) : emptyDay(dk); })
-        .catch(function(){ return emptyDay(dk); });
-    }));
+    /* 一天一個請求。刻意不列整個 days 資料夾：
+     * 那會隨著使用月數線性增加請求數，手機上會越用越慢。
+     * 最多 8 個並行：歷史頁一次要 HIST_DAYS 天，全部一起打在手機網路上很容易有人失敗，
+     * 而這裡是 all-or-nothing（任何一天讀失敗就整批當失敗，由 ensureDays 收掉空殼再重試）。 */
+    var out=new Array(dates.length), next=0;
+    function worker(){
+      if(next>=dates.length) return Promise.resolve();
+      var at=next++, dk=dates[at];
+      return self._readTextStrict(pathDay(u, dk)).then(function(txt){
+        out[at]= txt ? parseDay(dk, txt) : emptyDay(dk);
+      }).then(worker);
+    }
+    var lanes=[];
+    for(var i=0;i<Math.min(8, dates.length);i++) lanes.push(worker());
+    return Promise.all(lanes).then(function(){ return out; });
   },
   loadIndex:function(u){
     var hasKey=this.canWrite();

@@ -147,6 +147,11 @@
   設定頁與首次引導都有一句提醒，**別拿掉**（Benson 問「輕度是什麼意思」才發現原本文案在引導使用者重複計算）。
 - **淨攝取 = 吃進去 − 額外運動**。活動係數已含日常活動，所以「運動」欄位只記額外運動；UI 上有寫明，別拿掉那句提示，會造成重複扣抵而低估。
 
+## 讀取／歷史頁（2026-07 稽核後定案，別改回去）
+- **讀日紀錄失敗 ≠ 那天沒吃**：`ensureDays` 先放空殼避免重複請求，但**失敗時一定要把空殼收回來**（只收回「還是原本那個空殼」的，載入途中記的東西不能弄丟）。留著的話 `db.days[k]` 有值 → 永遠不再重試，而那個空白的一天一旦被存回去就會蓋掉雲端真正的紀錄。同理 GitHubStore 讀 day 走 **`_readTextStrict`**（只有真 404 才回 null，其他錯誤往外丟）——別為了「比較不會噴錯」改回寬鬆的 `_readText`。
+- **歷史頁的天數用單一常數 `HIST_DAYS`**（載入與繪製共用）。原本載 30、畫 60，第 31–60 天永遠顯示「—」。
+- **`histDates` 由 `persistDay` 順手維護**：有內容就加進去、整天清空就移除（判斷條件 `dayHasData` 要跟 server 的「空天刪檔」條件一致）。歷史清單一輩子只在開 app／第一次點歷史時抓一次，不維護的話當天新記的紀錄要重開 app 才看得到。
+
 ## PWA 鐵律（travel-book 血淚，全部已做，別退步）
 - 所有資源、manifest `start_url`/`scope`、SW scope **一律相對路徑**（Pages 在 `/lose-weight-helper/` 子路徑）。
 - SW：`skipWaiting()`＋activate 清舊快取＋`clients.claim()`；GET `/api` network-first、寫入 network-only、殼 cache-first；**跨網域（Anthropic／GitHub）直接放行不攔**。**改前端記得把 sw.js 的 cache 版本號 +1**（`lwh-shell-vN`，目前 v1）。
@@ -155,6 +160,8 @@
 - 換 icon 後 iOS 已安裝的 PWA 要移除主畫面重加才會換。
 
 ## 其他實作備忘
+- **`output_config.effort` 只在推理型模型送**（`outputConfigFor`）：Haiku 4.5 收到會直接回 400，雖然有純 JSON 降級路徑接住，但等於每次都白打一次請求（慢、又多算一次 usage）。新增模型時記得確認這個開關。
+- 常吃清單支援**刪單筆**（`data-fav-del`，有 confirm）：AI 偶爾會生出「甜椒配料 3 大卡」這種項目，只有「清空全部」的話會一直卡在清單裡。
 - 寫入用 per-檔案 promise chain 排隊（`persistChains`），避免快速連點時並發互蓋。
 - 樂觀更新：畫面先動、背景寫入，失敗才 toast。
 - 唯讀模式（Pages 無 PAT）：所有寫入動作入口都有 `requireWrite()` 守門＋toast 提示。

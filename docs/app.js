@@ -43,6 +43,7 @@ var picking=false;              /* 是否停在「誰在用？」畫面 */
 var curDate=dateKey();
 var histDates=[];
 var histLoaded=false;
+var HIST_DAYS=60;               /* 歷史頁的天數：載入與繪製共用同一個窗口，兩邊分開寫過就對不上了 */
 var booted=false;
 
 function dayOf(key){ return db.days[key] || (db.days[key]=emptyDay(key)); }
@@ -63,7 +64,17 @@ function persistDay(key){
   var d=db.days[key];
   if(!d || !me) return Promise.resolve();
   var u=me.id;
+  /* 歷史頁的日期清單只在開 app／第一次點歷史時抓一次，之後就鎖住了。
+   * 這裡順手維護：今天剛記的第一筆要馬上出現在歷史，整天清空的要消失。 */
+  var at=histDates.indexOf(key);
+  if(dayHasData(d)){ if(at<0) histDates.push(key); }
+  else if(at>=0) histDates.splice(at,1);
   return chainPersist(u+":day:"+key, function(){ return STORE.saveDay(u, d); });
+}
+/* 與 server.js 判斷「這天是不是空的、可以刪檔」的條件一致 */
+function dayHasData(d){
+  return !!(d && ((d.entries||[]).length || (d.moves||[]).length ||
+                  String(d.notes||"").trim() || num(d.weight)));
 }
 function persistProfile(){
   if(!me) return Promise.resolve();
@@ -560,7 +571,7 @@ function proteinWeekHtml(target){
 /* ---------- 歷史 ---------- */
 function viewHistory(){
   var target=targetOf(db.profile);
-  var keys=histDates.slice().sort().reverse().slice(0,60);
+  var keys=histDates.slice().sort().reverse().slice(0,HIST_DAYS);
   var h=headHtml("歷史");
 
   var loaded=keys.filter(function(k){ return db.days[k]; });
@@ -1072,7 +1083,7 @@ function loadUserData(){
   }).then(function(days){
     if(!me || me.id!==u) return;
     (days||[]).forEach(function(d){ db.days[d.date]=d; });
-    histDates=Object.keys(db.days);
+    histDates=Object.keys(db.days).filter(function(k){ return dayHasData(db.days[k]); });
     booted=true;
   }).catch(function(e){
     booted=true;
@@ -1193,7 +1204,8 @@ function addTabBody(){
     }
     return '<div class="field"><label>搜尋</label>'+
       '<input type="text" id="i-fav-q" placeholder="輸入食物名稱" autocomplete="off"></div>'+
-      '<div id="fav-list">'+favListHtml("")+'</div>';
+      '<div id="fav-list">'+favListHtml("")+'</div>'+
+      '<p class="hint" style="padding:2px 4px 0">點項目直接加入今天；右邊的 ✕ 可以把估錯的項目從常吃移除。</p>';
   }
   /* manual */
   return '<form id="f-manual">'+
@@ -1224,12 +1236,16 @@ function favListHtml(q){
   q=String(q||"").trim().toLowerCase();
   var list=db.foods.filter(function(f){ return !q || f.name.toLowerCase().indexOf(q)>=0; }).slice(0,60);
   if(!list.length) return '<p class="empty">找不到符合的項目</p>';
+  /* 刪除鈕跟加入鈕是兩個獨立的 button（不能互相巢狀），外面用 .food-item 包成一列 */
   return list.map(function(f){
-    return '<button class="food-row" data-fav="'+esc(f.id)+'">'+
-      '<b>'+esc(f.name)+(f.portion?'<span style="display:block;font-size:11.5px;color:var(--muted);font-weight:600">'+esc(f.portion)+'</span>':'')+'</b>'+
-      '<span class="k num">'+kcal(f.kcal)+'</span>'+
-      '<span style="color:var(--acc);font-size:20px">＋</span>'+
-    '</button>';
+    return '<div class="food-item">'+
+      '<button class="food-row" data-fav="'+esc(f.id)+'">'+
+        '<b>'+esc(f.name)+(f.portion?'<span style="display:block;font-size:11.5px;color:var(--muted);font-weight:600">'+esc(f.portion)+'</span>':'')+'</b>'+
+        '<span class="k num">'+kcal(f.kcal)+'</span>'+
+        '<span style="color:var(--acc);font-size:20px">＋</span>'+
+      '</button>'+
+      '<button class="food-del" data-fav-del="'+esc(f.id)+'" aria-label="從常吃移除 '+esc(f.name)+'">✕</button>'+
+    '</div>';
   }).join("");
 }
 
@@ -1321,6 +1337,22 @@ function wireFav(root){
       if(!f) return;
       addEntries([{ id:uid(), name:f.name, kcal:f.kcal, p:f.p||0, c:f.c||0, f:f.f||0,
                     portion:f.portion||"", src:"preset" }]);
+    };
+  });
+  /* AI 偶爾會把配料拆成「甜椒配料 3 大卡」這種沒用的項目，之前只能整份清空 */
+  root.querySelectorAll("[data-fav-del]").forEach(function(b){
+    b.onclick=function(){
+      if(!requireWrite()) return;
+      var id=b.getAttribute("data-fav-del");
+      var f=db.foods.filter(function(x){ return x.id===id; })[0];
+      if(!f) return;
+      if(!confirm("把「"+f.name+"」從常吃清單移除？（已經記進去的飲食不受影響）")) return;
+      db.foods=db.foods.filter(function(x){ return x.id!==id; });
+      persistFoods();
+      toast("已移除「"+f.name+"」");
+      var qEl=root.querySelector("#i-fav-q"), listEl=root.querySelector("#fav-list");
+      if(db.foods.length && listEl){ listEl.innerHTML=favListHtml(qEl?qEl.value:""); wireFav(root); }
+      else drawAddSheet(false);   /* 全刪光了 -> 換成空狀態說明 */
     };
   });
 }
@@ -1742,13 +1774,24 @@ function ensureDays(keys){
   var u=me.id;
   var need=keys.filter(function(k){ return !db.days[k]; });
   if(!need.length) return Promise.resolve();
-  need.forEach(function(k){ db.days[k]=emptyDay(k); }); /* 先放空的，避免重複請求 */
+  var holds={};
+  need.forEach(function(k){ holds[k]=db.days[k]=emptyDay(k); }); /* 先放空的，避免重複請求 */
   return STORE.loadDays(u, need).then(function(days){
     if(!me || me.id!==u) return; /* 載入途中切了人：丟棄 */
     days.forEach(function(d){ db.days[d.date]=d; });
     if(booted && !picking) render();
   }).catch(function(e){
+    /* 讀失敗一定要把空殼收回來：留著的話 db.days[k] 已經有值，
+     * ensureDays 永遠不會再重試那一天，而那個空白的一天只要被存回去，
+     * 就會把伺服器上真正的紀錄蓋掉。只收回「還是原本那個空殼」的，
+     * 使用者在載入途中記的東西不能弄丟。 */
+    if(me && me.id===u){
+      need.forEach(function(k){
+        if(db.days[k]===holds[k] && !dayHasData(db.days[k])) delete db.days[k];
+      });
+    }
     toast(e.userMessage||"讀取紀錄失敗", true);
+    if(booted && !picking) render();
   });
 }
 
@@ -1759,8 +1802,8 @@ function ensureHistory(){
     if(!me || me.id!==u) return;
     histDates=dates;
     histLoaded=true;
-    /* 最近 30 天的內容補進來，歷史頁才畫得出長條 */
-    return ensureDays(dates.slice(-30));
+    /* 內容補進來，歷史頁才畫得出長條（窗口跟 viewHistory 綁同一個常數） */
+    return ensureDays(dates.slice(-HIST_DAYS));
   }).then(function(){
     if(view==="history" && !picking) render();
   }).catch(function(){

@@ -248,8 +248,12 @@ input,textarea,select{font-family:inherit; font-size:16px; color:inherit;}
 .pbtn:active{background:var(--acc-deep);}
 .photo-btns.after .pbtn{background:#eef1ea; color:var(--muted);}
 .photo-prev{width:100%; border-radius:16px; display:block; margin-bottom:10px;}
-.food-row{width:100%; display:flex; align-items:center; gap:10px; padding:12px 13px; background:var(--card);
-  border-radius:14px; box-shadow:var(--shadow); margin-bottom:8px; text-align:left;}
+.food-item{display:flex; align-items:stretch; gap:8px; margin-bottom:8px;}
+.food-row{flex:1; min-width:0; display:flex; align-items:center; gap:10px; padding:12px 13px; background:var(--card);
+  border-radius:14px; box-shadow:var(--shadow); text-align:left;}
+.food-del{flex:0 0 44px; width:44px; border-radius:14px; background:var(--card); box-shadow:var(--shadow);
+  color:var(--muted); font-size:15px; font-weight:800;}
+.food-del:active{background:var(--bad); color:#fff;}
 .food-row b{flex:1; font-size:14.5px; font-weight:700; overflow-wrap:anywhere;}
 .food-row .k{font-size:14px; font-weight:800; font-variant-numeric:tabular-nums;}
 
