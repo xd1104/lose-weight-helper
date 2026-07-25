@@ -22,6 +22,7 @@ node test/browser/01-flow.js
 | `05-ai.js` | AI request 形狀、結果預覽的編輯與刪除、用量統計 |
 | `06-photo.js` | 相機／相簿兩個入口、`capture` 屬性、重選同一張、非圖片檔的錯誤 |
 | `07-move-ai.js` | 運動 AI 估算：請求有帶體重、要求淨消耗、數字可先改再存、做過的運動進快速選擇 |
+| `09-floor.js` | 熱量上限語意（減脂顯示「上限」）、目標低於 BMR 的警告與消失條件 |
 | `08-macros.js` | 營養分頁：三大營養素達標判定、蛋白質缺口建議、熱量來源分配、目標可調 |
 
 `06` 需要先跑 `node test/browser/fixtures.js` 產生素材（素材不進 repo）。

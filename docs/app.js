@@ -218,10 +218,20 @@ function viewToday(){
   var mt=macroTargets(db.profile);
   var isToday=curDate===dateKey();
 
+  var bmr=bmrOf(db.profile);
+  var lateEnough = !isToday || new Date().getHours()>=20; /* 一天還沒過完就講「吃太少」很煩 */
   var tag;
-  if(net>target) tag='<div class="over-tag over">今天超過目標 '+kcal(net-target)+' 大卡</div>';
-  else if(target>0 && net/target>=0.85) tag='<div class="over-tag near">快到目標了，剩 '+kcal(target-net)+' 大卡</div>';
-  else tag='<div class="over-tag ok">還在目標內，剩 '+kcal(target-net)+' 大卡</div>';
+  if(net>target){
+    tag='<div class="over-tag over">超過上限 '+kcal(net-target)+' 大卡</div>';
+  }else if(net>0 && net<bmr && lateEnough){
+    /* 低於基礎代謝：掉的會有一大部分是肌肉，代謝也會往下適應 */
+    tag='<div class="over-tag low">只吃了 '+kcal(net)+'，低於基礎代謝 '+kcal(bmr)+
+        '<span>長期這樣掉的會有一大部分是肌肉</span></div>';
+  }else if(target>0 && net/target>=0.85){
+    tag='<div class="over-tag near">快到上限了，剩 '+kcal(target-net)+' 大卡</div>';
+  }else{
+    tag='<div class="over-tag ok">還在額度內，剩 '+kcal(target-net)+' 大卡</div>';
+  }
 
   var h=headHtml(me.name);
 
@@ -238,7 +248,8 @@ function viewToday(){
         '<div class="ring-side">'+
           '<div class="kv eat"><span>已攝取</span><b class="num">'+kcal(eaten)+'</b></div>'+
           (burn?'<div class="kv burn"><span>運動消耗</span><b class="num">−'+kcal(burn)+'</b></div>':'')+
-          '<div class="kv goal"><span>每日目標</span><b class="num">'+kcal(target)+'</b></div>'+
+          '<div class="kv goal"><span>'+(num(db.profile.goal)<0?"每日上限":"每日目標")+
+            '</span><b class="num">'+kcal(target)+'</b></div>'+
         '</div>'+
       '</div>'+
       tag+
@@ -730,6 +741,15 @@ function viewSettings(){
         '<input type="number" inputmode="numeric" data-num="goal" value="'+p.goal+'">'+
         '<div class="hint">負數 = 減脂缺口，正數 = 增肌盈餘。</div></div>'+
       '<div class="tdee-box"><div class="r"><span>每日目標攝取</span><b class="num">'+kcal(target)+'</b></div></div>'+
+      (target<bmr
+        ? '<div class="warn-box">'+
+            '<b>⚠️ 目標 '+kcal(target)+' 低於基礎代謝 '+kcal(bmr)+'</b>'+
+            '<span>基礎代謝是躺著不動也會燒掉的熱量。長期吃低於它，掉的會有一大部分是肌肉，'+
+            '代謝也會往下適應，之後更難維持。<br><br>'+
+            '建議二選一：把缺口縮到 '+kcal(Math.max(0, tdee-bmr))+' 大卡以內，'+
+            '或把活動量調成符合實際的等級（多數人不是真的整天不動）。</span>'+
+          '</div>'
+        : '')+
      '</div>';
 
   /* 營養目標 */
