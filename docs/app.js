@@ -456,12 +456,16 @@ function avgOf(list){
 }
 
 /* ---------- 設定 ---------- */
+/* 活動係數＝「不含運動」的日常生活強度。
+ * 教科書的定義（輕度＝每週運動 1-3 次）把運動算進係數裡，
+ * 但本 app 另外有「運動」欄位；照教科書選就會把健身房算兩遍、目標虛高。
+ * 所以這裡的說明刻意改成描述「工作型態與走路量」，不提運動次數。 */
 var ACTIVITIES=[
-  {v:1.2,   label:"久坐",   hint:"幾乎沒運動"},
-  {v:1.375, label:"輕度",   hint:"每週 1–3 次"},
-  {v:1.55,  label:"中度",   hint:"每週 3–5 次"},
-  {v:1.725, label:"高度",   hint:"每週 6–7 次"},
-  {v:1.9,   label:"極高",   hint:"體力工作／雙練"}
+  {v:1.2,   label:"久坐", hint:"整天坐著，通勤開車或捷運，一天走不到 5,000 步"},
+  {v:1.375, label:"輕度", hint:"以坐著為主，但有走路通勤或做家事，一天約 5,000–8,000 步"},
+  {v:1.55,  label:"中度", hint:"工作要常走動（店員、外勤、帶小孩），一天約 8,000–12,000 步"},
+  {v:1.725, label:"高度", hint:"體力工作（工地、搬運、餐飲內場），整天都在動"},
+  {v:1.9,   label:"極高", hint:"重度體力工作，或一天兩練的運動員"}
 ];
 var GOALS=[
   {v:-500, label:"減脂 快", hint:"約每週 −0.45kg"},
@@ -509,7 +513,9 @@ function viewSettings(){
           return '<button class="chip '+(Math.abs(p.activity-a.v)<0.01?"on":"")+'" data-set="activity" data-val="'+a.v+'">'+
                  a.label+'</button>';
         }).join("")+
-      '</div><div class="hint">'+esc((ACTIVITIES.filter(function(a){return Math.abs(p.activity-a.v)<0.01;})[0]||{}).hint||"")+'</div></div>'+
+      '</div><div class="hint">'+esc((ACTIVITIES.filter(function(a){return Math.abs(p.activity-a.v)<0.01;})[0]||{}).hint||"")+
+        '<br><b>這裡只算「不含運動」的日常活動。</b>健身房、跑步那些記在首頁的「運動」就好，'+
+        '兩邊都算會重複扣，目標會虛高。</div></div>'+
       '<div class="tdee-box">'+
         '<div class="r"><span>基礎代謝 BMR</span><b class="num">'+kcal(bmr)+'</b></div>'+
         '<div class="r"><span>每日總消耗 TDEE</span><b class="num">'+kcal(tdee)+'</b></div>'+
@@ -1404,7 +1410,8 @@ function openSetupSheet(){
         ACTIVITIES.map(function(a){
           return '<button type="button" class="chip '+(Math.abs(p.activity-a.v)<0.01?"on":"")+'" data-s="activity" data-v="'+a.v+'">'+a.label+'</button>';
         }).join("")+'</div>'+
-        '<div class="hint">'+esc((ACTIVITIES.filter(function(a){return Math.abs(p.activity-a.v)<0.01;})[0]||{}).hint||"")+'</div></div>'+
+        '<div class="hint">'+esc((ACTIVITIES.filter(function(a){return Math.abs(p.activity-a.v)<0.01;})[0]||{}).hint||"")+
+          '<br><b>只算不含運動的日常活動</b>，運動另外記，不然會重複扣。</div></div>'+
       '<div class="field"><label>目標</label><div class="chips">'+
         GOALS.map(function(g){
           return '<button type="button" class="chip '+(p.goal===g.v?"on":"")+'" data-s="goal" data-v="'+g.v+'">'+g.label+'</button>';
