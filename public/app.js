@@ -136,11 +136,16 @@ function avatarHtml(u, cls){
 }
 function viewPicker(){
   var first=!users.length;
+  var ro=!STORE.canWrite();
+  /* 唯讀又還沒有使用者時不要叫他「先建立第一位使用者」——他建不了，會以為 app 壞了 */
+  var sub = first
+    ? (ro ? "這支手機還沒設定金鑰，先貼上金鑰才能開始。"
+          : "先建立第一位使用者。兩個人的紀錄、目標與常吃清單完全獨立。")
+    : (ro ? "目前是唯讀模式，可以看但不能記錄。" : "每個人的紀錄與目標都是分開的。");
   var h='<div class="picker">';
   h+='<div class="picker-head">'+
       '<h1>'+(first?"歡迎使用減重助手":"誰在用？")+'</h1>'+
-      '<p>'+(first?"先建立第一位使用者。兩個人的紀錄、目標與常吃清單完全獨立。"
-                 :"每個人的紀錄與目標都是分開的。")+'</p>'+
+      '<p>'+sub+'</p>'+
      '</div>';
   h+='<div class="picker-grid">';
   users.forEach(function(u){
@@ -149,11 +154,23 @@ function viewPicker(){
         '<b>'+esc(u.name)+'</b>'+
        '</button>';
   });
-  h+='<button class="picker-tile add" data-act="new-user">'+
-      '<span class="picker-face add">＋</span><b>新增使用者</b></button>';
+  if(STORE.canWrite()){
+    h+='<button class="picker-tile add" data-act="new-user">'+
+        '<span class="picker-face add">＋</span><b>新增使用者</b></button>';
+  }
   h+='</div>';
-  if(!first){
-    h+='<button class="picker-manage" data-act="manage-users">管理使用者</button>';
+
+  /* 唯讀（手機端還沒貼 GitHub 金鑰）時一定要給出口。
+   * 少了這段，第一次在手機上開會卡死：沒有使用者 -> 只有「新增使用者」-> 被唯讀擋掉
+   * -> 而「設定」要有使用者才進得去 -> 沒有任何地方能貼金鑰。 */
+  if(!STORE.canWrite()){
+    h+='<div class="picker-note">'+
+        '<b>目前是唯讀模式</b>'+
+        '<span>手機版要貼上 GitHub 金鑰才能建立使用者與記錄。金鑰只存在這支手機裡。</span>'+
+        '<button class="btn" data-act="open-keys">貼上金鑰</button>'+
+       '</div>';
+  }else{
+    h+='<button class="picker-manage" data-act="open-keys">金鑰設定</button>';
   }
   h+='</div>';
   return h;
@@ -615,6 +632,7 @@ function doAct(act, el){
     picking=false; view="settings"; render(); return;
   }
   if(act==="new-user"){ openUserSheet(null); return; }
+  if(act==="open-keys"){ openKeysSheet(); return; }
   if(act==="prev-day"){ curDate=shiftDate(curDate,-1); ensureDays([curDate]); render(); return; }
   if(act==="next-day"){ if(curDate<dateKey()){ curDate=shiftDate(curDate,1); ensureDays([curDate]); render(); } return; }
   if(act==="go-today"){ curDate=dateKey(); ensureDays([curDate]); render(); return; }
@@ -1202,6 +1220,47 @@ function openNotesSheet(){
       ev.preventDefault();
       d.notes=root.querySelector("#n-text").value||"";
       persistDay(curDate);
+      closeSheet(); render(); toast("已儲存");
+    };
+  }});
+}
+
+/* ============ 金鑰設定（不依賴 me，選人畫面也叫得動） ============ */
+function openKeysSheet(){
+  var body='';
+  if(!STORE.local){
+    body+='<div class="field" style="margin-top:0"><label>GitHub 金鑰（記錄用，必填）</label>'+
+      '<input type="password" id="k-gh" placeholder="github_pat_..." value="'+esc(getToken())+'" autocomplete="off">'+
+      '<div class="hint">GitHub → Settings → Developer settings → Fine-grained tokens，'+
+      '只授權 lose-weight-helper 這一個 repo，Contents 設為 <b>Read and write</b>。<br>'+
+      '沒有這把金鑰只能看，不能記錄。</div></div>';
+  }
+  body+='<div class="field"><label>Anthropic API key（AI 判讀用，選填）</label>'+
+    '<input type="password" id="k-ai" placeholder="sk-ant-..." value="'+esc(getAiKey())+'" autocomplete="off">'+
+    '<div class="hint">到 console.anthropic.com → API keys 申請，記得在 Billing 設每月上限。<br>'+
+    '不填也能用，只是沒有 AI 判讀（手動輸入與常吃清單照常）。</div></div>'+
+    '<p class="desc" style="margin:14px 0 0">兩把金鑰都只存在這支手機的瀏覽器裡，'+
+    '不會上傳、也不會進 GitHub。換手機要重貼。</p>'+
+    '<button class="btn" data-keys="save">儲存</button>';
+
+  openSheet("金鑰設定", body, { onDraw:function(root){
+    root.querySelector('[data-keys="save"]').onclick=function(){
+      var ai=(root.querySelector("#k-ai")||{}).value||"";
+      ai=ai.trim();
+      if(ai) setAiKey(ai); else clearAiKey();
+
+      var ghEl=root.querySelector("#k-gh");
+      if(ghEl){
+        var gh=(ghEl.value||"").trim();
+        var changed = gh!==getToken();
+        if(gh) setToken(gh); else clearToken();
+        if(changed){
+          /* 換了 GitHub 金鑰＝整個資料層的讀寫權限變了，重載最乾淨 */
+          toast("金鑰已儲存，重新載入…");
+          setTimeout(function(){ location.reload(); }, 700);
+          return;
+        }
+      }
       closeSheet(); render(); toast("已儲存");
     };
   }});
