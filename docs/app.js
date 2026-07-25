@@ -190,13 +190,19 @@ function viewPicker(){
 }
 
 /* ---------- 熱量環 ---------- */
-function ringHtml(eaten, target){
-  var pct = target>0 ? eaten/target : 0;
+/* 三段（定案）：
+ *   綠 = 還在減脂上限內
+ *   黃 = 超過減脂上限，但還沒超過 TDEE ← 今天不會胖，只是沒有減脂進度
+ *   紅 = 超過 TDEE ← 這才是真的會變胖的量
+ * 中間那段以前跟「真的吃過頭」畫成同一種紅色，會讓人以為自己爆了。 */
+function ringHtml(net, target, tdee){
+  var pct = target>0 ? net/target : 0;
   var shown = Math.max(0, Math.min(1, pct));
   var R=58, C=2*Math.PI*R;
-  var over = eaten>target;
-  var color = over ? "var(--bad)" : (pct>=0.85 ? "var(--warn)" : "var(--acc)");
-  var left = target-eaten;
+  var over = net>target;
+  var hardOver = over && (!(tdee>0) || net>tdee);
+  var color = hardOver ? "var(--bad)" : ((over||pct>=0.85) ? "var(--warn)" : "var(--acc)");
+  var left = target-net;
   return ''+
   '<div class="ring">'+
     '<svg width="132" height="132" viewBox="0 0 132 132">'+
@@ -206,8 +212,8 @@ function ringHtml(eaten, target){
         ' stroke-dasharray="'+(C*shown).toFixed(1)+' '+C.toFixed(1)+'"/>' : '')+
     '</svg>'+
     '<div class="mid">'+
-      '<b class="num" style="color:'+(over?"var(--bad)":"var(--ink)")+'">'+kcal(Math.abs(left))+'</b>'+
-      '<span>'+(over?"超過 大卡":"還可以吃")+'</span>'+
+      '<b class="num" style="color:'+(hardOver?"var(--bad)":(over?"#a86d12":"var(--ink)"))+'">'+kcal(Math.abs(left))+'</b>'+
+      '<span>'+(over?"超過上限":"還可以吃")+'</span>'+
     '</div>'+
   '</div>';
 }
@@ -229,11 +235,20 @@ function viewToday(){
   var mt=macroTargets(db.profile);
   var isToday=curDate===dateKey();
 
-  var bmr=bmrOf(db.profile);
+  var bmr=bmrOf(db.profile), tdee=tdeeOf(db.profile);
   var lateEnough = !isToday || new Date().getHours()>=20; /* 一天還沒過完就講「吃太少」很煩 */
   var tag;
   if(net>target){
-    tag='<div class="over-tag over">超過上限 '+kcal(net-target)+' 大卡</div>';
+    if(tdee>0 && net<=tdee){
+      /* 超過減脂上限、但還在 TDEE 以內：今天不會胖，只是這天沒有減脂進度。
+       * 「每日上限」是 TDEE 扣掉缺口之後的數字，很容易被誤讀成「超過就是吃太多」。 */
+      tag='<div class="over-tag mid">超過上限 '+kcal(net-target)+' 大卡 · 距離 TDEE 還有 '+kcal(tdee-net)+
+          '<span>今天大致是維持體重，不會胖，但也幾乎沒有減脂進度</span></div>';
+    }else{
+      tag='<div class="over-tag over">超過上限 '+kcal(net-target)+' 大卡'+
+          (tdee>0?' · 已超出 TDEE '+kcal(net-tdee):'')+
+          '<span>超出 TDEE 的部分才是真正會變胖的量</span></div>';
+    }
   }else if(net>0 && net<bmr && lateEnough){
     /* 低於基礎代謝：掉的會有一大部分是肌肉，代謝也會往下適應 */
     tag='<div class="over-tag low">只吃了 '+kcal(net)+'，低於基礎代謝 '+kcal(bmr)+
@@ -255,12 +270,15 @@ function viewToday(){
      '</div>';
 
   h+='<section class="ring-card">'+
-      '<div class="ring-wrap">'+ringHtml(net, target)+
+      '<div class="ring-wrap">'+ringHtml(net, target, tdee)+
         '<div class="ring-side">'+
           '<div class="kv eat"><span>已攝取</span><b class="num">'+kcal(eaten)+'</b></div>'+
           (burn?'<div class="kv burn"><span>運動消耗</span><b class="num">−'+kcal(burn)+'</b></div>':'')+
           '<div class="kv goal"><span>'+(num(db.profile.goal)<0?"每日上限":"每日目標")+
             '</span><b class="num">'+kcal(target)+'</b></div>'+
+          (num(db.profile.goal)<0
+            ? '<div class="kv tdee"><span>維持體重（TDEE）</span><b class="num">'+kcal(tdee)+'</b></div>'
+            : '')+
         '</div>'+
       '</div>'+
       tag+
@@ -810,7 +828,7 @@ function viewSettings(){
   });
   if(grp) h+='</div>';
 
-  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v2.4</p>';
+  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v2.5</p>';
   return h;
 }
 

@@ -1,9 +1,17 @@
 const { chromium } = require('playwright');
-const { seedUser, openSet } = require('./_setup');
+const { BASE, seedUser, openSet, closeSet } = require('./_setup');
+const dayKey = () => { const d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+/* 直接用 API 灌今天的紀錄，比一筆一筆從 UI 敲快很多 */
+const seedToday = (u, eaten, burn) => fetch(BASE+'/api/days', {
+  method:'POST', headers:{'Content-Type':'application/json'},
+  body: JSON.stringify({ u, date: dayKey(),
+    entries: eaten ? [{ id:'e1', name:'測試餐', kcal:eaten, meal:'lunch' }] : [],
+    moves:  burn  ? [{ id:'m1', name:'測試運動', kcal:burn }] : [] }) });
 const fail=[]; const check=(n,c,g)=>{ if(c) console.log('  ok  '+n); else {console.log('  FAIL '+n+(g!==undefined?'  got='+JSON.stringify(g):'')); fail.push(n);} };
 (async () => {
   // 用 Benson 實際的設定：27歲 168cm 80kg 久坐 -500 -> BMR 1720 / TDEE 2064 / 目標 1564
-  await seedUser({ age:27, height:168, weight:80, activity:1.2, goal:-500 });
+  const uid = await seedUser({ age:27, height:168, weight:80, activity:1.2, goal:-500 });
   const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
   const p = await b.newPage({ viewport:{width:390,height:844}, deviceScaleFactor:2 });
   const errs=[]; p.on('pageerror',e=>errs.push(e.message));
@@ -64,6 +72,57 @@ const fail=[]; const check=(n,c,g)=>{ if(c) console.log('  ok  '+n); else {conso
   await p.click('[data-nav="today"]'); await p.waitForTimeout(700);
   const labels2 = await p.$$eval('.kv span', e=>e.map(x=>x.textContent.trim()));
   check('顯示「每日目標」', labels2.includes('每日目標'), labels2);
+
+  console.log('\n[5] 三段式圓環：超過減脂上限 ≠ 超過 TDEE');
+  // 27歲 168cm 80kg 久坐 -300 -> BMR 1720 / TDEE 2064 / 每日上限 1764
+  await openSet(p, 'goal');
+  await p.click('[data-set="goal"][data-val="-300"]'); await p.waitForTimeout(900);
+  await closeSet(p);
+
+  const zone = async (eaten, burn) => {
+    await seedToday(uid, eaten, burn);
+    await p.reload({ waitUntil:'networkidle' }); await p.waitForTimeout(1400);
+    return {
+      tag: (await p.textContent('.over-tag').catch(()=> '')||'').replace(/\s+/g,' ').trim(),
+      cls: (await p.getAttribute('.over-tag','class').catch(()=> '')||''),
+      mid: (await p.textContent('.ring .mid').catch(()=> '')||'').replace(/\s+/g,' ').trim(),
+      stroke: await p.$eval('.ring circle:nth-child(2)', e=>e.getAttribute('stroke')).catch(()=> ''),
+    };
+  };
+
+  const green = await zone(1200, 0);   // 1,200 / 1,764 = 68%，還不到「快到上限」的 85%
+  check('綠：還在上限內（1,200 < 1,764）', /ok/.test(green.cls), green);
+  check('綠：圓環是綠色', /--acc/.test(green.stroke||''), green.stroke);
+  check('綠：中間寫「還可以吃 564」', /564/.test(green.mid) && /還可以吃/.test(green.mid), green.mid);
+
+  // Benson 2026-07-25 真實的一天：吃 2,288、運動 240 -> 淨 2,048
+  const amber = await zone(2288, 240);
+  check('黃：超過上限但還在 TDEE 以內', /mid/.test(amber.cls), amber);
+  check('黃：算出超過上限 284', /超過上限 284/.test(amber.tag), amber.tag);
+  check('黃：算出距離 TDEE 還有 16', /距離 TDEE 還有 16/.test(amber.tag), amber.tag);
+  check('黃：明講今天不會胖、但也沒減脂進度', /不會胖/.test(amber.tag) && /沒有減脂進度/.test(amber.tag), amber.tag);
+  check('黃：圓環不是紅色', !/--bad/.test(amber.stroke||''), amber.stroke);
+  check('黃：中間寫「超過上限 284」', /284/.test(amber.mid) && /超過上限/.test(amber.mid), amber.mid);
+  await p.screenshot({ path:'/tmp/ring-amber.png', fullPage:false });
+
+  const red = await zone(2500, 0);
+  check('紅：淨 2,500 真的超過 TDEE 2,064', /over/.test(red.cls) && !/mid/.test(red.cls), red);
+  check('紅：算出超過上限 736、超出 TDEE 436', /超過上限 736/.test(red.tag) && /超出 TDEE 436/.test(red.tag), red.tag);
+  check('紅：圓環是紅色', /--bad/.test(red.stroke||''), red.stroke);
+
+  console.log('\n[5b] 右邊那欄要看得到 TDEE（「上限」是從哪來的）');
+  const kvs = await p.$$eval('.kv', e=>e.map(x=>x.textContent.replace(/\s+/g,' ').trim()));
+  check('列出維持體重（TDEE）2,064', kvs.some(t=>/維持體重（TDEE）/.test(t) && /2,064/.test(t)), kvs);
+
+  console.log('\n[5c] 目標設成「維持」時沒有中間地帶（上限就是 TDEE）');
+  await openSet(p, 'goal');
+  await p.click('[data-set="goal"][data-val="0"]'); await p.waitForTimeout(900);
+  await closeSet(p);
+  await p.click('[data-nav="today"]'); await p.waitForTimeout(800);
+  const keep = (await p.getAttribute('.over-tag','class').catch(()=> '')||'');
+  check('維持模式下超過 TDEE 直接是紅色', /over/.test(keep) && !/mid/.test(keep), keep);
+  check('維持模式不顯示重複的 TDEE 那列',
+    !(await p.$$eval('.kv.tdee', e=>e.length)));
 
   console.log('\npageerrors:', errs.length?errs:'none');
   console.log(fail.length?'\n❌ '+fail.length+' 項未過':'\n✅ 全部通過');
