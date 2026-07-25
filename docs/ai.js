@@ -100,6 +100,12 @@ var AI_SCHEMA = {
   additionalProperties:false
 };
 
+/* 降級用：沒有 structured outputs 時，靠提示詞把形狀講死 */
+var AI_JSON_FALLBACK = [
+  "只輸出一段 JSON，不要加任何說明文字、不要用 markdown 的程式碼框。格式：",
+  '{"items":[{"name":"食物名稱","portion":"份量假設","kcal":0,"protein":0,"carbs":0,"fat":0,"confidence":"high|medium|low"}],"note":"一句話說明"}'
+].join("\n");
+
 function aiError(message, code){ var e=new Error(message); e.userMessage=message; e.code=code||""; return e; }
 
 function aiMsgForStatus(status, body){
@@ -114,21 +120,26 @@ function aiMsgForStatus(status, body){
   return "AI 錯誤 "+status+"："+m;
 }
 
-/* 送出一次 Messages 請求，回傳 parse 過的結果 */
-function aiRequest(model, contentBlocks){
+/* 送出一次 Messages 請求，回傳 parse 過的結果。
+ * plain=true 時不用 structured outputs，改在 system 裡要求純 JSON。
+ * 這是降級路徑：萬一 output_config 的形狀被 API 拒絕（400），
+ * 使用者不該直接看到「AI 拒絕了這個請求」然後整個功能不能用。 */
+function aiRequest(model, contentBlocks, plain){
   var key=getAiKey();
   if(!key) return Promise.reject(aiError("還沒設定 API key，到「設定」貼上就能用 AI 判讀。","nokey"));
 
   var body={
     model: model,
     max_tokens: 4000,           /* 含 thinking，留寬一點避免估到一半被截斷 */
-    system: AI_SYSTEM,
-    output_config: {
-      effort: "low",            /* 這是簡單估算，不需要深度推理；省時間也省錢 */
-      format: { type:"json_schema", schema: AI_SCHEMA }
-    },
+    system: AI_SYSTEM + (plain ? "\n\n" + AI_JSON_FALLBACK : ""),
     messages: [{ role:"user", content: contentBlocks }]
   };
+  if(!plain){
+    body.output_config = {
+      effort: "low",            /* 這是簡單估算，不需要深度推理；省時間也省錢 */
+      format: { type:"json_schema", schema: AI_SCHEMA }
+    };
+  }
 
   return fetch("https://api.anthropic.com/v1/messages", {
     method:"POST",
@@ -142,12 +153,19 @@ function aiRequest(model, contentBlocks){
     body: JSON.stringify(body)
   }).then(function(res){
     return res.json().catch(function(){ return {}; }).then(function(j){
-      if(!res.ok) throw aiError(aiMsgForStatus(res.status, j), "http"+res.status);
+      if(!res.ok){
+        /* 400 且還沒降級過 -> 很可能是 output_config 的形狀不被接受，改用純 JSON 再試一次 */
+        if(res.status===400 && !plain){
+          return aiRequest(model, contentBlocks, true).then(function(r){ return {__done:r}; });
+        }
+        throw aiError(aiMsgForStatus(res.status, j), "http"+res.status);
+      }
       return j;
     });
   }, function(){
     throw aiError("連不到 Anthropic（目前離線？）","offline");
   }).then(function(j){
+    if(j && j.__done) return j.__done; /* 降級那條路已經 parse 完了 */
     addUsage(model, j.usage);
     if(j.stop_reason==="refusal") throw aiError("AI 拒絕回答這個內容，請換個描述或照片。","refusal");
     if(j.stop_reason==="max_tokens") throw aiError("AI 回覆被截斷了，請再試一次。","truncated");
@@ -210,28 +228,49 @@ function aiAnalyzePhoto(model, dataUrl, hint){
 function compressImage(file, maxEdge, quality){
   maxEdge = maxEdge || 1024;
   quality = quality || 0.85;
-  return new Promise(function(resolve, reject){
-    var url=URL.createObjectURL(file);
-    var img=new Image();
-    img.onload=function(){
-      try{
-        var w=img.naturalWidth, h=img.naturalHeight;
-        var scale=Math.min(1, maxEdge/Math.max(w,h));
-        var cw=Math.max(1, Math.round(w*scale)), ch=Math.max(1, Math.round(h*scale));
-        var cv=document.createElement("canvas");
-        cv.width=cw; cv.height=ch;
-        cv.getContext("2d").drawImage(img, 0, 0, cw, ch);
+
+  function toDataUrl(src, w, h){
+    var scale=Math.min(1, maxEdge/Math.max(w,h));
+    var cw=Math.max(1, Math.round(w*scale)), ch=Math.max(1, Math.round(h*scale));
+    var cv=document.createElement("canvas");
+    cv.width=cw; cv.height=ch;
+    cv.getContext("2d").drawImage(src, 0, 0, cw, ch);
+    return cv.toDataURL("image/jpeg", quality);
+  }
+
+  /* 舊路徑：<img> + canvas。注意這條路徑「不會」照 EXIF 轉正 */
+  function viaImage(){
+    return new Promise(function(resolve, reject){
+      var url=URL.createObjectURL(file);
+      var img=new Image();
+      img.onload=function(){
+        try{
+          var out=toDataUrl(img, img.naturalWidth, img.naturalHeight);
+          URL.revokeObjectURL(url);
+          resolve(out);
+        }catch(e){
+          URL.revokeObjectURL(url);
+          reject(aiError("照片處理失敗，請換一張。","bad-image"));
+        }
+      };
+      img.onerror=function(){
         URL.revokeObjectURL(url);
-        resolve(cv.toDataURL("image/jpeg", quality));
-      }catch(e){
-        URL.revokeObjectURL(url);
-        reject(aiError("照片處理失敗，請換一張。","bad-image"));
-      }
-    };
-    img.onerror=function(){
-      URL.revokeObjectURL(url);
-      reject(aiError("這個檔案不是可讀的圖片。","bad-image"));
-    };
-    img.src=url;
-  });
+        reject(aiError("這個檔案不是可讀的圖片。","bad-image"));
+      };
+      img.src=url;
+    });
+  }
+
+  /* 優先走 createImageBitmap({imageOrientation:"from-image"})：會照 EXIF 轉正。
+   * iPhone 直向拍的照片 EXIF orientation 常常是 6，不轉正就會躺著送給 AI，判讀會變差。 */
+  if(typeof createImageBitmap==="function"){
+    try{
+      return createImageBitmap(file, { imageOrientation:"from-image" }).then(function(bmp){
+        var out=toDataUrl(bmp, bmp.width, bmp.height);
+        if(bmp.close) bmp.close();
+        return out;
+      }, viaImage);
+    }catch(e){ return viaImage(); }
+  }
+  return viaImage();
 }

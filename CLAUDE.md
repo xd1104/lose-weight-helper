@@ -122,7 +122,12 @@
 - PWA 常常整天不關：`visibilitychange` 會在過午夜後把 `curDate` 推到新的一天。
 - icon 產生工具在 scratchpad、**不進 repo**；server.js 保持零執行期依賴。
 - 熱量環在 0 時**不畫彩色弧**：`stroke-linecap:round` 會在 dasharray 0 的位置留一個小圓點。
-- 測試：`npm test`（`test/roundtrip.js`）。裡面有一條**「前端 store.js 的 serializer 產出與 server.js 逐字相同」**——這是防止前後端 mirror 無聲分岔的主要保險，改格式時它會先炸。
+- **AI 有降級路徑**：`output_config` 的形狀若被 API 回 400，會自動改用「提示詞要求純 JSON」再試一次（`aiRequest(..., plain)`）。
+  沒有 API key 就無法驗證 structured outputs 的形狀，這條保險是刻意留的，別當多餘刪掉。
+- **照片走 `createImageBitmap({imageOrientation:"from-image"})`**：iPhone 直向拍的 EXIF orientation 常是 6，
+  用 `<img>`+canvas 不會轉正，會把躺著的照片送給 AI，判讀變差。舊瀏覽器才退回 `<img>` 路徑。
+- 測試：`npm test`（`test/roundtrip.js`）＋ `npm run test:browser`（`test/browser/`，需要 `npm i -D playwright`）。
+  `test/browser/README.md` 有寫**哪些是假的外部服務、哪些還沒驗過**——接手前先看那一段。裡面有一條**「前端 store.js 的 serializer 產出與 server.js 逐字相同」**——這是防止前後端 mirror 無聲分岔的主要保險，改格式時它會先炸。
 
 ## 啟動
 - 雙擊 `start.bat`（只跑 `node server.js`，port 3619）。
