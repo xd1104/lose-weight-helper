@@ -10,7 +10,7 @@
  *    跑之前請先備份 data/。
  */
 const { chromium } = require('playwright');
-const { BASE, seedUser } = require('./_setup');
+const { BASE, seedUser, openSet } = require('./_setup');
 
 const fail = [];
 function check(n, c, g) {
@@ -176,10 +176,11 @@ async function addManual(p, name, kcal) {
     await p.goto(BASE + '/', { waitUntil: 'networkidle' });
     await p.waitForTimeout(1200);
 
-    await p.click('[data-nav="settings"]');
-    await p.waitForTimeout(700);
+    await openSet(p, 'ai');
     await p.click('[data-set="model"][data-val="claude-haiku-4-5"]');
     await p.waitForTimeout(1200);
+    await p.click('[data-sheet="close"]');
+    await p.waitForTimeout(400);
     await p.click('[data-nav="today"]');
     await p.waitForTimeout(500);
 
@@ -200,10 +201,11 @@ async function addManual(p, name, kcal) {
     /* 換回 Sonnet：effort 要回來，別誤把兩邊都拔掉 */
     await p.click('[data-ai="cancel"], [data-sheet="close"]').catch(() => {});
     await p.waitForTimeout(400);
-    await p.click('[data-nav="settings"]');
-    await p.waitForTimeout(700);
+    await openSet(p, 'ai');
     await p.click('[data-set="model"][data-val="claude-sonnet-5"]');
     await p.waitForTimeout(1200);
+    await p.click('[data-sheet="close"]');
+    await p.waitForTimeout(400);
     await p.click('[data-nav="today"]');
     await p.waitForTimeout(500);
     await p.click('.fab');

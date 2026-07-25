@@ -1,6 +1,6 @@
 /* 營養分頁測試 */
 const { chromium } = require('playwright');
-const { seedUser } = require('./_setup');
+const { seedUser, openSet } = require('./_setup');
 const fail = [];
 function check(n, c, g) {
   if (c) console.log('  ok  ' + n);
@@ -116,12 +116,13 @@ function check(n, c, g) {
   await p.screenshot({ path: '/tmp/mac-2.png', fullPage: true });
 
   console.log('\n[7] 設定頁可調目標，且會反映到營養頁');
-  await p.click('[data-nav="settings"]');
-  await p.waitForTimeout(700);
+  await openSet(p, 'macros');
   check('有蛋白質係數選項', !!(await p.$('[data-set="proteinPerKg"]')));
   check('有脂肪百分比選項', !!(await p.$('[data-set="fatPct"]')));
   await p.click('[data-set="proteinPerKg"][data-val="2.2"]');
   await p.waitForTimeout(1000);
+  await p.click('[data-sheet="close"]');
+  await p.waitForTimeout(400);
   await p.click('[data-nav="macros"]');
   await p.waitForTimeout(800);
   const protNum = await p.textContent('.mrow-num');

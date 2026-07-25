@@ -1,6 +1,6 @@
 /* 多使用者流程測試：建兩個人 -> 各自記錄 -> 確認資料互不干擾 */
 const { chromium } = require('playwright');
-const { clearAll } = require('./_setup');
+const { clearAll, openSet, closeSet } = require('./_setup');
 
 const MOCK = (items, note) => ({
   id: 'msg_test', type: 'message', role: 'assistant', model: 'claude-sonnet-5', stop_reason: 'end_turn',
@@ -77,8 +77,7 @@ const MOCK = (items, note) => ({
   console.log('   小美已攝取（應為 0）:', (await p.textContent('.kv.eat b')).trim());
 
   // 小美設定：女性、不同體重 -> 目標應不同
-  await p.click('[data-nav="settings"]');
-  await p.waitForTimeout(400);
+  await openSet(p, 'body');
   await p.click('[data-set="sex"][data-val="female"]');
   await p.waitForTimeout(500);
   await p.fill('[data-num="weight"]', '52');
@@ -87,13 +86,15 @@ const MOCK = (items, note) => ({
   await p.fill('[data-num="height"]', '160');
   await p.dispatchEvent('[data-num="height"]', 'change');
   await p.waitForTimeout(600);
-  await p.click('[data-set="goal"][data-val="-300"]');
-  await p.waitForTimeout(600);
   await p.screenshot({ path: '/tmp/m3-settings.png', fullPage: true });
   const boxes = await p.$$eval('.tdee-box .r b', (els) => els.map((e) => e.textContent.trim()));
-  console.log('5. 小美 BMR/TDEE/目標:', boxes.join(' / '));
+  await openSet(p, 'goal');
+  await p.click('[data-set="goal"][data-val="-300"]');
+  await p.waitForTimeout(600);
+  console.log('5. 小美 BMR/TDEE:', boxes.join(' / '));
 
   // 切回 Benson 確認資料還在、且沒被小美的設定污染
+  await closeSet(p);
   await p.click('.me-btn');
   await p.waitForTimeout(400);
   const tiles = await p.$$eval('.picker-tile b', (els) => els.map((e) => e.textContent.trim()));
@@ -103,10 +104,9 @@ const MOCK = (items, note) => ({
   await p.click(`[data-pick="${bensonId}"]`);
   await p.waitForTimeout(1300);
   console.log('7. 切回', (await p.textContent('.head h1')).trim(), '已攝取:', (await p.textContent('.kv.eat b')).trim());
-  await p.click('[data-nav="settings"]');
-  await p.waitForTimeout(500);
+  await openSet(p, 'body');
   const b2 = await p.$$eval('.tdee-box .r b', (els) => els.map((e) => e.textContent.trim()));
-  console.log('   Benson BMR/TDEE/目標（應與小美不同）:', b2.join(' / '));
+  console.log('   Benson BMR/TDEE（應與小美不同）:', b2.join(' / '));
   await p.screenshot({ path: '/tmp/m5-benson-settings.png', fullPage: true });
 
   console.log('console errors:', errs.length ? JSON.stringify(errs, null, 2) : 'none');

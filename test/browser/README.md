@@ -25,6 +25,7 @@ node test/browser/01-flow.js
 | `09-floor.js` | 熱量上限語意（減脂顯示「上限」）、目標低於 BMR 的警告與消失條件 |
 | `08-macros.js` | 營養分頁：三大營養素達標判定、蛋白質缺口建議、熱量來源分配、目標可調 |
 | `10-audit-fixes.js` | 2026-07 稽核修正的回歸測試：讀取失敗不留空白天、歷史頁載入=繪製窗口、當天紀錄即時進歷史、Haiku 不送 effort、常吃可刪單筆 |
+| `11-settings.js` | 索引式設定頁：摘要值、控制項收在 sheet 裡、改數字不重建 input、警示留在索引上、從 sheet 切換使用者 |
 
 `06` 需要先跑 `node test/browser/fixtures.js` 產生素材（素材不進 repo）。
 
@@ -34,7 +35,9 @@ node test/browser/01-flow.js
 後一支的斷言就會噴假警報（踩過）。`_setup.js` 提供：
 
 - `clearAll()` — 刪光所有使用者，給「測建立流程」的測試（01–04）
-- `seedUser()` — 清空後建一位填好身體資料的 Benson，給其他測試（05–08）
+- `seedUser()` — 清空後建一位填好身體資料的 Benson，給其他測試（05–11）
+- `openSet(page, sec)` / `closeSet(page)` — 設定頁是索引式的，控制項在各自的 sheet 裡，
+  要動 `[data-set]` / `[data-num]` 一律先 `openSet`；換頁前要 `closeSet`，不然 sheet 會蓋住導覽列
 
 每支測試開頭都會呼叫其中一個。新增測試時記得跟著做。
 

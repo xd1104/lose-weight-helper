@@ -152,6 +152,14 @@
 - **歷史頁的天數用單一常數 `HIST_DAYS`**（載入與繪製共用）。原本載 30、畫 60，第 31–60 天永遠顯示「—」。
 - **`histDates` 由 `persistDay` 順手維護**：有內容就加進去、整天清空就移除（判斷條件 `dayHasData` 要跟 server 的「空天刪檔」條件一致）。歷史清單一輩子只在開 app／第一次點歷史時抓一次，不維護的話當天新記的紀錄要重開 app 才看得到。
 
+## 設定頁＝索引式（v2.4 改版，別攤回一頁）
+- 一列一個主題（`.set-row`，右邊直接寫**目前值**），控制項全部收在各自的 sheet 裡（`openSettingsSheet(sec)`）。原本一頁六張大卡全攤開，手機上要滑很久才找得到東西。
+- **索引與 sheet 的資料來源是同一份 `setSections()`**，摘要別在別的地方各寫一次。
+- **例外：警示留在索引上**（`.set-alert` ＋ 那一列的 `.wdot`）。「上限低於 BMR／缺口佔 TDEE 超過 25%」是不該要他自己翻進去才看得到的資訊，點警示直接開「每日目標」。
+- **數字欄位（`data-num`）改值時只換 `#set-live` 這一塊**，不整份重畫——重畫會把正在編輯的 input 換掉，手機鍵盤會跳掉。chip（`data-set`）才做整份重畫（選中狀態要更新）。
+- 從 sheet 裡按「切換使用者／新增使用者」要先 `closeAllSheets()`，不然選人畫面會被 sheet 蓋住。
+- 測試：`test/browser/11-settings.js`。其他測試要動設定，用 `_setup.js` 的 `openSet(page, sec)` / `closeSet(page)`。
+
 ## PWA 鐵律（travel-book 血淚，全部已做，別退步）
 - 所有資源、manifest `start_url`/`scope`、SW scope **一律相對路徑**（Pages 在 `/lose-weight-helper/` 子路徑）。
 - SW：`skipWaiting()`＋activate 清舊快取＋`clients.claim()`；GET `/api` network-first、寫入 network-only、殼 cache-first；**跨網域（Anthropic／GitHub）直接放行不攔**。**改前端記得把 sw.js 的 cache 版本號 +1**（`lwh-shell-vN`，目前 v1）。

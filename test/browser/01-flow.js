@@ -1,6 +1,6 @@
 /* QC：新使用者引導 → 體重 → 多日 → 歷史趨勢 → 邊界情況 */
 const { chromium } = require('playwright');
-const { clearAll } = require('./_setup');
+const { clearAll, openSet, closeSet } = require('./_setup');
 const fail = [];
 function check(name, cond, got) {
   if (cond) console.log('  ok  ' + name);
@@ -73,10 +73,10 @@ function check(name, cond, got) {
   check('與上次比較顯示下降 0.8kg', /↓/.test(sub) && /0\.8/.test(sub), sub);
 
   console.log('\n[C] 體重同步進身體資料（TDEE 才不會失準）');
-  await p.click('[data-nav="settings"]');
-  await p.waitForTimeout(600);
+  await openSet(p, 'body');
   const pw = await p.inputValue('[data-num="weight"]');
   check('今天量的體重已同步到 profile', Number(pw) === 78, pw);
+  await closeSet(p);
 
   console.log('\n[D] 歷史頁體重趨勢');
   await p.click('[data-nav="history"]');

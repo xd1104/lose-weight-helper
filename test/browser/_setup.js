@@ -30,4 +30,20 @@ async function seedUser(profile) {
   return id;
 }
 
-module.exports = { BASE, clearAll, seedUser };
+/* 設定頁是索引式的：控制項都在各自的 sheet 裡，要先點進去。
+ * sec: body | activity | goal | macros | ai | gh | users | data */
+async function openSet(page, sec) {
+  await page.evaluate(() => { if (typeof closeAllSheets === 'function') closeAllSheets(); });
+  await page.click('[data-nav="settings"]');
+  await page.waitForTimeout(450);
+  await page.click('[data-sec="' + sec + '"]');
+  await page.waitForTimeout(550);
+}
+
+/* 設定 sheet 開著的時候底下的導覽列點不到，換頁前要先關 */
+async function closeSet(page) {
+  await page.evaluate(() => { if (typeof closeAllSheets === 'function') closeAllSheets(); });
+  await page.waitForTimeout(250);
+}
+
+module.exports = { BASE, clearAll, seedUser, openSet, closeSet };

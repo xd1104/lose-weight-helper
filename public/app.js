@@ -725,31 +725,126 @@ function deficitAdvice(p){
     '每週減重是理論值，實際會被水分與肝醣蓋過去，看兩週以上的趨勢比較準。</p>';
 }
 
+/* ---------- 設定 ----------
+ * 原本一頁六張大卡、所有控制項全攤開，在手機上要滑很久才找得到東西。
+ * 改成索引式：一列一個主題、右邊直接寫目前值，點進去才是完整控制項與說明。
+ * 刻意留在索引上的例外是「上限低於 BMR／缺口偏大」的警告——
+ * 那是不該要他自己翻進去才看得到的資訊。 */
+
+function activityInfo(p){
+  return ACTIVITIES.filter(function(a){ return Math.abs(num(p.activity)-a.v)<0.01; })[0]
+         || { label:"自訂 ×"+num(p.activity), hint:"" };
+}
+function goalInfo(p){
+  return GOALS.filter(function(g){ return round(p.goal)===g.v; })[0]
+         || { label:(num(p.goal)<0 ? "缺口 "+kcal(-round(p.goal)) : "盈餘 "+kcal(round(p.goal))) };
+}
+/* 索引上要不要亮警示：red = 上限低於基礎代謝，amber = 缺口佔 TDEE 超過 25% */
+function goalWarnLevel(p){
+  if(num(p.goal)>=0) return "";
+  if(targetOf(p)<bmrOf(p)) return "red";
+  if(deficitPct(p)>25) return "amber";
+  return "";
+}
+
+function setSections(){
+  var p=db.profile, mt=macroTargets(p), key=getAiKey();
+  var list=[
+    { g:"身體與目標", id:"body",     icon:"\u2696\uFE0F", label:"身體資料",
+      sum:(p.sex==="female"?"女":"男")+" · "+round(p.age)+" 歲 · "+round(p.height)+" cm · "+num(p.weight).toFixed(1)+" kg" },
+    { g:"身體與目標", id:"activity", icon:"\uD83D\uDEB6", label:"活動量與 TDEE",
+      sum:activityInfo(p).label+" · TDEE "+kcal(tdeeOf(p))+" 大卡" },
+    { g:"身體與目標", id:"goal",     icon:"\uD83C\uDFAF", label:"每日目標",
+      sum:goalInfo(p).label+" · "+(num(p.goal)<0?"上限 ":"目標 ")+kcal(targetOf(p))+" 大卡",
+      warn:goalWarnLevel(p) },
+    { g:"身體與目標", id:"macros",   icon:"\uD83E\uDD57", label:"營養目標",
+      sum:"蛋白 "+mt.p+" · 脂肪 "+mt.f+" · 碳水 "+mt.c+" g" },
+    { g:"AI 與同步",  id:"ai",       icon:"\uD83E\uDD16", label:"AI 熱量判讀",
+      sum:key ? aiModelInfo(p.model).label+" · "+usageText() : "未設定 · 只能手動記" }
+  ];
+  if(!STORE.local){
+    var tok=getToken();
+    list.push({ g:"AI 與同步", id:"gh", icon:"\uD83D\uDD11", label:"GitHub 同步",
+      sum:tok?"已連線，可記錄":"唯讀 · 貼上金鑰才能記錄", warn:tok?"":"amber" });
+  }
+  list.push({ g:"其他", id:"users", icon:"\uD83D\uDC65", label:"使用者",
+    sum:users.length+" 人 · 資料各自獨立" });
+  list.push({ g:"其他", id:"data", icon:"\uD83D\uDDC2\uFE0F", label:"資料與常吃清單",
+    sum:"常吃 "+db.foods.length+" 筆" });
+  return list;
+}
+
 function viewSettings(){
   var p=db.profile;
-  var bmr=bmrOf(p), tdee=tdeeOf(p), target=targetOf(p);
   var h=headHtml("設定");
 
-  /* 使用者 */
-  h+='<div class="card">'+
-      '<h2>使用者</h2>'+
-      '<p class="desc">每個人的紀錄、TDEE、目標與常吃清單完全獨立，互不干擾。</p>'+
-      '<div class="user-list">'+
-        users.map(function(u){
-          return '<button class="user-row" data-edit-user="'+esc(u.id)+'">'+
-            avatarHtml(u,"sm")+
-            '<b>'+esc(u.name)+(u.id===me.id?'<span class="tag-me">目前</span>':'')+'</b>'+
-            '<span class="chev">›</span></button>';
-        }).join("")+
-      '</div>'+
-      '<button class="btn ghost" data-act="new-user">＋ 新增使用者</button>'+
-      '<button class="btn ghost" data-act="switch-user">切換使用者</button>'+
+  /* 最常來設定頁看的兩個數字放最上面，不用點進去 */
+  h+='<div class="set-me">'+
+      avatarHtml(me)+
+      '<div class="set-me-t"><b>'+esc(me.name)+'</b>'+
+        '<span>TDEE '+kcal(tdeeOf(p))+' · 每日'+(num(p.goal)<0?"上限":"目標")+' '+kcal(targetOf(p))+'</span></div>'+
+      '<button class="set-me-sw" data-act="switch-user">切換</button>'+
      '</div>';
 
-  /* 個人資料 → TDEE */
-  h+='<div class="card">'+
-      '<h2>'+esc(me.name)+' 的身體資料</h2>'+
-      '<p class="desc">用 Mifflin-St Jeor 公式算基礎代謝，再乘活動係數得到 TDEE。</p>'+
+  var wl=goalWarnLevel(p);
+  if(wl){
+    h+='<button class="set-alert'+(wl==="amber"?" amber":"")+'" data-act="open-set" data-sec="goal">'+
+        '<b>'+(wl==="amber"
+          ? "缺口偏大：佔 TDEE 的 "+deficitPct(p)+"%"
+          : "每日上限 "+kcal(targetOf(p))+" 低於基礎代謝 "+kcal(bmrOf(p)))+'</b>'+
+        '<span>點開看說明與建議 ›</span></button>';
+  }
+
+  var secs=setSections(), grp="";
+  secs.forEach(function(x){
+    if(x.g!==grp){
+      if(grp) h+='</div>';
+      grp=x.g;
+      h+='<h3 class="set-grp">'+esc(grp)+'</h3><div class="set-list">';
+    }
+    h+='<button class="set-row" data-act="open-set" data-sec="'+x.id+'">'+
+        '<i>'+x.icon+'</i>'+
+        '<b>'+esc(x.label)+'<span>'+esc(x.sum)+'</span></b>'+
+        (x.warn?'<u class="wdot'+(x.warn==="amber"?" amber":"")+'"></u>':'')+
+        '<span class="chev">›</span></button>';
+  });
+  if(grp) h+='</div>';
+
+  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v2.4</p>';
+  return h;
+}
+
+/* ---- 設定的分頁 sheet ---- */
+var SET_TITLES={ body:"身體資料", activity:"活動量與 TDEE", goal:"每日目標", macros:"營養目標",
+                 ai:"AI 熱量判讀", gh:"GitHub 同步", users:"使用者", data:"資料與常吃清單" };
+
+/* 會被數字欄位影響的計算結果單獨包一塊：改數字時只換這一塊，
+ * 不整份重畫——重畫會把正在編輯的 input 換掉，手機上鍵盤會跳掉。 */
+function setLive(sec){
+  var p=db.profile;
+  if(sec==="body" || sec==="activity"){
+    return '<div class="tdee-box">'+
+        '<div class="r"><span>基礎代謝 BMR</span><b class="num">'+kcal(bmrOf(p))+'</b></div>'+
+        '<div class="r"><span>每日總消耗 TDEE</span><b class="num">'+kcal(tdeeOf(p))+'</b></div>'+
+      '</div>';
+  }
+  if(sec==="goal"){
+    return '<div class="tdee-box">'+
+        '<div class="r"><span>每日'+(num(p.goal)<0?"上限":"目標")+'攝取</span><b class="num">'+kcal(targetOf(p))+'</b></div>'+
+        (num(p.goal)<0
+          ? '<div class="r"><span>缺口佔 TDEE</span><b class="num">'+deficitPct(p)+'%</b></div>'+
+            '<div class="r"><span>理論每週減重</span><b class="num">'+weeklyLoss(p)+' kg</b></div>'
+          : '')+
+      '</div>'+deficitAdvice(p);
+  }
+  return "";
+}
+
+function setBody(sec){
+  var p=db.profile;
+
+  if(sec==="body"){
+    return '<p class="desc" style="margin-top:0">用 Mifflin-St Jeor 公式算基礎代謝。體重在首頁「量體重」記錄時也會同步更新。</p>'+
       '<div class="field"><label>性別</label><div class="chips">'+
         '<button class="chip '+(p.sex==="male"?"on":"")+'" data-set="sex" data-val="male">男</button>'+
         '<button class="chip '+(p.sex==="female"?"on":"")+'" data-set="sex" data-val="female">女</button>'+
@@ -758,52 +853,43 @@ function viewSettings(){
         '<div class="field"><label>年齡</label><input type="number" inputmode="numeric" data-num="age" value="'+p.age+'"></div>'+
         '<div class="field"><label>身高 (cm)</label><input type="number" inputmode="decimal" data-num="height" value="'+p.height+'"></div>'+
       '</div>'+
-      '<div class="field"><label>體重 (kg)</label><input type="number" inputmode="decimal" data-num="weight" value="'+p.weight+'"></div>'+
+      '<div class="field"><label>體重 (kg)</label><input type="number" inputmode="decimal" step="0.1" data-num="weight" value="'+p.weight+'"></div>'+
+      '<div id="set-live">'+setLive(sec)+'</div>';
+  }
+
+  if(sec==="activity"){
+    return '<p class="desc" style="margin-top:0">BMR 乘上活動係數就是 TDEE（每日總消耗）。</p>'+
       '<div class="field"><label>活動量</label><div class="chips">'+
         ACTIVITIES.map(function(a){
-          return '<button class="chip '+(Math.abs(p.activity-a.v)<0.01?"on":"")+'" data-set="activity" data-val="'+a.v+'">'+
+          return '<button class="chip '+(Math.abs(num(p.activity)-a.v)<0.01?"on":"")+'" data-set="activity" data-val="'+a.v+'">'+
                  a.label+'</button>';
         }).join("")+
-      '</div><div class="hint">'+esc((ACTIVITIES.filter(function(a){return Math.abs(p.activity-a.v)<0.01;})[0]||{}).hint||"")+
+      '</div><div class="hint">'+esc(activityInfo(p).hint)+
         '<br><b>這裡只算「不含運動」的日常活動。</b>健身房、跑步那些記在首頁的「運動」就好，'+
         '兩邊都算會重複扣，目標會虛高。</div></div>'+
-      '<div class="tdee-box">'+
-        '<div class="r"><span>基礎代謝 BMR</span><b class="num">'+kcal(bmr)+'</b></div>'+
-        '<div class="r"><span>每日總消耗 TDEE</span><b class="num">'+kcal(tdee)+'</b></div>'+
-      '</div>'+
+      '<div id="set-live">'+setLive(sec)+'</div>'+
       '<div class="field"><label>手動覆寫 TDEE（0 = 用上面算的）</label>'+
         '<input type="number" inputmode="numeric" data-num="tdee" value="'+p.tdee+'">'+
-        '<div class="hint">有做過體檢代謝測量的話填進來，會蓋掉公式估算值。</div></div>'+
-     '</div>';
+        '<div class="hint">有做過體檢代謝測量的話填進來，會蓋掉公式估算值。</div></div>';
+  }
 
-  /* 目標 */
-  h+='<div class="card">'+
-      '<h2>每日目標</h2>'+
-      '<p class="desc">在 TDEE 上加減，決定「今天還可以吃多少」。</p>'+
+  if(sec==="goal"){
+    return '<p class="desc" style="margin-top:0">在 TDEE 上加減，決定「今天還可以吃多少」。</p>'+
       '<div class="chips">'+
         GOALS.map(function(g){
-          return '<button class="chip '+(p.goal===g.v?"on":"")+'" data-set="goal" data-val="'+g.v+'">'+g.label+'</button>';
+          return '<button class="chip '+(round(p.goal)===g.v?"on":"")+'" data-set="goal" data-val="'+g.v+'">'+g.label+'</button>';
         }).join("")+
       '</div>'+
       '<div class="field"><label>自訂調整 (大卡)</label>'+
         '<input type="number" inputmode="numeric" data-num="goal" value="'+p.goal+'">'+
         '<div class="hint">負數 = 減脂缺口，正數 = 增肌盈餘。</div></div>'+
-      '<div class="tdee-box">'+
-        '<div class="r"><span>每日'+(num(p.goal)<0?"上限":"目標")+'攝取</span><b class="num">'+kcal(target)+'</b></div>'+
-        (num(p.goal)<0
-          ? '<div class="r"><span>缺口佔 TDEE</span><b class="num">'+deficitPct(p)+'%</b></div>'+
-            '<div class="r"><span>理論每週減重</span><b class="num">'+weeklyLoss(p)+' kg</b></div>'
-          : '')+
-      '</div>'+
-      deficitAdvice(p)+
-     '</div>';
+      '<div id="set-live">'+setLive(sec)+'</div>';
+  }
 
-  /* 營養目標 */
-  var mt=macroTargets(p);
-  h+='<div class="card">'+
-      '<h2>營養目標</h2>'+
-      '<p class="desc">減脂期先守蛋白質，再定脂肪，碳水拿剩下的額度。</p>'+
-      '<div class="field" style="margin-top:0"><label>蛋白質（每公斤體重）</label><div class="chips">'+
+  if(sec==="macros"){
+    var mt=macroTargets(p);
+    return '<p class="desc" style="margin-top:0">減脂期先守蛋白質，再定脂肪，碳水拿剩下的額度。</p>'+
+      '<div class="field"><label>蛋白質（每公斤體重）</label><div class="chips">'+
         PROTEIN_LEVELS.map(function(o){
           return '<button class="chip '+(Math.abs(num(p.proteinPerKg)-o.v)<0.01?"on":"")+'" '+
                  'data-set="proteinPerKg" data-val="'+o.v+'">'+o.label+'</button>';
@@ -815,20 +901,17 @@ function viewSettings(){
           return '<button class="chip '+(Math.abs(num(p.fatPct)-v)<0.01?"on":"")+'" '+
                  'data-set="fatPct" data-val="'+v+'">'+v+'%</button>';
         }).join("")+
-      '</div><div class="hint">目前目標：<b>'+mt.f+' g／天</b>。'+
-        '低於 '+mt.fMin+' g（體重×0.6）長期會影響荷爾蒙，別為了壓熱量把脂肪砍太兇。</div></div>'+
+      '</div><div class="hint">低於 '+mt.fMin+' g（體重×0.6）長期會影響荷爾蒙，別為了壓熱量把脂肪砍太兇。</div></div>'+
       '<div class="tdee-box">'+
         '<div class="r"><span>蛋白質</span><b class="num">'+mt.p+' g</b></div>'+
         '<div class="r"><span>脂肪</span><b class="num">'+mt.f+' g</b></div>'+
         '<div class="r"><span>碳水（剩下的）</span><b class="num">'+mt.c+' g</b></div>'+
-      '</div>'+
-     '</div>';
+      '</div>';
+  }
 
-  /* AI */
-  var key=getAiKey();
-  h+='<div class="card">'+
-      '<h2>AI 熱量判讀</h2>'+
-      '<p class="desc">用你自己的 Anthropic API key，從這台裝置直接呼叫 Claude。'+
+  if(sec==="ai"){
+    var key=getAiKey();
+    return '<p class="desc" style="margin-top:0">用你自己的 Anthropic API key，從這台裝置直接呼叫 Claude。'+
         'key 只存在這支手機的瀏覽器裡，不會上傳、也不會進 GitHub。'+
         '<br><b>同一台裝置上兩個人共用同一把 key</b>（key 綁裝置，不綁使用者）。</p>'+
       '<div class="field"><label>API key</label>'+
@@ -842,32 +925,91 @@ function viewSettings(){
       '</div><div class="hint">'+esc(aiModelInfo(p.model).hint)+'</div></div>'+
       '<div class="tdee-box"><div class="r"><span>AI 用量（這台裝置）</span><b style="font-size:14px">'+esc(usageText())+'</b></div></div>'+
       '<button class="btn" data-act="save-key">儲存 API key</button>'+
-      (key?'<button class="btn ghost" data-act="clear-key">移除這台裝置的 key</button>':'')+
-     '</div>';
-
-  /* GitHub 金鑰：只有非 localhost 才需要（本機版直接寫檔） */
-  if(!STORE.local){
-    var tok=getToken();
-    h+='<div class="card">'+
-        '<h2>GitHub 同步金鑰</h2>'+
-        '<p class="desc">手機版直接讀寫 GitHub 上的資料檔。沒有金鑰只能看，不能記錄。'+
-          '請用 fine-grained PAT，只授權 lose-weight-helper 這一個 repo，Contents 設為 Read and write。</p>'+
-        '<div class="field"><label>Personal access token</label>'+
-          '<input type="password" id="gh-key" placeholder="github_pat_..." value="'+esc(tok)+'" autocomplete="off"></div>'+
-        '<button class="btn" data-act="save-gh">儲存金鑰</button>'+
-        (tok?'<button class="btn ghost" data-act="clear-gh">移除金鑰</button>':'')+
-       '</div>';
+      (key?'<button class="btn ghost" data-act="clear-key">移除這台裝置的 key</button>':'');
   }
 
-  h+='<div class="card"><h2>資料</h2>'+
-      '<p class="desc">紀錄存成 markdown：<br>'+
-        '<code style="font-size:12px">data/users/'+esc(me.id)+'/days/YYYY-MM-DD.md</code><br>'+
-        esc(me.name)+' 的常吃清單目前 '+db.foods.length+' 筆。</p>'+
-      (db.foods.length?'<button class="btn ghost" data-act="clear-foods">清空常吃清單</button>':'')+
-     '</div>';
+  if(sec==="gh"){
+    var tok=getToken();
+    return '<p class="desc" style="margin-top:0">手機版直接讀寫 GitHub 上的資料檔。沒有金鑰只能看，不能記錄。'+
+        '請用 fine-grained PAT，只授權 lose-weight-helper 這一個 repo，Contents 設為 Read and write。</p>'+
+      '<div class="field"><label>Personal access token</label>'+
+        '<input type="password" id="gh-key" placeholder="github_pat_..." value="'+esc(tok)+'" autocomplete="off"></div>'+
+      '<button class="btn" data-act="save-gh">儲存金鑰</button>'+
+      (tok?'<button class="btn ghost" data-act="clear-gh">移除金鑰</button>':'');
+  }
 
-  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:6px 16px 30px">減重助手 v2.3</p>';
-  return h;
+  if(sec==="users"){
+    return '<p class="desc" style="margin-top:0">每個人的紀錄、TDEE、目標與常吃清單完全獨立，互不干擾。</p>'+
+      '<div class="user-list">'+
+        users.map(function(u){
+          return '<button class="user-row" data-edit-user="'+esc(u.id)+'">'+
+            avatarHtml(u,"sm")+
+            '<b>'+esc(u.name)+(u.id===me.id?'<span class="tag-me">目前</span>':'')+'</b>'+
+            '<span class="chev">›</span></button>';
+        }).join("")+
+      '</div>'+
+      '<button class="btn ghost" data-act="new-user">＋ 新增使用者</button>'+
+      '<button class="btn ghost" data-act="switch-user">切換使用者</button>';
+  }
+
+  if(sec==="data"){
+    return '<p class="desc" style="margin-top:0">紀錄存成 markdown：<br>'+
+        '<code style="font-size:12px">data/users/'+esc(me.id)+'/days/YYYY-MM-DD.md</code><br>'+
+        esc(me.name)+' 的常吃清單目前 '+db.foods.length+' 筆。單筆要刪，到「記一筆 → 常吃」點右邊的 ✕。</p>'+
+      (db.foods.length?'<button class="btn ghost" data-act="clear-foods">清空常吃清單</button>':'');
+  }
+  return "";
+}
+
+function openSettingsSheet(sec){
+  if(!SET_TITLES[sec]) return;
+  function draw(isNew){
+    var opts={ onDraw:function(root){ wireSetSheet(root, sec, draw); } };
+    if(isNew) openSheet(SET_TITLES[sec], setBody(sec), opts);
+    else replaceSheet(SET_TITLES[sec], setBody(sec), opts);
+  }
+  draw(true);
+}
+
+function wireSetSheet(root, sec, redraw){
+  /* 重畫前先把已經敲進去、還沒 change 的數字收起來，不然會被吃掉 */
+  function readNums(){
+    root.querySelectorAll("[data-num]").forEach(function(inp){
+      if(inp.value!=="") db.profile[inp.getAttribute("data-num")]=Number(inp.value)||0;
+    });
+    db.profile=cleanProfile(db.profile);
+  }
+  root.querySelectorAll("[data-set]").forEach(function(b){
+    b.onclick=function(){
+      readNums();
+      var k=b.getAttribute("data-set"), v=b.getAttribute("data-val");
+      db.profile[k]=(k==="sex"||k==="model") ? v : Number(v);
+      db.profile=cleanProfile(db.profile);
+      persistProfile();
+      render();          /* 底下的索引摘要跟著更新 */
+      redraw(false);     /* chip 的選中狀態要重畫 */
+    };
+  });
+  root.querySelectorAll("[data-num]").forEach(function(inp){
+    inp.onchange=function(){
+      readNums();
+      persistProfile();
+      render();
+      var live=root.querySelector("#set-live");
+      if(live) live.innerHTML=setLive(sec);   /* 只換計算結果，別動到 input */
+    };
+  });
+  root.querySelectorAll("[data-edit-user]").forEach(function(b){
+    b.onclick=function(){ var id=b.getAttribute("data-edit-user"); closeAllSheets(); openUserSheet(id); };
+  });
+  root.querySelectorAll("[data-act]").forEach(function(b){
+    b.onclick=function(){
+      var act=b.getAttribute("data-act");
+      doAct(act, b);
+      /* 這幾個動作會改到這頁自己顯示的東西，重畫一次才不會停在舊畫面 */
+      if(act==="save-key"||act==="clear-key"||act==="clear-foods") redraw(false);
+    };
+  });
 }
 
 /* ============ 事件綁定 ============ */
@@ -919,13 +1061,14 @@ function wire(){
 }
 
 function doAct(act, el){
-  if(act==="switch-user"){ picking=true; render(); return; }
+  if(act==="switch-user"){ closeAllSheets(); picking=true; render(); return; }
+  if(act==="open-set"){ openSettingsSheet(el.getAttribute("data-sec")); return; }
   if(act==="manage-users"){
     /* 從選人畫面進管理：先進去目前這位（或第一位）的設定頁 */
     if(!me && users.length) return switchUser(users[0].id, function(){ view="settings"; picking=false; render(); });
     picking=false; view="settings"; render(); return;
   }
-  if(act==="new-user"){ openUserSheet(null); return; }
+  if(act==="new-user"){ closeAllSheets(); openUserSheet(null); return; }
   if(act==="open-keys"){ openKeysSheet(); return; }
   if(act==="prev-day"){ curDate=shiftDate(curDate,-1); ensureDays([curDate]); render(); return; }
   if(act==="next-day"){ if(curDate<dateKey()){ curDate=shiftDate(curDate,1); ensureDays([curDate]); render(); } return; }

@@ -3,7 +3,7 @@
  * 逼出 GitHubStore 從來沒被跑過的「重取 sha 再試一次」那條路。
  */
 const { chromium } = require('playwright');
-const { clearAll } = require('./_setup');
+const { clearAll, openSet, closeSet } = require('./_setup');
 const fail = [];
 function check(n, c, g) {
   if (c) console.log('  ok  ' + n);
@@ -129,8 +129,7 @@ const unb64 = (s) => Buffer.from(s, 'base64').toString('utf8');
 
   console.log('\n[3] 再改一次設定 → 這次檔案已存在，必須帶 sha（不帶會 422）');
   const before = log.filter((l) => l.startsWith('PUT422')).length;
-  await p.click('[data-nav="settings"]');
-  await p.waitForTimeout(600);
+  await openSet(p, 'goal');
   await p.click('[data-set="goal"][data-val="-300"]');
   await p.waitForTimeout(1500);
   check('沒有觸發 422（第一次寫入後有記住 sha）', log.filter((l) => l.startsWith('PUT422')).length === before,
@@ -150,6 +149,7 @@ const unb64 = (s) => Buffer.from(s, 'base64').toString('utf8');
   check('沒有跳錯誤 toast', errs.length === errBefore);
 
   console.log('\n[5] 記一筆 → PUT 當天的 day 檔');
+  await closeSet(p);
   await p.click('[data-nav="today"]');
   await p.waitForTimeout(600);
   await p.click('.fab');
@@ -174,8 +174,7 @@ const unb64 = (s) => Buffer.from(s, 'base64').toString('utf8');
   check('day 檔被刪除', !files.has(dayKey), [...files.keys()]);
 
   console.log('\n[7] 刪除使用者 → 整個資料夾（含子資料夾）都要清掉');
-  await p.click('[data-nav="settings"]');
-  await p.waitForTimeout(600);
+  await openSet(p, 'users');
   await p.click('[data-act="new-user"]');            // 先建第二位，才允許刪第一位
   await p.waitForTimeout(400);
   await p.fill('#u-name', '小美');
@@ -183,8 +182,7 @@ const unb64 = (s) => Buffer.from(s, 'base64').toString('utf8');
   await p.waitForTimeout(1800);
   await p.click('[data-sheet="close"]').catch(() => {});
   await p.waitForTimeout(400);
-  await p.click('[data-nav="settings"]');
-  await p.waitForTimeout(600);
+  await openSet(p, 'users');
   await p.click('[data-edit-user="' + uid + '"]');
   await p.waitForTimeout(500);
   p.once('dialog', (d) => d.accept());
