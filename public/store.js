@@ -203,13 +203,15 @@ function cleanProfile(p){
     tdee:Math.max(0, round(p&&p.tdee)),
     goal:round(p&&p.goal),
     model:String((p&&p.model)||d.model),
-    updatedAt:new Date().toISOString()
+    /* 讀取時原樣保留（理由同 server.js）：蓋成 now 會讓「還沒設定過」判斷永遠失效 */
+    updatedAt:String((p&&p.updatedAt)||"")
   };
   if(!(o.activity>=1 && o.activity<=2.5)) o.activity=d.activity;
   return o;
 }
 function serializeProfile(p){
   var o=cleanProfile(p);
+  o.updatedAt=new Date().toISOString(); /* 寫入＝這一刻才是 updatedAt */
   var L=["---"];
   L.push("sex: "+fmString(o.sex));
   L.push("age: "+fmNumber(o.age));

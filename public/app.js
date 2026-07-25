@@ -67,6 +67,9 @@ function persistDay(key){
 }
 function persistProfile(){
   if(!me) return Promise.resolve();
+  /* 存過就不再顯示「還沒設定身體資料」。落檔的時間戳由 serializeProfile 蓋，
+   * 這裡標記的是「這個 session 已經設定過了」。 */
+  db.profile.updatedAt=new Date().toISOString();
   var u=me.id, p=db.profile;
   return chainPersist(u+":profile", function(){ return STORE.saveProfile(u, p); });
 }
@@ -168,8 +171,9 @@ function ringHtml(eaten, target){
   '<div class="ring">'+
     '<svg width="132" height="132" viewBox="0 0 132 132">'+
       '<circle cx="66" cy="66" r="'+R+'" fill="none" stroke="#eef1ea" stroke-width="12"/>'+
-      '<circle cx="66" cy="66" r="'+R+'" fill="none" stroke="'+color+'" stroke-width="12" stroke-linecap="round"'+
-        ' stroke-dasharray="'+(C*shown).toFixed(1)+' '+C.toFixed(1)+'"/>'+
+      /* shown=0 時完全不畫：round linecap 會在 dasharray 0 的地方留一個小圓點 */
+      (shown>0 ? '<circle cx="66" cy="66" r="'+R+'" fill="none" stroke="'+color+'" stroke-width="12" stroke-linecap="round"'+
+        ' stroke-dasharray="'+(C*shown).toFixed(1)+' '+C.toFixed(1)+'"/>' : '')+
     '</svg>'+
     '<div class="mid">'+
       '<b class="num" style="color:'+(over?"var(--bad)":"var(--ink)")+'">'+kcal(Math.abs(left))+'</b>'+
@@ -222,6 +226,17 @@ function viewToday(){
         macroBox("蛋白","var(--p)",m.p)+macroBox("碳水","var(--c)",m.c)+macroBox("脂肪","var(--f)",m.f)+
       '</div>'+
      '</section>';
+
+  /* 沒設過身體資料 -> TDEE 是用預設值算的，等於假的，一定要先講 */
+  if(!db.profile.updatedAt){
+    h+='<section class="sec"><button class="nudge" data-act="setup-profile">'+
+        '<b>⚠️ 先設定身體資料</b>'+
+        '<span>現在的目標是用預設值算的。填了身高體重活動量，TDEE 才會是你的。</span>'+
+       '</button></section>';
+  }
+
+  /* 體重（減重 app 的主角，放在熱量環正下方） */
+  h+=weighHtml(d);
 
   /* 四個餐段 */
   MEALS.forEach(function(mk){
@@ -280,6 +295,39 @@ function viewToday(){
 
   return h;
 }
+/* 找 curDate 之前最近一筆有量的體重（只在已載入的日子裡找，夠用且不多打 API） */
+function prevWeight(){
+  var keys=Object.keys(db.days).filter(function(k){
+    return k<curDate && num(db.days[k].weight)>0;
+  }).sort();
+  return keys.length ? num(db.days[keys[keys.length-1]].weight) : 0;
+}
+function weighHtml(d){
+  var w=num(d.weight);
+  var sub;
+  if(!w){
+    sub='<span>還沒量 · 早上起床空腹最準</span>';
+  }else{
+    var pv=prevWeight();
+    if(pv){
+      var diff=w-pv;
+      var cls=diff<0?"down":(diff>0?"up":"");
+      sub='<span class="'+cls+'">'+(diff===0?"和上次一樣"
+        :(diff<0?"↓ ":"↑ ")+Math.abs(diff).toFixed(1)+" kg（比上次）")+'</span>';
+    }else{
+      sub='<span>第一筆紀錄</span>';
+    }
+  }
+  return '<section class="sec"><button class="weigh" data-act="edit-weight">'+
+      '<span class="weigh-ico">⚖️</span>'+
+      '<div class="weigh-mid">'+
+        (w?'<b class="num">'+w.toFixed(1)+'<i>kg</i></b>':'<b class="none">記錄今天的體重</b>')+
+        sub+
+      '</div>'+
+      '<span class="chev">›</span>'+
+     '</button></section>';
+}
+
 function macroBox(label,color,v){
   return '<div class="macro"><div class="lb"><span class="dot" style="background:'+color+'"></span>'+label+'</div>'+
          '<b class="num">'+kcal(v)+'<i>g</i></b></div>';
@@ -318,6 +366,8 @@ function viewHistory(){
       '<div><span>每日目標</span><b class="num">'+kcal(target)+'</b></div>'+
      '</div>';
 
+  h+=weightTrendHtml(keys);
+
   if(!histLoaded){
     h+='<div class="card"><div class="spin"><div class="dots"><i></i><i></i><i></i></div>讀取紀錄中…</div></div>';
     return h;
@@ -330,18 +380,58 @@ function viewHistory(){
   h+='<div class="sec"><div class="list">';
   keys.forEach(function(k){
     var d=db.days[k];
-    var v=d?netOf(d):null;
+    /* 只量體重、沒記飲食的日子顯示「—」而不是 0（0 會被誤讀成「今天沒吃」） */
+    var v=(d && (d.entries||[]).length) ? netOf(d) : null;
     var pct=v!=null&&target>0 ? Math.max(0,Math.min(1,v/target)) : 0;
     var over=v!=null&&v>target;
     h+='<button class="hrow" data-act="open-day" data-date="'+esc(k)+'">'+
-        '<div class="d">'+esc(fmtMD(k))+'<small>週'+WD[parseDateKey(k).getDay()]+'</small></div>'+
+        '<div class="d">'+esc(fmtMD(k))+'<small>'+(d&&num(d.weight)?num(d.weight).toFixed(1)+' kg':'週'+WD[parseDateKey(k).getDay()])+'</small></div>'+
         '<div class="hbar"><i class="'+(over?"over":"")+'" style="width:'+(pct*100).toFixed(0)+'%"></i></div>'+
-        '<div class="v num '+(v==null?"none":(over?"over":""))+'">'+(v==null?"…":kcal(v))+'</div>'+
+        '<div class="v num '+(v==null?"none":(over?"over":""))+'">'+(v==null?"—":kcal(v))+'</div>'+
        '</button>';
   });
   h+='</div></div>';
   return h;
 }
+/* 體重趨勢：只畫有量到的日子，用折線連起來（沒量的日子不補值、不畫假的平滑曲線） */
+function weightTrendHtml(keys){
+  var pts=keys.slice().sort().map(function(k){
+    var d=db.days[k];
+    return d && num(d.weight)>0 ? {k:k, w:num(d.weight)} : null;
+  }).filter(Boolean);
+  if(pts.length<1) return '';
+  var first=pts[0], last=pts[pts.length-1];
+  var diff=last.w-first.w;
+  var W=300, H=56;
+  var chart='';
+  if(pts.length>=2){
+    var min=Math.min.apply(null, pts.map(function(p){return p.w;}));
+    var max=Math.max.apply(null, pts.map(function(p){return p.w;}));
+    var span=Math.max(0.6, max-min); /* 全部一樣重時不要變成一條貼邊的線 */
+    var mid=(max+min)/2;
+    var lo=mid-span/2, hi=mid+span/2;
+    var coords=pts.map(function(p,i){
+      var x=pts.length===1?W/2:(i/(pts.length-1))*(W-8)+4;
+      var y=H-4-((p.w-lo)/(hi-lo))*(H-12);
+      return x.toFixed(1)+','+y.toFixed(1);
+    }).join(' ');
+    chart='<svg class="wchart" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'+
+      '<polyline points="'+coords+'" fill="none" stroke="'+(diff<=0?"var(--acc)":"var(--warn)")+
+        '" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'+
+    '</svg>';
+  }
+  return '<div class="sec"><div class="wcard">'+
+      '<div class="wtop">'+
+        '<div><span>目前體重</span><b class="num">'+last.w.toFixed(1)+'<i>kg</i></b></div>'+
+        (pts.length>=2
+          ? '<div class="wdiff '+(diff<0?"down":(diff>0?"up":""))+'"><span>'+esc(fmtMD(first.k))+' 以來</span>'+
+            '<b class="num">'+(diff>0?"+":"")+diff.toFixed(1)+'<i>kg</i></b></div>'
+          : '<div><span>紀錄</span><b class="num">1<i>筆</i></b></div>')+
+      '</div>'+
+      chart+
+     '</div></div>';
+}
+
 function avgOf(list){
   if(!list.length) return 0;
   var s=0; list.forEach(function(v){ s+=v; });
@@ -534,6 +624,8 @@ function doAct(act, el){
   if(act==="edit-entry"){ if(requireWrite()) openEntrySheet(el.getAttribute("data-id")); return; }
   if(act==="edit-move"){ if(requireWrite()) openMoveSheet(el.getAttribute("data-id")); return; }
   if(act==="edit-notes"){ if(requireWrite()) openNotesSheet(); return; }
+  if(act==="edit-weight"){ if(requireWrite()) openWeightSheet(); return; }
+  if(act==="setup-profile"){ openSetupSheet(); return; }
   if(act==="save-key"){
     var v=(document.getElementById("ai-key")||{}).value||"";
     v=v.trim();
@@ -628,7 +720,8 @@ function saveUser(draft, isNew){
   closeAllSheets();
   if(isNew){
     toast("已建立 "+clean.name);
-    switchUser(clean.id);
+    /* 直接接著設定身體資料：不設的話首頁的目標是預設值算的，等於假的 */
+    switchUser(clean.id, function(){ render(); openSetupSheet(); });
   }else{
     toast("已更新");
     render();
@@ -1112,6 +1205,116 @@ function openNotesSheet(){
       closeSheet(); render(); toast("已儲存");
     };
   }});
+}
+
+/* ============ 體重 ============ */
+function openWeightSheet(){
+  var d=dayOf(curDate);
+  var cur=num(d.weight);
+  var isToday=curDate===dateKey();
+  var body='<form id="f-weigh">'+
+    '<div class="field" style="margin-top:0"><label>'+esc(fmtLong(curDate))+' 的體重 (kg)</label>'+
+      '<input type="number" inputmode="decimal" step="0.1" id="w-val" value="'+(cur?cur:"")+'" '+
+        'placeholder="'+(prevWeight()||db.profile.weight||70)+'" autofocus>'+
+      '<div class="hint">早上起床、上完廁所、空腹量最準。同一個時間點量才有可比性。</div></div>'+
+    (isToday?'<div class="tdee-box" style="margin-top:12px"><div class="r">'+
+      '<span style="font-weight:600">存檔時會一併更新身體資料的體重</span></div>'+
+      '<div class="r"><span style="font-size:11.5px;font-weight:600;opacity:.85">'+
+      'TDEE 是用體重算的，不同步更新目標就會越來越不準</span></div></div>':'')+
+    '<button class="btn" type="submit">儲存</button>'+
+    (cur?'<button class="btn danger" type="button" data-del="1">清除這天的體重</button>':'')+
+  '</form>';
+
+  openSheet("體重", body, { onDraw:function(root){
+    var del=root.querySelector("[data-del]");
+    if(del) del.onclick=function(){
+      d.weight=0;
+      persistDay(curDate);
+      closeSheet(); render(); toast("已清除");
+    };
+    root.querySelector("#f-weigh").onsubmit=function(ev){
+      ev.preventDefault();
+      var v=Number(root.querySelector("#w-val").value)||0;
+      if(v<0 || v>400){ toast("這個體重看起來怪怪的", true); return; }
+      d.weight=v;
+      persistDay(curDate);
+      /* 今天的體重同步進 profile：TDEE 是用體重算的，不同步會越來越不準 */
+      if(isToday && v>0){
+        db.profile.weight=v;
+        db.profile=cleanProfile(db.profile);
+        persistProfile();
+      }
+      closeSheet(); render(); toast(v?"已記錄 "+v.toFixed(1)+" kg":"已清除");
+    };
+  }});
+}
+
+/* ============ 首次身體資料設定（建完使用者馬上跳出來） ============ */
+function openSetupSheet(){
+  var p=Object.assign({}, db.profile);
+  function body(){
+    var bmr=bmrOf(p), tdee=tdeeOf(p), target=targetOf(p);
+    return '<form id="f-setup">'+
+      '<p class="desc" style="margin:0 0 4px">TDEE 要用這些算，填完才知道「今天還能吃多少」。之後在設定裡隨時可改。</p>'+
+      '<div class="field"><label>性別</label><div class="chips">'+
+        '<button type="button" class="chip '+(p.sex==="male"?"on":"")+'" data-s="sex" data-v="male">男</button>'+
+        '<button type="button" class="chip '+(p.sex==="female"?"on":"")+'" data-s="sex" data-v="female">女</button>'+
+      '</div></div>'+
+      '<div class="grid2">'+
+        '<div class="field"><label>年齡</label><input type="number" inputmode="numeric" id="s-age" value="'+p.age+'"></div>'+
+        '<div class="field"><label>身高 (cm)</label><input type="number" inputmode="decimal" id="s-height" value="'+p.height+'"></div>'+
+      '</div>'+
+      '<div class="field"><label>體重 (kg)</label><input type="number" inputmode="decimal" step="0.1" id="s-weight" value="'+p.weight+'"></div>'+
+      '<div class="field"><label>活動量</label><div class="chips">'+
+        ACTIVITIES.map(function(a){
+          return '<button type="button" class="chip '+(Math.abs(p.activity-a.v)<0.01?"on":"")+'" data-s="activity" data-v="'+a.v+'">'+a.label+'</button>';
+        }).join("")+'</div>'+
+        '<div class="hint">'+esc((ACTIVITIES.filter(function(a){return Math.abs(p.activity-a.v)<0.01;})[0]||{}).hint||"")+'</div></div>'+
+      '<div class="field"><label>目標</label><div class="chips">'+
+        GOALS.map(function(g){
+          return '<button type="button" class="chip '+(p.goal===g.v?"on":"")+'" data-s="goal" data-v="'+g.v+'">'+g.label+'</button>';
+        }).join("")+'</div></div>'+
+      '<div class="tdee-box">'+
+        '<div class="r"><span>基礎代謝 BMR</span><b class="num">'+kcal(bmr)+'</b></div>'+
+        '<div class="r"><span>每日總消耗 TDEE</span><b class="num">'+kcal(tdee)+'</b></div>'+
+        '<div class="r"><span>每日目標攝取</span><b class="num">'+kcal(target)+'</b></div>'+
+      '</div>'+
+      '<button class="btn" type="submit">完成設定</button>'+
+    '</form>';
+  }
+  function readInputs(root){
+    p.age=Number((root.querySelector("#s-age")||{}).value)||p.age;
+    p.height=Number((root.querySelector("#s-height")||{}).value)||p.height;
+    p.weight=Number((root.querySelector("#s-weight")||{}).value)||p.weight;
+  }
+  function draw(isNew){
+    var opts={ onDraw:function(root){
+      /* 改 chip 之前先把已輸入的數字收起來，重畫才不會被吃掉 */
+      root.querySelectorAll("[data-s]").forEach(function(b){
+        b.onclick=function(){
+          readInputs(root);
+          var k=b.getAttribute("data-s"), v=b.getAttribute("data-v");
+          p[k]=(k==="sex")?v:Number(v);
+          draw(false);
+        };
+      });
+      /* 數字改完即時更新下面的 TDEE 預覽 */
+      ["#s-age","#s-height","#s-weight"].forEach(function(sel){
+        var el=root.querySelector(sel);
+        if(el) el.onchange=function(){ readInputs(root); draw(false); };
+      });
+      root.querySelector("#f-setup").onsubmit=function(ev){
+        ev.preventDefault();
+        readInputs(root);
+        db.profile=cleanProfile(p);
+        persistProfile();
+        closeSheet(); render(); toast("設定完成，目標是 "+kcal(targetOf(db.profile))+" 大卡");
+      };
+    }};
+    if(isNew) openSheet(esc(me.name)+" 的身體資料", body(), opts);
+    else replaceSheet(esc(me.name)+" 的身體資料", body(), opts);
+  }
+  draw(true);
 }
 
 /* ============ 載入 ============ */

@@ -121,6 +121,19 @@ t('離譜的數值被夾住（不會產生負熱量目標）', () => {
   assert.strictEqual(back.activity, 1.375, '超出範圍的活動係數要落回預設');
 });
 
+t('updatedAt 只在寫入時蓋，讀取要原樣帶回（「還沒設定過」判斷靠它）', () => {
+  // 從沒存過的 profile：updatedAt 必須是空字串，前端才知道要跳設定引導
+  assert.strictEqual(S.defaultProfile().updatedAt, '', '預設 profile 的 updatedAt 要是空的');
+  assert.strictEqual(S.parseProfile('這不是 frontmatter').updatedAt, '', '讀不到檔時 updatedAt 要是空的');
+
+  // 存過一次之後：檔案裡有時間戳，且讀回來要是「存檔時間」而不是「讀檔時間」
+  const md = S.serializeProfile({ sex: 'male', age: 30, height: 170, weight: 65 });
+  const stamped = S.parseProfile(md).updatedAt;
+  assert.ok(stamped, '存檔後 updatedAt 不可為空');
+  const again = S.parseProfile(md).updatedAt;
+  assert.strictEqual(again, stamped, '重複讀取不可以改變 updatedAt');
+});
+
 console.log('foods round-trip');
 
 t('常吃清單原樣回來、次數保留', () => {

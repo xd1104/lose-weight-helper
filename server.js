@@ -398,13 +398,17 @@ function cleanProfile(p) {
     tdee: Math.max(0, round(p && p.tdee)),
     goal: round(p && p.goal),
     model: String((p && p.model) || d.model),
-    updatedAt: new Date().toISOString(),
+    // 讀取時原樣保留：這裡若蓋成 now，updatedAt 就變成「剛才讀檔的時間」而不是
+    // 「上次存檔的時間」，前端「還沒設定過身體資料」的判斷會永遠失效。
+    // 真正的時間戳在 serializeProfile 落檔那一刻蓋。
+    updatedAt: String((p && p.updatedAt) || ''),
   };
   if (!(o.activity >= 1 && o.activity <= 2.5)) o.activity = d.activity;
   return o;
 }
 function serializeProfile(p) {
   const o = cleanProfile(p);
+  o.updatedAt = new Date().toISOString(); // 寫入＝這一刻才是 updatedAt
   const L = ['---'];
   L.push('sex: ' + fmString(o.sex));
   L.push('age: ' + fmNumber(o.age));
