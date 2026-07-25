@@ -1,0 +1,18 @@
+# 資料與網頁資源在 working tree 一律 LF，parser 只認 \n
+# （Windows autocrlf 會把 md 轉 CRLF -> frontmatter 解析壞掉）
+*.md text eol=lf
+*.json text eol=lf
+*.js text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+
+# .bat 必須是 CRLF（Windows 要求）
+*.bat text eol=crlf
+
+# 圖片當 binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary

@@ -1,0 +1,13 @@
+{
+  "name": "lose-weight-helper",
+  "version": "1.0.0",
+  "description": "減重助手 — 手機優先的每日熱量／TDEE 記錄 PWA（本機真本 + GitHub 同步 + Pages）",
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "build": "node build.js",
+    "test": "node test/roundtrip.js"
+  },
+  "license": "MIT"
+}
