@@ -677,6 +677,43 @@ function proteinHint(v){
   return "自訂設定";
 }
 
+/* 缺口佔 TDEE 的百分比才是該看的指標——跟 BMR 比只是常見的經驗法則。
+ * 20% 以內較好維持、也較保得住肌肉；超過 25% 就偏激進。 */
+function deficitPct(p){
+  var tdee=tdeeOf(p), gap=-round(p.goal);
+  if(gap<=0 || tdee<=0) return 0;
+  return Math.round(gap/tdee*100);
+}
+/* 1 公斤脂肪約 7700 大卡。這是理論值，實際會被水分與肝醣蓋過去，要看兩週以上的趨勢。 */
+function weeklyLoss(p){
+  var gap=-round(p.goal);
+  if(gap<=0) return "0";
+  return (gap*7/7700).toFixed(2);
+}
+function deficitAdvice(p){
+  var bmr=bmrOf(p), tdee=tdeeOf(p), target=targetOf(p), pct=deficitPct(p);
+  if(num(p.goal)>=0) return "";
+  if(target<bmr){
+    return '<div class="warn-box">'+
+      '<b>⚠️ 上限 '+kcal(target)+' 低於基礎代謝 '+kcal(bmr)+'</b>'+
+      '<span>「不能吃低於基礎代謝」是常見的經驗法則，不是硬性禁令——真正該看的是'+
+      '<b>缺口佔 TDEE 的比例</b>，你目前是 <b>'+pct+'%</b>。<br><br>'+
+      '會掉到 BMR 以下，通常是活動量選得太低。「久坐」是給臥床或幾乎不出門的人用的；'+
+      '有正常上班走動的話「輕度」才符合實際。<br><br>'+
+      '建議二選一：<b>活動量調成符合實際的等級</b>，或把缺口縮到 '+
+      kcal(Math.max(0, tdee-bmr))+' 大卡以內。</span></div>';
+  }
+  if(pct>25){
+    return '<div class="warn-box amber">'+
+      '<b>缺口偏大：佔 TDEE 的 '+pct+'%</b>'+
+      '<span>一般建議控制在 20% 以內，比較能長期維持，也比較保得住肌肉。'+
+      '如果兩週後體重掉得比預期快很多、或一直很沒力，把缺口縮小一點。</span></div>';
+  }
+  return '<p class="hint" style="margin-top:12px">缺口佔 TDEE 的 '+pct+'%，'+
+    (pct<=20?'在一般建議的 20% 以內。':'略高於一般建議的 20%。')+
+    '每週減重是理論值，實際會被水分與肝醣蓋過去，看兩週以上的趨勢比較準。</p>';
+}
+
 function viewSettings(){
   var p=db.profile;
   var bmr=bmrOf(p), tdee=tdeeOf(p), target=targetOf(p);
@@ -740,16 +777,14 @@ function viewSettings(){
       '<div class="field"><label>自訂調整 (大卡)</label>'+
         '<input type="number" inputmode="numeric" data-num="goal" value="'+p.goal+'">'+
         '<div class="hint">負數 = 減脂缺口，正數 = 增肌盈餘。</div></div>'+
-      '<div class="tdee-box"><div class="r"><span>每日目標攝取</span><b class="num">'+kcal(target)+'</b></div></div>'+
-      (target<bmr
-        ? '<div class="warn-box">'+
-            '<b>⚠️ 目標 '+kcal(target)+' 低於基礎代謝 '+kcal(bmr)+'</b>'+
-            '<span>基礎代謝是躺著不動也會燒掉的熱量。長期吃低於它，掉的會有一大部分是肌肉，'+
-            '代謝也會往下適應，之後更難維持。<br><br>'+
-            '建議二選一：把缺口縮到 '+kcal(Math.max(0, tdee-bmr))+' 大卡以內，'+
-            '或把活動量調成符合實際的等級（多數人不是真的整天不動）。</span>'+
-          '</div>'
-        : '')+
+      '<div class="tdee-box">'+
+        '<div class="r"><span>每日'+(num(p.goal)<0?"上限":"目標")+'攝取</span><b class="num">'+kcal(target)+'</b></div>'+
+        (num(p.goal)<0
+          ? '<div class="r"><span>缺口佔 TDEE</span><b class="num">'+deficitPct(p)+'%</b></div>'+
+            '<div class="r"><span>理論每週減重</span><b class="num">'+weeklyLoss(p)+' kg</b></div>'
+          : '')+
+      '</div>'+
+      deficitAdvice(p)+
      '</div>';
 
   /* 營養目標 */

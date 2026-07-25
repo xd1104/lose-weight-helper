@@ -23,9 +23,26 @@ const fail=[]; const check=(n,c,g)=>{ if(c) console.log('  ok  '+n); else {conso
   check('給了具體建議', /缺口|活動量/.test(warn||''));
   await p.screenshot({ path:'/tmp/floor-warn.png', fullPage:true });
 
-  console.log('\n[3] 把缺口縮小 → 警告要消失');
+  console.log('\n[2b] 顯示缺口佔 TDEE 的百分比與理論減重');
+  // 頁面上有多個 .tdee-box（身體資料／每日目標／營養目標），掃全部再挑含「缺口」的那個
+  const boxes = await p.$$eval('.tdee-box', e => e.map(x => x.textContent.replace(/\s+/g,' ')));
+  const box = boxes.find(t => /缺口/.test(t)) || '';
+  check('顯示缺口百分比 24%', /24%/.test(box||''), (box||'').replace(/\s+/g,' ').slice(0,80));
+  check('顯示理論每週減重 0.45kg', /0\.45/.test(box||''), (box||'').replace(/\s+/g,' ').slice(0,80));
+
+  console.log('\n[3] 把缺口縮小 → 紅色警告消失');
   await p.click('[data-set="goal"][data-val="-300"]'); await p.waitForTimeout(1000);
-  check('缺口 -300（目標 1764 > BMR 1720）時警告消失', !(await p.$('.warn-box')));
+  const w2 = await p.$('.warn-box:not(.amber)');
+  check('缺口 -300（上限 1764 > BMR 1720）時紅色警告消失', !w2);
+
+  console.log('\n[3b] 活動量改輕度 + 缺口 -500 → 也該安全');
+  await p.click('[data-set="goal"][data-val="-500"]'); await p.waitForTimeout(900);
+  await p.click('[data-set="activity"][data-val="1.375"]'); await p.waitForTimeout(1000);
+  check('輕度 -500（上限 1865 > BMR 1720）沒有紅色警告', !(await p.$('.warn-box:not(.amber)')));
+  const boxes2 = await p.$$eval('.tdee-box', e => e.map(x => x.textContent.replace(/\s+/g,' ')));
+  const box2 = boxes2.find(t => /缺口/.test(t)) || '';
+  check('缺口百分比降到 21%', /21%/.test(box2||''), (box2||'').replace(/\s+/g,' ').slice(0,60));
+  await p.click('[data-set="activity"][data-val="1.2"]'); await p.waitForTimeout(900);
 
   console.log('\n[4] 維持體重時標籤回到「每日目標」');
   await p.click('[data-set="goal"][data-val="0"]'); await p.waitForTimeout(1000);
