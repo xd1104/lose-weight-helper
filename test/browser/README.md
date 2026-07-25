@@ -20,6 +20,9 @@ node test/browser/01-flow.js
 | `03-github-write.js` | **GitHubStore 寫入路徑**：sha 記憶、缺 sha 的 422、sha 過期的 409 自動重試、刪檔、遞迴刪使用者資料夾 |
 | `04-multiuser.js` | 兩個使用者的資料隔離、TDEE 各自獨立 |
 | `05-ai.js` | AI request 形狀、結果預覽的編輯與刪除、用量統計 |
+| `06-photo.js` | 相機／相簿兩個入口、`capture` 屬性、重選同一張、非圖片檔的錯誤 |
+
+`06` 需要先跑 `node test/browser/fixtures.js` 產生素材（素材不進 repo）。
 
 ## 這些測試用的是假的外部服務
 

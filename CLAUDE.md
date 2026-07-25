@@ -124,6 +124,10 @@
 - 熱量環在 0 時**不畫彩色弧**：`stroke-linecap:round` 會在 dasharray 0 的位置留一個小圓點。
 - **AI 有降級路徑**：`output_config` 的形狀若被 API 回 400，會自動改用「提示詞要求純 JSON」再試一次（`aiRequest(..., plain)`）。
   沒有 API key 就無法驗證 structured outputs 的形狀，這條保險是刻意留的，別當多餘刪掉。
+- **照片有兩個 file input，這是刻意的**：`capture="environment"` 會**強制**開相機，手機上就完全看不到相簿；
+  不帶 `capture` 才會讓系統給選單。與其靠系統選單，不如直接給「拍照」「從相簿選」兩顆按鈕。
+  **不要把兩個 input 合併成一個**，合併就一定得犧牲其中一種來源。
+- 每次處理完照片要把 `input.value=""` 清掉，否則使用者連選同一張時 `change` 不會再觸發。
 - **照片走 `createImageBitmap({imageOrientation:"from-image"})`**：iPhone 直向拍的 EXIF orientation 常是 6，
   用 `<img>`+canvas 不會轉正，會把躺著的照片送給 AI，判讀變差。舊瀏覽器才退回 `<img>` 路徑。
 - 測試：`npm test`（`test/roundtrip.js`）＋ `npm run test:browser`（`test/browser/`，需要 `npm i -D playwright`）。

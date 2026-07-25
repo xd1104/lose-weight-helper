@@ -891,12 +891,13 @@ function addTabBody(){
   }
   if(addTab==="photo"){
     if(!hasAiKey()) return noKeyBox();
+    /* 兩個 input 是刻意的：capture="environment" 會「強制」開相機，
+     * 手機上就看不到相簿；不帶 capture 才會讓系統給選單。
+     * 與其靠系統選單，不如直接給兩顆按鈕，使用者一眼就知道有相簿這個選項。 */
     return '<form id="f-photo">'+
-      '<div id="photo-slot">'+
-        '<label class="photo-pick" for="i-photo"><i>📷</i>拍照或從相簿選一張'+
-          '<span style="font-size:12px;font-weight:600">整桌、便當盒都可以，會自動拆成多筆</span></label>'+
-      '</div>'+
-      '<input type="file" id="i-photo" accept="image/*" capture="environment" hidden>'+
+      '<div id="photo-slot">'+photoPickHtml()+'</div>'+
+      '<input type="file" id="i-cam" accept="image/*" capture="environment" hidden>'+
+      '<input type="file" id="i-lib" accept="image/*" hidden>'+
       '<div class="field"><label>補充說明（選填）</label>'+
         '<input type="text" id="i-hint" placeholder="例如：這碗是大碗、白飯只吃一半" autocomplete="off"></div>'+
       '<button class="btn" type="submit" id="b-photo" disabled>交給 AI 估算</button>'+
@@ -922,6 +923,18 @@ function addTabBody(){
     '</div>'+
     '<button class="btn" type="submit">加入</button>'+
   '</form>';
+}
+
+function photoPickHtml(){
+  return '<div class="photo-pick">'+
+      '<i>🍱</i>'+
+      '<b>加一張餐點照片</b>'+
+      '<span>整桌、便當盒都可以，會自動拆成多筆</span>'+
+      '<div class="photo-btns">'+
+        '<label class="pbtn" for="i-cam">📷 拍照</label>'+
+        '<label class="pbtn" for="i-lib">🖼️ 從相簿選</label>'+
+      '</div>'+
+    '</div>';
 }
 
 function favListHtml(q){
@@ -958,25 +971,36 @@ function wireAddSheet(root){
 
   var fPhoto=root.querySelector("#f-photo");
   if(fPhoto){
-    var input=root.querySelector("#i-photo");
     var btn=root.querySelector("#b-photo");
     var slot=root.querySelector("#photo-slot");
-    input.onchange=function(){
-      var file=input.files&&input.files[0];
-      if(!file) return;
-      btn.disabled=true;
-      btn.textContent="處理照片中…";
-      compressImage(file).then(function(dataUrl){
-        pendingPhoto=dataUrl;
-        slot.innerHTML='<img class="photo-prev" src="'+dataUrl+'" alt="餐點照片">'+
-          '<label class="btn ghost" for="i-photo" style="margin-top:0">換一張</label>';
-        btn.disabled=false;
-        btn.textContent="交給 AI 估算";
-      }).catch(function(e){
-        toast(e.userMessage||"照片處理失敗", true);
-        btn.textContent="交給 AI 估算";
-      });
+    var onPick=function(input){
+      return function(){
+        var file=input.files&&input.files[0];
+        /* 同一張照片連選兩次時 change 不會再觸發，所以每次處理完把 value 清掉 */
+        input.value="";
+        if(!file) return;
+        btn.disabled=true;
+        btn.textContent="處理照片中…";
+        compressImage(file).then(function(dataUrl){
+          pendingPhoto=dataUrl;
+          slot.innerHTML='<img class="photo-prev" src="'+dataUrl+'" alt="餐點照片">'+
+            '<div class="photo-btns after">'+
+              '<label class="pbtn" for="i-cam">📷 重拍</label>'+
+              '<label class="pbtn" for="i-lib">🖼️ 換一張</label>'+
+            '</div>';
+          btn.disabled=false;
+          btn.textContent="交給 AI 估算";
+        }).catch(function(e){
+          toast(e.userMessage||"照片處理失敗", true);
+          btn.disabled=!pendingPhoto;
+          btn.textContent="交給 AI 估算";
+        });
+      };
     };
+    ["#i-cam","#i-lib"].forEach(function(sel){
+      var el=root.querySelector(sel);
+      if(el) el.onchange=onPick(el);
+    });
     fPhoto.onsubmit=function(ev){
       ev.preventDefault();
       if(!pendingPhoto){ toast("請先選一張照片", true); return; }
