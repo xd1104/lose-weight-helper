@@ -190,7 +190,8 @@ function parseDay(date, text){
 
 function defaultProfile(){
   return { sex:"male", age:30, height:170, weight:65, activity:1.375,
-           tdee:0, goal:0, model:"claude-sonnet-5", updatedAt:"" };
+           tdee:0, goal:0, proteinPerKg:1.6, fatPct:25,
+           model:"claude-sonnet-5", updatedAt:"" };
 }
 function cleanProfile(p){
   var d=defaultProfile();
@@ -202,11 +203,15 @@ function cleanProfile(p){
     activity:num(p&&p.activity)||d.activity,
     tdee:Math.max(0, round(p&&p.tdee)),
     goal:round(p&&p.goal),
+    proteinPerKg:num(p&&p.proteinPerKg)||d.proteinPerKg,
+    fatPct:num(p&&p.fatPct)||d.fatPct,
     model:String((p&&p.model)||d.model),
     /* 讀取時原樣保留（理由同 server.js）：蓋成 now 會讓「還沒設定過」判斷永遠失效 */
     updatedAt:String((p&&p.updatedAt)||"")
   };
   if(!(o.activity>=1 && o.activity<=2.5)) o.activity=d.activity;
+  if(!(o.proteinPerKg>=0.8 && o.proteinPerKg<=3)) o.proteinPerKg=d.proteinPerKg;
+  if(!(o.fatPct>=15 && o.fatPct<=45)) o.fatPct=d.fatPct;
   return o;
 }
 function serializeProfile(p){
@@ -220,6 +225,8 @@ function serializeProfile(p){
   L.push("activity: "+fmNumber(o.activity));
   L.push("tdee: "+fmNumber(o.tdee));
   L.push("goal: "+fmNumber(o.goal));
+  L.push("proteinPerKg: "+fmNumber(o.proteinPerKg));
+  L.push("fatPct: "+fmNumber(o.fatPct));
   L.push("model: "+fmString(o.model));
   L.push("updatedAt: "+fmString(o.updatedAt));
   L.push("---","");
@@ -266,6 +273,23 @@ function tdeeOf(p){
   return Math.round(bmrOf(p)*num(p.activity));
 }
 function targetOf(p){ return Math.max(800, tdeeOf(p)+round(p.goal)); }
+
+/* 三大營養素目標。
+ * 順序是固定的：先蛋白質（體重決定，減脂期最該守住的），再脂肪（熱量百分比），
+ * 碳水拿剩下的。這是營養學上常見的排法，也讓「碳水超標」等於「其他兩個沒吃夠」。 */
+function macroTargets(p){
+  var target=targetOf(p);
+  var prot=Math.round(num(p.weight)*num(p.proteinPerKg));
+  var fat=Math.round(target*num(p.fatPct)/100/9);
+  var carb=Math.max(0, Math.round((target-prot*4-fat*9)/4));
+  return {
+    p:prot,
+    f:fat,
+    c:carb,
+    fMin:Math.round(num(p.weight)*0.6), /* 脂肪下限：長期低於這個會影響荷爾蒙 */
+    kcal:target
+  };
+}
 
 function sumKcal(list){
   var s=0; (list||[]).forEach(function(x){ s+=num(x.kcal); }); return s;

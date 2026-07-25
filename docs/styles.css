@@ -297,3 +297,39 @@ input,textarea,select{font-family:inherit; font-size:16px; color:inherit;}
 .picker-note b{display:block; font-size:14.5px; font-weight:800; color:#a86d12;}
 .picker-note span{display:block; font-size:12.5px; color:#a86d12; opacity:.85; margin-top:5px; line-height:1.6;}
 .picker-note .btn{margin-top:12px;}
+
+/* ---------- 營養 ---------- */
+.macros{width:100%; text-align:left;}
+.macro .mbar{height:4px; border-radius:99px; background:#eef1ea; overflow:hidden; margin-top:6px;}
+.macro .mbar i{display:block; height:100%; border-radius:99px; transition:width .25s;}
+.macro b i{font-size:10.5px;}
+
+.mrow{background:var(--card); border-radius:18px; box-shadow:var(--shadow); padding:15px 16px 13px; margin-bottom:12px;}
+.mrow-top{display:flex; align-items:baseline; justify-content:space-between; gap:8px;}
+.mrow-top b{font-size:16px; font-weight:800;}
+.mrow-num{font-size:19px; font-weight:800;}
+.mrow-num i{font-style:normal; font-size:12px; color:var(--muted); font-weight:700; margin-left:1px;}
+.mbar.big{height:10px; border-radius:99px; background:#eef1ea; margin-top:10px; position:relative; overflow:visible;}
+.mbar.big i{display:block; height:100%; border-radius:99px; transition:width .25s; max-width:100%;}
+.mbar.big u{position:absolute; top:-3px; width:2px; height:16px; background:#c3ccbe; border-radius:2px;}
+.mrow-foot{display:flex; align-items:center; gap:8px; margin-top:10px; font-size:12px; color:var(--muted);}
+.mrow-foot .tag{font-weight:800; padding:3px 9px; border-radius:99px; background:#f1f4ee; flex:0 0 auto;}
+.mrow.ok .tag{background:var(--acc-soft); color:var(--acc-deep);}
+.mrow.near .tag{background:var(--warn-soft); color:#a86d12;}
+.mrow.under .tag{background:var(--bad-soft); color:var(--bad);}
+.mrow.over .tag{background:var(--bad-soft); color:var(--bad);}
+.mrow-note{font-size:11.5px; color:#a9b2a5; margin-top:7px; line-height:1.5;}
+
+.split{display:flex; height:14px; border-radius:99px; overflow:hidden; background:#eef1ea;}
+.split i{display:block; height:100%;}
+.split-lb{display:flex; gap:14px; margin-top:9px; font-size:12px; color:var(--muted); font-weight:700;}
+.split-lb span{display:flex; align-items:center; gap:5px;}
+.split-lb b{width:8px; height:8px; border-radius:99px; display:inline-block;}
+
+.tip{background:var(--warn-soft); border-radius:16px; padding:13px 15px;}
+.tip b{display:block; font-size:14.5px; font-weight:800; color:#a86d12;}
+.tip span{display:block; font-size:12.5px; color:#a86d12; opacity:.85; margin-top:4px; line-height:1.55;}
+.tip.ok{background:var(--acc-soft);}
+.tip.ok b, .tip.ok span{color:var(--acc-deep);}
+
+.spark .bar.under{background:var(--warn);}

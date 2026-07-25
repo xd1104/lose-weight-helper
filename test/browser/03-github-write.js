@@ -3,6 +3,7 @@
  * 逼出 GitHubStore 從來沒被跑過的「重取 sha 再試一次」那條路。
  */
 const { chromium } = require('playwright');
+const { clearAll } = require('./_setup');
 const fail = [];
 function check(n, c, g) {
   if (c) console.log('  ok  ' + n);
@@ -12,6 +13,7 @@ const b64 = (s) => Buffer.from(s, 'utf8').toString('base64');
 const unb64 = (s) => Buffer.from(s, 'base64').toString('utf8');
 
 (async () => {
+  await clearAll();   // 測試之間必須隔離，不然資料會累加
   const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
   const p = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
   const errs = [];

@@ -1,8 +1,10 @@
 /* AI 全流程測試：攔截 api.anthropic.com 回一份真實形狀的回應，
  * 驗證 request body 正確 + 結果預覽 + 編輯 + 寫入當天 + 常吃清單 + 用量統計 */
 const { chromium } = require('playwright');
+const { seedUser } = require('./_setup');
 
 (async () => {
+  await seedUser();   // 測試之間必須隔離，不然資料會累加
   const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
   const p = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
   const errs = [];
@@ -34,9 +36,12 @@ const { chromium } = require('playwright');
   });
 
   await p.goto('http://localhost:3619/', { waitUntil: 'networkidle' });
-  await p.evaluate(() => localStorage.setItem('cal_anthropic_key', 'sk-ant-test-key'));
+  await p.evaluate(() => localStorage.setItem('lwh_anthropic_key', 'sk-ant-test-key'));
   await p.reload({ waitUntil: 'networkidle' });
-  await p.waitForTimeout(600);
+  await p.waitForTimeout(900);
+  // seedUser 建好的使用者需要先在選人畫面挑一下
+  const tile = await p.$('.picker-tile[data-pick]');
+  if (tile) { await tile.click(); await p.waitForTimeout(1600); }
 
   await p.click('.fab');
   await p.waitForTimeout(300);
@@ -74,7 +79,7 @@ const { chromium } = require('playwright');
   await p.waitForTimeout(900);
   await p.screenshot({ path: '/tmp/shot-ai-added.png', fullPage: true });
 
-  const usage = await p.evaluate(() => localStorage.getItem('cal_ai_usage'));
+  const usage = await p.evaluate(() => localStorage.getItem('lwh_ai_usage'));
   console.log('--- 寫入結果 ---');
   console.log('AI 用量統計:', usage);
   console.log('console errors:', errs.length ? JSON.stringify(errs, null, 2) : 'none');

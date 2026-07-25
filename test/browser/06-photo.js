@@ -1,5 +1,6 @@
 /* 照片來源測試：相機 / 相簿 兩個入口都要能走完整流程 */
 const { chromium } = require('playwright');
+const { seedUser } = require('./_setup');
 const path = require('path');
 const fail = [];
 function check(n, c, g) {
@@ -8,6 +9,7 @@ function check(n, c, g) {
 }
 
 (async () => {
+  await seedUser();   // 測試之間必須隔離，不然資料會累加
   const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
   const p = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
   const errs = [];

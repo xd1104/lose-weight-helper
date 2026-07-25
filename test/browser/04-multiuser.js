@@ -1,5 +1,6 @@
 /* 多使用者流程測試：建兩個人 -> 各自記錄 -> 確認資料互不干擾 */
 const { chromium } = require('playwright');
+const { clearAll } = require('./_setup');
 
 const MOCK = (items, note) => ({
   id: 'msg_test', type: 'message', role: 'assistant', model: 'claude-sonnet-5', stop_reason: 'end_turn',
@@ -8,6 +9,7 @@ const MOCK = (items, note) => ({
 });
 
 (async () => {
+  await clearAll();   // 測試之間必須隔離，不然資料會累加
   const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
   const p = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
   const errs = [];
@@ -35,7 +37,10 @@ const MOCK = (items, note) => ({
   await p.waitForTimeout(200);
   await p.fill('#u-name', 'Benson');
   await p.click('#f-user button[type="submit"]');
-  await p.waitForTimeout(1200);
+  await p.waitForTimeout(1500);
+  // v2.1 起建完使用者會自動跳身體資料設定，先關掉才點得到後面的東西
+  await p.click('[data-sheet="close"]').catch(() => {});
+  await p.waitForTimeout(400);
   console.log('2. 建完 Benson，頁首:', (await p.textContent('.head h1')).trim());
 
   // Benson 記一筆
@@ -65,7 +70,9 @@ const MOCK = (items, note) => ({
   await p.waitForTimeout(200);
   await p.fill('#u-name', '小美');
   await p.click('#f-user button[type="submit"]');
-  await p.waitForTimeout(1300);
+  await p.waitForTimeout(1600);
+  await p.click('[data-sheet="close"]').catch(() => {});
+  await p.waitForTimeout(400);
   console.log('4. 切到小美，頁首:', (await p.textContent('.head h1')).trim());
   console.log('   小美已攝取（應為 0）:', (await p.textContent('.kv.eat b')).trim());
 

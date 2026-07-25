@@ -383,6 +383,8 @@ function defaultProfile() {
     activity: 1.375, // 久坐1.2／輕度1.375／中度1.55／高度1.725／極高1.9
     tdee: 0,         // >0 = 手動覆寫，0 = 用 Mifflin-St Jeor 自動算
     goal: 0,         // 每日熱量調整：-400 減脂、0 維持、+300 增肌
+    proteinPerKg: 1.6, // 蛋白質目標 = 體重 × 這個係數（減脂期常見 1.6–2.2）
+    fatPct: 25,        // 脂肪目標 = 目標熱量 × 這個百分比 ÷ 9
     model: 'claude-sonnet-5',
     updatedAt: '',
   };
@@ -397,6 +399,8 @@ function cleanProfile(p) {
     activity: num(p && p.activity) || d.activity,
     tdee: Math.max(0, round(p && p.tdee)),
     goal: round(p && p.goal),
+    proteinPerKg: num(p && p.proteinPerKg) || d.proteinPerKg,
+    fatPct: num(p && p.fatPct) || d.fatPct,
     model: String((p && p.model) || d.model),
     // 讀取時原樣保留：這裡若蓋成 now，updatedAt 就變成「剛才讀檔的時間」而不是
     // 「上次存檔的時間」，前端「還沒設定過身體資料」的判斷會永遠失效。
@@ -404,6 +408,10 @@ function cleanProfile(p) {
     updatedAt: String((p && p.updatedAt) || ''),
   };
   if (!(o.activity >= 1 && o.activity <= 2.5)) o.activity = d.activity;
+  // 夾在有醫學意義的範圍：蛋白質過低沒有保留肌肉的效果，過高沒有額外好處
+  if (!(o.proteinPerKg >= 0.8 && o.proteinPerKg <= 3)) o.proteinPerKg = d.proteinPerKg;
+  // 脂肪低於 15% 會影響荷爾蒙，高於 45% 就擠掉蛋白質與碳水了
+  if (!(o.fatPct >= 15 && o.fatPct <= 45)) o.fatPct = d.fatPct;
   return o;
 }
 function serializeProfile(p) {
@@ -417,6 +425,8 @@ function serializeProfile(p) {
   L.push('activity: ' + fmNumber(o.activity));
   L.push('tdee: ' + fmNumber(o.tdee));
   L.push('goal: ' + fmNumber(o.goal));
+  L.push('proteinPerKg: ' + fmNumber(o.proteinPerKg));
+  L.push('fatPct: ' + fmNumber(o.fatPct));
   L.push('model: ' + fmString(o.model));
   L.push('updatedAt: ' + fmString(o.updatedAt));
   L.push('---', '');

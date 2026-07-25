@@ -1,5 +1,6 @@
 /* QC：新使用者引導 → 體重 → 多日 → 歷史趨勢 → 邊界情況 */
 const { chromium } = require('playwright');
+const { clearAll } = require('./_setup');
 const fail = [];
 function check(name, cond, got) {
   if (cond) console.log('  ok  ' + name);
@@ -7,6 +8,7 @@ function check(name, cond, got) {
 }
 
 (async () => {
+  await clearAll();   // 測試之間必須隔離，不然資料會累加
   const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
   const p = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
   const errs = [];

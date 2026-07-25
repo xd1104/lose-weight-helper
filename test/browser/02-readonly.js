@@ -1,6 +1,7 @@
 /* 模擬手機端第一次開啟（GitHub 模式、沒有金鑰、也還沒有任何使用者）
  * 用 ?store=github 強制走 GitHubStore，並攔截 GitHub API 回「檔案不存在」 */
 const { chromium } = require('playwright');
+const { clearAll } = require('./_setup');
 const fail = [];
 function check(n, c, g) {
   if (c) console.log('  ok  ' + n);
@@ -8,6 +9,7 @@ function check(n, c, g) {
 }
 
 (async () => {
+  await clearAll();   // 測試之間必須隔離，不然資料會累加
   const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
   const p = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
   const errs = [];

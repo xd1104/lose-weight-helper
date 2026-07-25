@@ -116,6 +116,7 @@ function rememberFood(item){
 function render(){
   if(picking){ $app.innerHTML=viewPicker(); wire(); window.scrollTo(0,0); return; }
   if(view==="today") $app.innerHTML=viewToday();
+  else if(view==="macros") $app.innerHTML=viewMacros();
   else if(view==="history") $app.innerHTML=viewHistory();
   else $app.innerHTML=viewSettings();
   $app.innerHTML+=navHtml();
@@ -127,7 +128,8 @@ function navHtml(){
   var t=function(id,ico,label){
     return '<button data-nav="'+id+'" class="'+(view===id?"on":"")+'"><i>'+ico+'</i>'+label+'</button>';
   };
-  return '<nav class="nav">'+t("today","🍽","今天")+t("history","📈","歷史")+t("settings","⚙","設定")+'</nav>';
+  return '<nav class="nav">'+t("today","🍽","今天")+t("macros","🥗","營養")+
+         t("history","📈","歷史")+t("settings","⚙","設定")+'</nav>';
 }
 
 /* ---------- 誰在用？（Netflix 式） ---------- */
@@ -213,6 +215,7 @@ function viewToday(){
   var target=targetOf(db.profile);
   var net=eaten-burn;
   var m=macrosOf(d);
+  var mt=macroTargets(db.profile);
   var isToday=curDate===dateKey();
 
   var tag;
@@ -239,9 +242,9 @@ function viewToday(){
         '</div>'+
       '</div>'+
       tag+
-      '<div class="macros">'+
-        macroBox("蛋白","var(--p)",m.p)+macroBox("碳水","var(--c)",m.c)+macroBox("脂肪","var(--f)",m.f)+
-      '</div>'+
+      '<button class="macros" data-nav2="macros">'+
+        macroBox("蛋白","var(--p)",m.p,mt.p)+macroBox("碳水","var(--c)",m.c,mt.c)+macroBox("脂肪","var(--f)",m.f,mt.f)+
+      '</button>'+
      '</section>';
 
   /* 沒設過身體資料 -> TDEE 是用預設值算的，等於假的，一定要先講 */
@@ -345,9 +348,11 @@ function weighHtml(d){
      '</button></section>';
 }
 
-function macroBox(label,color,v){
+function macroBox(label,color,v,target){
+  var pct = target>0 ? Math.min(1, v/target) : 0;
   return '<div class="macro"><div class="lb"><span class="dot" style="background:'+color+'"></span>'+label+'</div>'+
-         '<b class="num">'+kcal(v)+'<i>g</i></b></div>';
+         '<b class="num">'+kcal(v)+'<i>/'+kcal(target)+'g</i></b>'+
+         '<div class="mbar"><i style="width:'+(pct*100).toFixed(0)+'%;background:'+color+'"></i></div></div>';
 }
 
 function sparkHtml(target){
@@ -366,6 +371,179 @@ function sparkHtml(target){
        '</div>';
   });
   return h+'</div>';
+}
+
+/* ---------- 營養 ---------- */
+/* 蛋白質換算成食物：差多少克時，給一兩個「等一下可以吃什麼」的具體建議。
+ * 只給常見、好取得的。數字是每份的粗略蛋白質含量。 */
+/* 名稱都寫成「單份」，需要多份時後面接 ×N 才讀得順 */
+var PROTEIN_FOODS = [
+  { name:"高蛋白飲",        g:24 },
+  { name:"雞胸肉 100g",     g:23 },
+  { name:"鮭魚 100g",       g:20 },
+  { name:"希臘優格 150g",   g:15 },
+  { name:"板豆腐半盒",      g:14 },
+  { name:"無糖豆漿 400ml",  g:14 },
+  { name:"雞蛋",            g:6  }
+];
+/* 每種食物最多出現一次，需要多份就寫「×2」。
+ * 缺口大到接近整天的目標時不給零食建議——那不是「補一下」的量，
+ * 講「等於 5 份高蛋白飲」只會讓人放棄。 */
+function proteinAdvice(gap, target){
+  gap=Math.round(gap);
+  if(gap<=5) return "";
+  if(target>0 && gap>target*0.6) return "";
+  var picks=[], left=gap;
+  for(var i=0;i<PROTEIN_FOODS.length && picks.length<3 && left>5;i++){
+    var f=PROTEIN_FOODS[i];
+    if(left < f.g*0.7) continue;
+    var n=Math.max(1, Math.min(2, Math.round(left/f.g)));
+    picks.push(f.name + (n>1 ? " ×"+n : ""));
+    left-=f.g*n;
+  }
+  return picks.length ? picks.join("＋") : "";
+}
+
+function viewMacros(){
+  var d=dayOf(curDate);
+  var m=macrosOf(d);
+  var mt=macroTargets(db.profile);
+  var eaten=sumKcal(d.entries);
+  var isToday=curDate===dateKey();
+
+  var h=headHtml("營養");
+  h+='<div class="daynav">'+
+      '<button data-act="prev-day" aria-label="前一天">‹</button>'+
+      '<div class="date">'+esc(fmtLong(curDate))+
+        '<small>'+(isToday?"今天":"")+'</small></div>'+
+      '<button data-act="next-day" aria-label="後一天" '+(curDate>=dateKey()?"disabled":"")+'>›</button>'+
+      (isToday?"":'<button class="today-btn" data-act="go-today">今天</button>')+
+     '</div>';
+
+  if(!eaten && !m.p && !m.c && !m.f){
+    h+='<div class="card"><p class="desc" style="margin:0">今天還沒有紀錄。回「今天」記一筆，這裡就會出現營養分析。</p></div>';
+    return h;
+  }
+
+  /* 三大營養素：各自一條，語意不同 —— 蛋白質是「至少要吃到」，脂肪碳水是「不要超過」 */
+  h+='<div class="sec">';
+  h+=macroRow({
+    label:"蛋白質", sub:"至少吃到（保住肌肉的關鍵）", color:"var(--p)",
+    v:m.p, target:mt.p, mode:"atleast",
+    note:"目標＝體重 "+Math.round(num(db.profile.weight))+"kg × "+num(db.profile.proteinPerKg)+" g/kg"
+  });
+  h+=macroRow({
+    label:"脂肪", sub:"別超過，但也別低於 "+mt.fMin+"g", color:"var(--f)",
+    v:m.f, target:mt.f, mode:"cap", min:mt.fMin,
+    note:"目標＝每日熱量的 "+Math.round(num(db.profile.fatPct))+"%"
+  });
+  h+=macroRow({
+    label:"碳水", sub:"剩下的額度", color:"var(--c)",
+    v:m.c, target:mt.c, mode:"cap",
+    note:"目標＝熱量扣掉蛋白質與脂肪之後剩下的"
+  });
+  h+='</div>';
+
+  /* 熱量來源分配：實際吃進去的熱量，有多少來自哪一類 */
+  var pk=m.p*4, ck=m.c*4, fk=m.f*9, tot=pk+ck+fk;
+  if(tot>0){
+    var pp=pk/tot*100, cp=ck/tot*100, fp=fk/tot*100;
+    h+='<div class="sec"><div class="sec-head"><h2>熱量來源</h2>'+
+        '<span class="n">'+kcal(tot)+' 大卡</span></div>'+
+        '<div class="card" style="margin:0;padding:14px 15px">'+
+        '<div class="split">'+
+          '<i style="width:'+pp.toFixed(1)+'%;background:var(--p)"></i>'+
+          '<i style="width:'+cp.toFixed(1)+'%;background:var(--c)"></i>'+
+          '<i style="width:'+fp.toFixed(1)+'%;background:var(--f)"></i>'+
+        '</div>'+
+        '<div class="split-lb">'+
+          '<span><b style="background:var(--p)"></b>蛋白 '+Math.round(pp)+'%</span>'+
+          '<span><b style="background:var(--c)"></b>碳水 '+Math.round(cp)+'%</span>'+
+          '<span><b style="background:var(--f)"></b>脂肪 '+Math.round(fp)+'%</span>'+
+        '</div>'+
+        (Math.abs(tot-eaten)>eaten*0.15 && eaten>0
+          ? '<p class="hint" style="margin-top:10px">三大營養素加起來 '+kcal(tot)+' 大卡，'+
+            '但記錄的熱量是 '+kcal(eaten)+' 大卡。差距通常是某幾筆沒有填營養素（手動輸入時只填了熱量）。</p>'
+          : '')+
+        '</div></div>';
+  }
+
+  /* 蛋白質還差多少 -> 具體建議 */
+  var gap=mt.p-m.p;
+  if(gap>5){
+    var advice=proteinAdvice(gap, mt.p);
+    var big = gap>mt.p*0.6;
+    h+='<div class="sec"><div class="tip">'+
+        '<b>蛋白質還差 '+Math.round(gap)+' g</b>'+
+        (advice
+          ? '<span>大概等於：'+esc(advice)+'</span>'
+          : (big ? '<span>今天幾乎還沒吃到蛋白質。接下來的正餐記得配一份肉、魚、蛋或豆製品，'+
+                   '不然赤字掉的會有一部分是肌肉。</span>' : ''))+
+       '</div></div>';
+  }else if(m.p>0){
+    h+='<div class="sec"><div class="tip ok"><b>蛋白質達標 👍</b>'+
+       '<span>減脂期最重要的一項守住了。</span></div></div>';
+  }
+
+  /* 7 日蛋白質達標率：單日會波動，看趨勢才有意義 */
+  h+=proteinWeekHtml(mt.p);
+
+  return h;
+}
+
+function macroRow(o){
+  var v=Math.round(o.v), target=Math.round(o.target);
+  var pct = target>0 ? v/target : 0;
+  var state, msg;
+  if(o.mode==="atleast"){
+    /* 蛋白質：吃不夠才是問題，超過不算壞事 */
+    if(pct>=1){ state="ok"; msg="達標"; }
+    else if(pct>=0.8){ state="near"; msg="差 "+(target-v)+" g"; }
+    else { state="under"; msg="差 "+(target-v)+" g"; }
+  }else{
+    if(o.min && v>0 && v<o.min){ state="under"; msg="低於下限 "+o.min+" g"; }
+    else if(pct>1.1){ state="over"; msg="超過 "+(v-target)+" g"; }
+    else if(pct>1){ state="near"; msg="接近上限"; }
+    else { state="ok"; msg="還有 "+(target-v)+" g"; }
+  }
+  return '<div class="mrow '+state+'">'+
+      '<div class="mrow-top">'+
+        '<b>'+esc(o.label)+'</b>'+
+        '<span class="mrow-num num">'+v+'<i>/'+target+' g</i></span>'+
+      '</div>'+
+      '<div class="mbar big"><i style="width:'+Math.min(100,pct*100).toFixed(0)+'%;background:'+o.color+'"></i>'+
+        (o.mode==="atleast"?'':'<u style="left:100%"></u>')+
+      '</div>'+
+      '<div class="mrow-foot"><span class="tag">'+esc(msg)+'</span><span>'+esc(o.sub)+'</span></div>'+
+      '<div class="mrow-note">'+esc(o.note)+'</div>'+
+    '</div>';
+}
+
+function proteinWeekHtml(target){
+  var keys=[], i;
+  for(i=6;i>=0;i--) keys.push(shiftDate(curDate,-i));
+  var days=keys.map(function(k){ return db.days[k]; });
+  var vals=days.map(function(d){ return d?macrosOf(d).p:0; });
+  var logged=days.filter(function(d){ return d && (d.entries||[]).length; }).length;
+  if(!logged) return "";
+  var hit=vals.filter(function(v){ return v>=target; }).length;
+  var avg=Math.round(vals.reduce(function(a,b){return a+b;},0)/Math.max(1,logged));
+  var max=Math.max(target, Math.max.apply(null, vals), 1);
+  var h='<div class="sec"><div class="sec-head"><h2>最近 7 天的蛋白質</h2>'+
+        '<span class="n">'+hit+'/'+logged+' 天達標</span></div>'+
+        '<div class="spark">';
+  keys.forEach(function(k,idx){
+    var v=vals[idx];
+    var pct=Math.max(0, Math.min(1, v/max));
+    var cls=v<=0 ? "none" : (v>=target ? "" : "under");
+    h+='<div class="col'+(k===curDate?" today":"")+'">'+
+        '<div class="bar '+cls+'" style="height:'+(v<=0?3:Math.max(6, pct*72))+'px" title="'+v+' g"></div>'+
+        '<div class="lb">'+WD[parseDateKey(k).getDay()]+'</div>'+
+       '</div>';
+  });
+  h+='</div><p class="hint" style="padding:8px 4px 0">有記錄的日子平均 '+avg+' g，目標 '+target+' g。'+
+     '單日會波動，看一週的平均比較準。</p></div>';
+  return h;
 }
 
 /* ---------- 歷史 ---------- */
@@ -474,6 +652,20 @@ var GOALS=[
   {v:300,  label:"增肌",    hint:"小幅盈餘"}
 ];
 
+/* 蛋白質係數的選項與說明（抽出來當常數，別再塞回字串拼接裡） */
+var PROTEIN_LEVELS = [
+  { v:1.2, label:"1.2 g", hint:"一般維持體重的量" },
+  { v:1.6, label:"1.6 g", hint:"減脂期的基本盤，保留肌肉的效果明顯" },
+  { v:2.0, label:"2.0 g", hint:"有在重訓、又處在熱量赤字時的常見設定" },
+  { v:2.2, label:"2.2 g", hint:"赤字很大或體脂已經很低時才需要" }
+];
+function proteinHint(v){
+  for(var i=0;i<PROTEIN_LEVELS.length;i++){
+    if(Math.abs(num(v)-PROTEIN_LEVELS[i].v)<0.01) return PROTEIN_LEVELS[i].hint;
+  }
+  return "自訂設定";
+}
+
 function viewSettings(){
   var p=db.profile;
   var bmr=bmrOf(p), tdee=tdeeOf(p), target=targetOf(p);
@@ -540,6 +732,32 @@ function viewSettings(){
       '<div class="tdee-box"><div class="r"><span>每日目標攝取</span><b class="num">'+kcal(target)+'</b></div></div>'+
      '</div>';
 
+  /* 營養目標 */
+  var mt=macroTargets(p);
+  h+='<div class="card">'+
+      '<h2>營養目標</h2>'+
+      '<p class="desc">減脂期先守蛋白質，再定脂肪，碳水拿剩下的額度。</p>'+
+      '<div class="field" style="margin-top:0"><label>蛋白質（每公斤體重）</label><div class="chips">'+
+        PROTEIN_LEVELS.map(function(o){
+          return '<button class="chip '+(Math.abs(num(p.proteinPerKg)-o.v)<0.01?"on":"")+'" '+
+                 'data-set="proteinPerKg" data-val="'+o.v+'">'+o.label+'</button>';
+        }).join("")+
+      '</div><div class="hint">'+esc(proteinHint(p.proteinPerKg))+
+        '<br>目前目標：<b>'+mt.p+' g／天</b>（'+Math.round(num(p.weight))+'kg × '+num(p.proteinPerKg)+'）</div></div>'+
+      '<div class="field"><label>脂肪（佔每日熱量）</label><div class="chips">'+
+        [20,25,30,35].map(function(v){
+          return '<button class="chip '+(Math.abs(num(p.fatPct)-v)<0.01?"on":"")+'" '+
+                 'data-set="fatPct" data-val="'+v+'">'+v+'%</button>';
+        }).join("")+
+      '</div><div class="hint">目前目標：<b>'+mt.f+' g／天</b>。'+
+        '低於 '+mt.fMin+' g（體重×0.6）長期會影響荷爾蒙，別為了壓熱量把脂肪砍太兇。</div></div>'+
+      '<div class="tdee-box">'+
+        '<div class="r"><span>蛋白質</span><b class="num">'+mt.p+' g</b></div>'+
+        '<div class="r"><span>脂肪</span><b class="num">'+mt.f+' g</b></div>'+
+        '<div class="r"><span>碳水（剩下的）</span><b class="num">'+mt.c+' g</b></div>'+
+      '</div>'+
+     '</div>';
+
   /* AI */
   var key=getAiKey();
   h+='<div class="card">'+
@@ -582,7 +800,7 @@ function viewSettings(){
       (db.foods.length?'<button class="btn ghost" data-act="clear-foods">清空常吃清單</button>':'')+
      '</div>';
 
-  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:6px 16px 30px">減重助手 v2.2</p>';
+  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:6px 16px 30px">減重助手 v2.3</p>';
   return h;
 }
 
@@ -595,6 +813,10 @@ function wire(){
       render();
       window.scrollTo(0,0);
     };
+  });
+
+  $app.querySelectorAll("[data-nav2]").forEach(function(b){
+    b.onclick=function(){ view=b.getAttribute("data-nav2"); render(); window.scrollTo(0,0); };
   });
 
   $app.querySelectorAll("[data-pick]").forEach(function(b){
