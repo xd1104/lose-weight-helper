@@ -576,7 +576,7 @@ function viewSettings(){
       (db.foods.length?'<button class="btn ghost" data-act="clear-foods">清空常吃清單</button>':'')+
      '</div>';
 
-  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:6px 16px 30px">減重助手 v2.0</p>';
+  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:6px 16px 30px">減重助手 v2.2</p>';
   return h;
 }
 
@@ -1186,16 +1186,43 @@ var MOVE_PRESETS=[
   {name:"重訓 60 分", kcal:300}, {name:"游泳 30 分", kcal:280},
   {name:"單車 60 分", kcal:400}, {name:"爬山 60 分", kcal:450}
 ];
+/* 快速選擇＝你做過的運動（從已載入的日子撈）＋內建幾個常見的。
+ * 不另外開一個檔案存：這些資料本來就在 days 裡，撈出來就好。 */
+function moveChoices(){
+  var seen={}, out=[];
+  Object.keys(db.days).sort().reverse().forEach(function(k){
+    (db.days[k].moves||[]).forEach(function(m){
+      var name=String(m.name||"").trim();
+      if(!name || seen[name]) return;
+      seen[name]=true;
+      out.push({ name:name, kcal:num(m.kcal), mine:true });
+    });
+  });
+  MOVE_PRESETS.forEach(function(p){
+    if(seen[p.name]) return;
+    seen[p.name]=true;
+    out.push({ name:p.name, kcal:p.kcal, mine:false });
+  });
+  return out.slice(0,12);
+}
+
 function openMoveSheet(id){
   var d=dayOf(curDate);
   var mv=id ? d.moves.filter(function(x){ return x.id===id; })[0] : null;
+  var choices=moveChoices();
   var body='<form id="f-move">'+
-    (mv?'':'<div class="field" style="margin-top:0"><label>快速選擇</label><div class="chips">'+
-      MOVE_PRESETS.map(function(p,i){
-        return '<button type="button" class="chip" data-mp="'+i+'">'+esc(p.name)+'</button>';
+    (mv?'':'<div class="field" style="margin-top:0"><label>做過的／常見的</label><div class="chips">'+
+      choices.map(function(p,i){
+        return '<button type="button" class="chip'+(p.mine?" mine":"")+'" data-mp="'+i+'">'+esc(p.name)+'</button>';
       }).join("")+'</div></div>')+
     '<div class="field"><label>項目</label>'+
-      '<input type="text" id="mv-name" value="'+esc(mv?mv.name:"")+'" placeholder="例如：慢跑 30 分" autocomplete="off" required></div>'+
+      '<input type="text" id="mv-name" value="'+esc(mv?mv.name:"")+'" placeholder="例如：飛輪 45 分、爬象山來回" autocomplete="off" required></div>'+
+    (hasAiKey()
+      ? '<button class="btn ghost ai-move" type="button" data-ai-move="1">🤖 讓 AI 估消耗</button>'+
+        '<div class="hint" style="margin-top:6px">清單裡沒有的運動，打上去讓 AI 算。會依你的體重估，'+
+        '而且是<b>淨消耗</b>（扣掉那段時間本來就會燒的基礎代謝）。</div>'
+      : '')+
+    '<div id="mv-detail"></div>'+
     '<div class="field"><label>消耗熱量 (大卡)</label>'+
       '<input type="number" inputmode="numeric" id="mv-kcal" value="'+(mv?mv.kcal:"")+'" placeholder="0" required>'+
       '<div class="hint">只記「額外」運動。日常走路已經算在活動係數裡了，重複記會高估。</div></div>'+
@@ -1206,11 +1233,36 @@ function openMoveSheet(id){
   openSheet(mv?"編輯運動":"記一筆運動", body, { onDraw:function(root){
     root.querySelectorAll("[data-mp]").forEach(function(b){
       b.onclick=function(){
-        var p=MOVE_PRESETS[+b.getAttribute("data-mp")];
+        var p=choices[+b.getAttribute("data-mp")];
         root.querySelector("#mv-name").value=p.name;
         root.querySelector("#mv-kcal").value=p.kcal;
+        root.querySelector("#mv-detail").innerHTML="";
       };
     });
+
+    var aiBtn=root.querySelector("[data-ai-move]");
+    if(aiBtn) aiBtn.onclick=function(){
+      var nameEl=root.querySelector("#mv-name");
+      var txt=(nameEl.value||"").trim();
+      if(!txt){ toast("先打上做了什麼運動", true); nameEl.focus(); return; }
+      aiBtn.disabled=true;
+      aiBtn.textContent="AI 估算中…";
+      aiAnalyzeMove(db.profile.model, txt, db.profile).then(function(r){
+        nameEl.value=r.name;
+        root.querySelector("#mv-kcal").value=r.kcal;
+        var cf = r.confidence==="high" ? "" :
+          '<span class="conf '+r.confidence+'">'+(r.confidence==="low"?"不太確定":"約略")+'</span>';
+        root.querySelector("#mv-detail").innerHTML=
+          '<div class="ai-note" style="margin:10px 0 0">💡 '+esc(r.detail)+cf+
+          '<br><span style="opacity:.8;font-size:11.5px">數字可以直接改，改完再按加入。</span></div>';
+        aiBtn.disabled=false;
+        aiBtn.textContent="🤖 重新估一次";
+      }).catch(function(e){
+        toast(e.userMessage||"AI 估算失敗", true);
+        aiBtn.disabled=false;
+        aiBtn.textContent="🤖 讓 AI 估消耗";
+      });
+    };
     var del=root.querySelector("[data-del]");
     if(del) del.onclick=function(){
       if(!confirm("刪除「"+mv.name+"」？")) return;

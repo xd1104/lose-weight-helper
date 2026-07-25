@@ -106,6 +106,38 @@ var AI_JSON_FALLBACK = [
   '{"items":[{"name":"食物名稱","portion":"份量假設","kcal":0,"protein":0,"carbs":0,"fat":0,"confidence":"high|medium|low"}],"note":"一句話說明"}'
 ].join("\n");
 
+/* ---- 運動：估「額外」消耗 ---- */
+/* 關鍵：要的是「淨消耗」。TDEE 的活動係數已經涵蓋那段時間的靜息代謝，
+ * 一般 app 報的是總消耗（含靜息），直接拿來扣就會系統性高估、變成怎麼練都瘦不下來。 */
+var AI_MOVE_SYSTEM = [
+  "你是運動生理的熱量估算助手。使用者會用口語描述剛做完的運動，你要估出消耗的熱量。",
+  "",
+  "規則：",
+  "1. 用 MET 值估算：kcal = MET × 體重(kg) × 時數。使用者的體重會在訊息裡給你。",
+  "2. **回傳「淨消耗」**：從總消耗扣掉同一段時間的靜息代謝（約 1 MET）。",
+  "   也就是實際用 (MET - 1) × 體重 × 時數。這一點很重要，因為使用者的每日總消耗 TDEE",
+  "   已經包含了那段時間本來就會燒的基礎代謝，不扣掉會重複計算。",
+  "3. 沒說時長就用該運動最常見的一次時長，並在 detail 裡寫明你假設了多久。",
+  "4. 沒說強度就用中等強度。「認真練」「衝刺」「爆汗」往高的抓，「散步」「輕鬆」往低的抓。",
+  "5. 重訓類要考慮組間休息，實際 MET 比想像低（一般 3–6，不是 8）。",
+  "6. detail 要寫出你用的假設：時長、強度、MET、體重。使用者要能一眼看出你是不是抓錯。",
+  "7. 台灣常見的講法要聽得懂：飛輪、有氧、TRX、拳擊有氧、爬象山、河濱騎車、健身房滑步機。",
+  "8. 一定要給數字，不確定就取中位數並用 confidence 表達。全部用繁體中文。"
+].join("\n");
+
+var AI_MOVE_SCHEMA = {
+  type:"object",
+  properties:{
+    name:{ type:"string", description:"整理過的運動名稱，含時長，例如「飛輪 45 分」" },
+    detail:{ type:"string", description:"採用的假設：時長、強度、MET、體重" },
+    kcal:{ type:"integer", description:"淨消耗（已扣掉同時間的靜息代謝），大卡" },
+    met:{ type:"number", description:"採用的 MET 值" },
+    confidence:{ type:"string", enum:["high","medium","low"] }
+  },
+  required:["name","detail","kcal","met","confidence"],
+  additionalProperties:false
+};
+
 function aiError(message, code){ var e=new Error(message); e.userMessage=message; e.code=code||""; return e; }
 
 function aiMsgForStatus(status, body){
@@ -207,6 +239,76 @@ function aiAnalyzeText(model, text){
   var t=String(text||"").trim();
   if(!t) return Promise.reject(aiError("先描述一下吃了什麼。","empty-input"));
   return aiRequest(model, [{ type:"text", text:"我剛吃了：" + t }]);
+}
+
+/* ---- 對外：運動 ---- */
+function aiAnalyzeMove(model, text, profile){
+  var t=String(text||"").trim();
+  if(!t) return Promise.reject(aiError("先描述做了什麼運動。","empty-input"));
+  var w=Math.round(Number(profile&&profile.weight)||70);
+  var who=(profile&&profile.sex)==="female"?"女性":"男性";
+  var age=Math.round(Number(profile&&profile.age)||30);
+  return aiMoveRequest(model, "我是 "+age+" 歲"+who+"、體重 "+w+" 公斤。剛做完：" + t);
+}
+
+var AI_MOVE_JSON_FALLBACK = [
+  "只輸出一段 JSON，不要加任何說明文字、不要用 markdown 的程式碼框。格式：",
+  '{"name":"運動名稱含時長","detail":"時長/強度/MET/體重的假設","kcal":0,"met":0,"confidence":"high|medium|low"}'
+].join("\n");
+
+function aiMoveRequest(model, userText, plain){
+  var key=getAiKey();
+  if(!key) return Promise.reject(aiError("還沒設定 API key，到「設定」貼上就能用 AI 判讀。","nokey"));
+  var body={
+    model: model,
+    max_tokens: 2000,
+    system: AI_MOVE_SYSTEM + (plain ? "\n\n" + AI_MOVE_JSON_FALLBACK : ""),
+    messages: [{ role:"user", content:[{ type:"text", text:userText }] }]
+  };
+  if(!plain){
+    body.output_config = { effort:"low", format:{ type:"json_schema", schema: AI_MOVE_SCHEMA } };
+  }
+  return fetch("https://api.anthropic.com/v1/messages", {
+    method:"POST",
+    headers:{
+      "content-type":"application/json",
+      "x-api-key":key,
+      "anthropic-version":"2023-06-01",
+      "anthropic-dangerous-direct-browser-access":"true"
+    },
+    body: JSON.stringify(body)
+  }).then(function(res){
+    return res.json().catch(function(){ return {}; }).then(function(j){
+      if(!res.ok){
+        if(res.status===400 && !plain){
+          return aiMoveRequest(model, userText, true).then(function(r){ return {__done:r}; });
+        }
+        throw aiError(aiMsgForStatus(res.status, j), "http"+res.status);
+      }
+      return j;
+    });
+  }, function(){
+    throw aiError("連不到 Anthropic（目前離線？）","offline");
+  }).then(function(j){
+    if(j && j.__done) return j.__done;
+    addUsage(model, j.usage);
+    if(j.stop_reason==="refusal") throw aiError("AI 拒絕回答這個內容。","refusal");
+    var txt="";
+    (j.content||[]).forEach(function(bk){ if(bk.type==="text") txt+=bk.text; });
+    var data=null;
+    try{ data=JSON.parse(txt); }
+    catch(e){ var m=/\{[\s\S]*\}/.exec(txt); if(m){ try{ data=JSON.parse(m[0]); }catch(e2){} } }
+    if(!data || !data.name || !isFinite(Number(data.kcal))){
+      throw aiError("AI 這次看不懂這個運動，換個講法試試。","empty");
+    }
+    return {
+      name: String(data.name).slice(0,60),
+      detail: String(data.detail||"").slice(0,120),
+      kcal: Math.max(0, round(data.kcal)),
+      met: Number(data.met)||0,
+      confidence: ({high:"high",medium:"medium",low:"low"})[data.confidence] || "medium"
+    };
+  });
 }
 
 /* ---- 對外：照片 ---- */
