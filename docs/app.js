@@ -39,7 +39,8 @@ var users=[];                   /* 使用者名冊 */
 var me=null;                    /* 目前是誰在用 */
 var db={ profile:defaultProfile(), foods:[], days:{} };
 var view="today";               /* today | history | settings（picker 是獨立全螢幕） */
-var showDetail=false;           /* 首頁熱量卡的明細（每日上限／TDEE／營養素公克數）是否展開 */
+var showDetail=false;           /* 首頁熱量卡的明細（每日上限／TDEE／淨攝取）是否展開 */
+var showMNote=false;            /* 營養頁「目標是怎麼算的」是否展開 */
 var picking=false;              /* 是否停在「誰在用？」畫面 */
 var curDate=dateKey();
 var histDates=[];
@@ -559,67 +560,46 @@ function viewMacros(){
     return h;
   }
 
-  /* 三大營養素：各自一條，語意不同 —— 蛋白質是「至少要吃到」，脂肪碳水是「不要超過」 */
-  h+='<div class="sec">';
-  h+=macroRow({
-    label:"蛋白質", sub:"至少吃到（保住肌肉的關鍵）", color:"var(--p)",
-    v:m.p, target:mt.p, mode:"atleast",
-    note:"目標＝體重 "+Math.round(num(db.profile.weight))+"kg × "+num(db.profile.proteinPerKg)+" g/kg"
-  });
-  h+=macroRow({
-    label:"脂肪", sub:"別超過，但也別低於 "+mt.fMin+"g", color:"var(--f)",
-    v:m.f, target:mt.f, mode:"cap", min:mt.fMin,
-    note:"目標＝每日熱量的 "+Math.round(num(db.profile.fatPct))+"%"
-  });
-  h+=macroRow({
-    label:"碳水", sub:"剩下的額度", color:"var(--c)",
-    v:m.c, target:mt.c, mode:"cap",
-    note:"目標＝熱量扣掉蛋白質與脂肪之後剩下的"
-  });
-  h+='</div>';
-
-  /* 熱量來源分配：實際吃進去的熱量，有多少來自哪一類 */
-  var pk=m.p*4, ck=m.c*4, fk=m.f*9, tot=pk+ck+fk;
-  if(tot>0){
-    var pp=pk/tot*100, cp=ck/tot*100, fp=fk/tot*100;
-    h+='<div class="sec"><div class="sec-head"><h2>熱量來源</h2>'+
-        '<span class="n">'+kcal(tot)+' 大卡</span></div>'+
-        '<div class="card" style="margin:0;padding:14px 15px">'+
-        '<div class="split">'+
-          '<i style="width:'+pp.toFixed(1)+'%;background:var(--p)"></i>'+
-          '<i style="width:'+cp.toFixed(1)+'%;background:var(--c)"></i>'+
-          '<i style="width:'+fp.toFixed(1)+'%;background:var(--f)"></i>'+
-        '</div>'+
-        '<div class="split-lb">'+
-          '<span><b style="background:var(--p)"></b>蛋白 '+Math.round(pp)+'%</span>'+
-          '<span><b style="background:var(--c)"></b>碳水 '+Math.round(cp)+'%</span>'+
-          '<span><b style="background:var(--f)"></b>脂肪 '+Math.round(fp)+'%</span>'+
-        '</div>'+
-        (Math.abs(tot-eaten)>eaten*0.15 && eaten>0
-          ? '<p class="hint" style="margin-top:10px">三大營養素加起來 '+kcal(tot)+' 大卡，'+
-            '但記錄的熱量是 '+kcal(eaten)+' 大卡。差距通常是某幾筆沒有填營養素（手動輸入時只填了熱量）。</p>'
-          : '')+
-        '</div></div>';
-  }
-
-  /* 蛋白質還差多少 -> 具體建議 */
+  /* 三大營養素合成一張卡（本來三張各佔 270px，光這裡就要滑一屏半）。
+   * 語意不同：蛋白質是「至少要吃到」，脂肪碳水是「不要超過」。
+   * 每一列底下的「目標＝…」公式收進最下面的展開——那是看一次就懂的東西，
+   * 天天佔版面只是雜訊（設定頁也寫過一次）。 */
+  var rows=[
+    { label:"蛋白質", color:"var(--p)", v:m.p, target:mt.p, mode:"atleast",
+      note:"體重 "+Math.round(num(db.profile.weight))+"kg × "+num(db.profile.proteinPerKg)+" g/kg。減脂期至少吃到，這是保住肌肉的關鍵。" },
+    { label:"脂肪", color:"var(--f)", v:m.f, target:mt.f, mode:"cap", min:mt.fMin,
+      note:"每日熱量的 "+Math.round(num(db.profile.fatPct))+"%。別超過，但也別低於 "+mt.fMin+" g（體重×0.6），長期太低會影響荷爾蒙。" },
+    { label:"碳水", color:"var(--c)", v:m.c, target:mt.c, mode:"cap",
+      note:"熱量扣掉蛋白質與脂肪之後剩下的額度。" }
+  ];
+  /* 蛋白質不夠時，建議直接接在那一列後面（以前另外開一張黃卡，等於同一件事講兩次） */
   var gap=mt.p-m.p;
   if(gap>5){
     var advice=proteinAdvice(gap, mt.p);
-    var big = gap>mt.p*0.6;
-    h+='<div class="sec"><div class="tip">'+
-        '<b>蛋白質還差 '+Math.round(gap)+' g</b>'+
-        (advice
-          ? '<span>大概等於：'+esc(advice)+'</span>'
-          : (big ? '<span>今天幾乎還沒吃到蛋白質。接下來的正餐記得配一份肉、魚、蛋或豆製品，'+
-                   '不然赤字掉的會有一部分是肌肉。</span>' : ''))+
-       '</div></div>';
+    rows[0].adv = advice ? "補一份："+advice
+                         : (gap>mt.p*0.6 ? "接下來的正餐記得配一份肉、魚、蛋或豆製品" : "");
   }else if(m.p>0){
-    h+='<div class="sec"><div class="tip ok"><b>蛋白質達標 👍</b>'+
-       '<span>減脂期最重要的一項守住了。</span></div></div>';
+    rows[0].adv = "達標了 👍 減脂期最重要的一項守住了";
   }
 
-  /* 7 日蛋白質達標率：單日會波動，看趨勢才有意義 */
+  h+='<div class="sec"><div class="mcard">'+rows.map(macroRow).join("")+'</div>';
+
+  /* 資料品質提醒：三大加起來的熱量跟記錄的熱量差太多，代表有幾筆只填了熱量 */
+  var tot=m.p*4+m.c*4+m.f*9;
+  if(eaten>0 && tot>0 && Math.abs(tot-eaten)>eaten*0.15){
+    h+='<p class="hint" style="padding:10px 4px 0">三大營養素加起來 '+kcal(tot)+' 大卡，'+
+       '但記錄的熱量是 '+kcal(eaten)+' 大卡。差距通常是某幾筆只填了熱量、沒填營養素。</p>';
+  }
+
+  h+='<button class="mnote-btn" data-act="toggle-mnote">目標是怎麼算的 '+(showMNote?"⌃":"⌄")+'</button>'+
+     (showMNote
+       ? '<div class="mnotes">'+rows.map(function(o){
+           return '<p><b>'+esc(o.label)+'</b>'+esc(o.note)+'</p>';
+         }).join("")+'</div>'
+       : '')+
+     '</div>';
+
+  /* 7 日蛋白質：單日會波動，看趨勢才有意義 */
   h+=proteinWeekHtml(mt.p);
 
   return h;
@@ -648,8 +628,9 @@ function macroRow(o){
       '<div class="mbar big"><i style="width:'+Math.min(100,pct*100).toFixed(0)+'%;background:'+o.color+'"></i>'+
         (o.mode==="atleast"?'':'<u style="left:100%"></u>')+
       '</div>'+
-      '<div class="mrow-foot"><span class="tag">'+esc(msg)+'</span><span>'+esc(o.sub)+'</span></div>'+
-      '<div class="mrow-note">'+esc(o.note)+'</div>'+
+      '<div class="mrow-foot"><span class="tag">'+esc(msg)+'</span>'+
+        (o.adv?'<span>'+esc(o.adv)+'</span>':'')+
+      '</div>'+
     '</div>';
 }
 
@@ -663,8 +644,10 @@ function proteinWeekHtml(target){
   var hit=vals.filter(function(v){ return v>=target; }).length;
   var avg=Math.round(vals.reduce(function(a,b){return a+b;},0)/Math.max(1,logged));
   var max=Math.max(target, Math.max.apply(null, vals), 1);
+  /* 主標放「平均 vs 目標」：每天都差一點時「0/7 天達標」看起來很打擊人，
+   * 但平均 112 / 目標 128 才是真正該看的距離 */
   var h='<div class="sec"><div class="sec-head"><h2>最近 7 天的蛋白質</h2>'+
-        '<span class="n">'+hit+'/'+logged+' 天達標</span></div>'+
+        '<span class="n">平均 '+avg+' g／目標 '+target+'</span></div>'+
         '<div class="spark">';
   keys.forEach(function(k,idx){
     var v=vals[idx];
@@ -675,7 +658,7 @@ function proteinWeekHtml(target){
         '<div class="lb">'+WD[parseDateKey(k).getDay()]+'</div>'+
        '</div>';
   });
-  h+='</div><p class="hint" style="padding:8px 4px 0">有記錄的日子平均 '+avg+' g，目標 '+target+' g。'+
+  h+='</div><p class="hint" style="padding:8px 4px 0">有記錄的 '+logged+' 天裡有 '+hit+' 天達標。'+
      '單日會波動，看一週的平均比較準。</p></div>';
   return h;
 }
@@ -922,7 +905,7 @@ function viewSettings(){
   });
   if(grp) h+='</div>';
 
-  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v2.8</p>';
+  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v2.9</p>';
   return h;
 }
 
@@ -1186,6 +1169,7 @@ function doAct(act, el){
   if(act==="next-day"){ if(curDate<dateKey()){ curDate=shiftDate(curDate,1); ensureDays([curDate]); render(); } return; }
   if(act==="go-today"){ curDate=dateKey(); ensureDays([curDate]); render(); return; }
   if(act==="toggle-detail"){ showDetail=!showDetail; render(); return; }
+  if(act==="toggle-mnote"){ showMNote=!showMNote; render(); return; }
   if(act==="open-day"){ curDate=el.getAttribute("data-date"); view="today"; ensureDays([curDate]); render(); window.scrollTo(0,0); return; }
   if(act==="add"){ if(requireWrite()) openAddSheet(el.getAttribute("data-meal")); return; }
   if(act==="add-move"){ if(requireWrite()) openMoveSheet(null); return; }

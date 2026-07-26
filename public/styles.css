@@ -370,7 +370,16 @@ body.has-sync #app{padding-top:58px;}
 .macro .mbar i{display:block; height:100%; border-radius:99px; transition:width .25s;}
 .macro b i{font-size:10.5px;}
 
-.mrow{background:var(--card); border-radius:18px; box-shadow:var(--shadow); padding:15px 16px 13px; margin-bottom:12px;}
+/* 三大營養素：一張卡、一列一個（本來三張獨立卡各佔 270px） */
+.mcard{background:var(--card); border-radius:18px; box-shadow:var(--shadow); overflow:hidden;}
+.mrow{padding:14px 16px 13px; border-top:1px solid #f1f4ee;}
+.mrow:first-child{border-top:none;}
+.mnote-btn{width:100%; min-height:44px; margin-top:2px; color:var(--muted);
+  font-size:12.5px; font-weight:700; text-align:center;}
+.mnotes{background:#fafbf8; border-radius:14px; padding:12px 14px; margin-top:2px;}
+.mnotes p{font-size:12px; color:var(--muted); line-height:1.65; margin-top:8px;}
+.mnotes p:first-child{margin-top:0;}
+.mnotes b{display:inline-block; color:var(--ink); font-weight:800; margin-right:6px;}
 .mrow-top{display:flex; align-items:baseline; justify-content:space-between; gap:8px;}
 .mrow-top b{font-size:16px; font-weight:800;}
 .mrow-num{font-size:19px; font-weight:800;}
@@ -379,6 +388,7 @@ body.has-sync #app{padding-top:58px;}
 .mbar.big i{display:block; height:100%; border-radius:99px; transition:width .25s; max-width:100%;}
 .mbar.big u{position:absolute; top:-3px; width:2px; height:16px; background:#c3ccbe; border-radius:2px;}
 .mrow-foot{display:flex; align-items:center; gap:8px; margin-top:10px; font-size:12px; color:var(--muted);}
+.mrow-foot > span:not(.tag){min-width:0; overflow-wrap:anywhere;}
 .mrow-foot .tag{font-weight:800; padding:3px 9px; border-radius:99px; background:#f1f4ee; flex:0 0 auto;}
 .mrow.ok .tag{background:var(--acc-soft); color:var(--acc-deep);}
 .mrow.near .tag{background:var(--warn-soft); color:#a86d12;}
