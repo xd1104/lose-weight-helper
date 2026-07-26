@@ -4,10 +4,19 @@
 - {"id":"xms08qs8es0ij","name":"洋蔥炒魷魚","kcal":180,"p":15,"c":10,"f":8,"portion":"約一小盤，魷魚約80克、洋蔥約50克","n":2}
 - {"id":"xmrzxrybqo6vq","name":"無糖豆漿","kcal":45,"p":4,"c":2,"f":2,"portion":"半杯約300ml","n":2}
 - {"id":"xms14b5m418gv","name":"蔥蛋","kcal":120,"p":7,"c":2,"f":9,"portion":"約1顆蛋量的蔥蛋","n":2}
+- {"id":"xms149v34zqbe","name":"豬肉餡餅","kcal":320,"p":11,"c":32,"f":17,"portion":"單顆，約7-8公分直徑，早餐店常見尺寸","n":2}
 - {"id":"xms14b5m31ttj","name":"燒餅","kcal":280,"p":6,"c":40,"f":10,"portion":"一份約1個，普通厚燒餅","n":2}
 - {"id":"xms08qs8egfxf","name":"燙秋葵佐芝麻醬","kcal":90,"p":3,"c":8,"f":5,"portion":"約一小盤，含少量芝麻醬淋醬","n":2}
 - {"id":"xms08qs8bajwi","name":"糙米飯","kcal":130,"p":3,"c":28,"f":1,"portion":"約半拳頭，約100克","n":2}
+- {"id":"xms1qj1uc1fk1","name":"木耳炒蛋","kcal":150,"p":7,"c":6,"f":11,"portion":"約一人份，含一顆蛋","n":1}
+- {"id":"xms1k9j18ck6q","name":"火鍋料(如魚餃、貢丸等)","kcal":100,"p":5,"c":8,"f":6,"portion":"少許，約2-3顆綜合火鍋料","n":1}
 - {"id":"xms04sq500kft","name":"白木耳蓮子甜湯","kcal":150,"p":2,"c":35,"portion":"馬克杯一杯，約250ml，含白木耳、蓮子、糖水","n":1}
+- {"id":"xms1k9j196fuo","name":"白飯","kcal":280,"p":5,"c":62,"portion":"一般碗白飯約1碗(210克)","n":1}
+- {"id":"xms1k9j1735nj","name":"羊肉片","kcal":220,"p":18,"f":16,"portion":"約100克涮煮羊肉片","n":1}
+- {"id":"xms1k9j181x2h","name":"昆布鍋底食材(高麗菜、豆腐、菇類等)","kcal":120,"p":8,"c":12,"f":5,"portion":"什錦火鍋料一份，約200克蔬菜豆腐類","n":1}
+- {"id":"xms1qj1ub7gp4","name":"炒蕃薯葉","kcal":90,"p":3,"c":6,"f":6,"portion":"約一人份，一小盤","n":1}
+- {"id":"xms1qj1ucoz44","name":"青江菜炒菇","kcal":80,"p":3,"c":6,"f":5,"portion":"約一人份，一小盤","n":1}
+- {"id":"xms1qj1ualy9d","name":"青椒炒肉絲","kcal":180,"p":13,"c":8,"f":11,"portion":"約一人份，肉絲約60克","n":1}
 - {"id":"xmrzy5yk1ytpk","name":"南瓜濃湯","kcal":90,"p":2,"c":12,"f":4,"portion":"半碗，約120ml","n":1}
 - {"id":"xms04tjkxap09","name":"紅心芭樂","kcal":100,"p":2,"c":22,"f":1,"portion":"一顆，約250公克","n":1}
 - {"id":"xms0a5vclkgqx","name":"苦瓜排骨湯","kcal":150,"p":10,"c":6,"f":9,"portion":"約一碗，含少量排骨與苦瓜","n":1}
@@ -15,6 +24,6 @@
 - {"id":"xms05gf4qcob3","name":"清蒸魚","kcal":320,"p":48,"c":2,"f":13,"portion":"整條約600克(含骨頭)，可食用魚肉約250克","n":1}
 - {"id":"xmrzvy2cso7iq","name":"甜椒配料","kcal":3,"c":1,"portion":"少量點綴，約10g","n":1}
 - {"id":"xms14aifk0m9t","name":"甜燒餅","kcal":350,"p":7,"c":45,"f":16,"portion":"傳統早餐店燒餅一份，約120克","n":1}
+- {"id":"xms1qj1udn9j7","name":"蛤蜊魚湯","kcal":100,"p":10,"c":4,"f":4,"portion":"約一碗，含少量魚肉與蛤蜊","n":1}
 - {"id":"xmrzvwpid4f6t","name":"碗粿","kcal":320,"p":8,"c":50,"f":10,"portion":"一碗，約350g，含花生粉與醬汁","n":1}
-- {"id":"xms149v34zqbe","name":"豬肉餡餅","kcal":320,"p":11,"c":32,"f":17,"portion":"單顆，約7-8公分直徑，早餐店常見尺寸","n":1}
 - {"id":"xmrzvy2cobh9k","name":"蕈菇燉飯","kcal":520,"p":14,"c":72,"f":18,"portion":"約一碗份量(含飯約200g熟重、綜合菇類、起司醬汁)","n":1}
