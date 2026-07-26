@@ -2,6 +2,8 @@
 
 - {"id":"xms08qs8ecwxz","name":"炒空心菜","kcal":120,"p":3,"c":6,"f":9,"portion":"約一小盤，含蒜末與油","n":2}
 - {"id":"xms08qs8es0ij","name":"洋蔥炒魷魚","kcal":180,"p":15,"c":10,"f":8,"portion":"約一小盤，魷魚約80克、洋蔥約50克","n":2}
+- {"id":"xms14b5m418gv","name":"蔥蛋","kcal":120,"p":7,"c":2,"f":9,"portion":"約1顆蛋量的蔥蛋","n":2}
+- {"id":"xms14b5m31ttj","name":"燒餅","kcal":280,"p":6,"c":40,"f":10,"portion":"一份約1個，普通厚燒餅","n":2}
 - {"id":"xms08qs8egfxf","name":"燙秋葵佐芝麻醬","kcal":90,"p":3,"c":8,"f":5,"portion":"約一小盤，含少量芝麻醬淋醬","n":2}
 - {"id":"xms08qs8bajwi","name":"糙米飯","kcal":130,"p":3,"c":28,"f":1,"portion":"約半拳頭，約100克","n":2}
 - {"id":"xms04sq500kft","name":"白木耳蓮子甜湯","kcal":150,"p":2,"c":35,"portion":"馬克杯一杯，約250ml，含白木耳、蓮子、糖水","n":1}
@@ -14,7 +16,5 @@
 - {"id":"xms14aifk0m9t","name":"甜燒餅","kcal":350,"p":7,"c":45,"f":16,"portion":"傳統早餐店燒餅一份，約120克","n":1}
 - {"id":"xmrzxrybqo6vq","name":"無糖豆漿","kcal":45,"p":4,"c":2,"f":2,"portion":"半杯約300ml","n":1}
 - {"id":"xmrzvwpid4f6t","name":"碗粿","kcal":320,"p":8,"c":50,"f":10,"portion":"一碗，約350g，含花生粉與醬汁","n":1}
-- {"id":"xms14b5m418gv","name":"蔥蛋","kcal":150,"p":9,"c":2,"f":11,"portion":"約1.5顆蛋量的蔥蛋","n":1}
 - {"id":"xms149v34zqbe","name":"豬肉餡餅","kcal":320,"p":11,"c":32,"f":17,"portion":"單顆，約7-8公分直徑，早餐店常見尺寸","n":1}
-- {"id":"xms14b5m31ttj","name":"燒餅","kcal":260,"p":6,"c":38,"f":9,"portion":"一份燒餅（約80克）","n":1}
 - {"id":"xmrzvy2cobh9k","name":"蕈菇燉飯","kcal":520,"p":14,"c":72,"f":18,"portion":"約一碗份量(含飯約200g熟重、綜合菇類、起司醬汁)","n":1}
