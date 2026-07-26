@@ -19,9 +19,11 @@ const fail=[]; const check=(n,c,g)=>{ if(c) console.log('  ok  '+n); else {conso
   await p.waitForTimeout(900);
   const t = await p.$('.picker-tile[data-pick]'); if(t){ await t.click(); await p.waitForTimeout(1600); }
 
-  console.log('\n[1] 首頁：減脂時標籤要叫「上限」');
+  console.log('\n[1] 首頁：減脂時標籤要叫「上限」（收在「看明細」裡）');
+  await p.click('[data-act="toggle-detail"]'); await p.waitForTimeout(500);
   const labels = await p.$$eval('.kv span', e=>e.map(x=>x.textContent.trim()));
   check('顯示「每日上限」而非「每日目標」', labels.includes('每日上限'), labels);
+  await p.click('[data-act="toggle-detail"]'); await p.waitForTimeout(400);
 
   console.log('\n[2] 設定索引就會亮警告（不用點進去才看得到）');
   await p.click('[data-nav="settings"]'); await p.waitForTimeout(700);
@@ -70,8 +72,10 @@ const fail=[]; const check=(n,c,g)=>{ if(c) console.log('  ok  '+n); else {conso
   await p.click('[data-set="goal"][data-val="0"]'); await p.waitForTimeout(1000);
   await p.click('[data-sheet="close"]'); await p.waitForTimeout(400);
   await p.click('[data-nav="today"]'); await p.waitForTimeout(700);
+  await p.click('[data-act="toggle-detail"]'); await p.waitForTimeout(500);
   const labels2 = await p.$$eval('.kv span', e=>e.map(x=>x.textContent.trim()));
   check('顯示「每日目標」', labels2.includes('每日目標'), labels2);
+  await p.click('[data-act="toggle-detail"]'); await p.waitForTimeout(400);
 
   console.log('\n[5] 三段式圓環：超過減脂上限 ≠ 超過 TDEE');
   // 27歲 168cm 80kg 久坐 -300 -> BMR 1720 / TDEE 2064 / 每日上限 1764
@@ -91,7 +95,7 @@ const fail=[]; const check=(n,c,g)=>{ if(c) console.log('  ok  '+n); else {conso
   };
 
   const green = await zone(1200, 0);   // 1,200 / 1,764 = 68%，還不到「快到上限」的 85%
-  check('綠：還在上限內（1,200 < 1,764）', /ok/.test(green.cls), green);
+  check('綠：正常範圍不再多印一條提示（跟圓環中央重複）', green.cls === '', green);
   check('綠：圓環是綠色', /--acc/.test(green.stroke||''), green.stroke);
   check('綠：中間寫「還可以吃 564」', /564/.test(green.mid) && /還可以吃/.test(green.mid), green.mid);
 
@@ -110,9 +114,15 @@ const fail=[]; const check=(n,c,g)=>{ if(c) console.log('  ok  '+n); else {conso
   check('紅：算出超過上限 736、超出 TDEE 436', /超過上限 736/.test(red.tag) && /超出 TDEE 436/.test(red.tag), red.tag);
   check('紅：圓環是紅色', /--bad/.test(red.stroke||''), red.stroke);
 
-  console.log('\n[5b] 右邊那欄要看得到 TDEE（「上限」是從哪來的）');
+  console.log('\n[5b] 明細裡看得到 TDEE（「上限」是從哪來的）');
+  check('收合時不顯示 TDEE（版面留給每天真的要看的東西）',
+    !(await p.$$eval('.kv', e=>e.filter(x=>/TDEE/.test(x.textContent)).length)));
+  await p.click('[data-act="toggle-detail"]'); await p.waitForTimeout(500);
   const kvs = await p.$$eval('.kv', e=>e.map(x=>x.textContent.replace(/\s+/g,' ').trim()));
-  check('列出維持體重（TDEE）2,064', kvs.some(t=>/維持體重（TDEE）/.test(t) && /2,064/.test(t)), kvs);
+  check('展開後列出維持體重（TDEE）2,064', kvs.some(t=>/維持體重（TDEE）/.test(t) && /2,064/.test(t)), kvs);
+  check('展開後才有三大營養素的公克數', (await p.$$('.detail .macro')).length === 3);
+  await p.click('[data-act="toggle-detail"]'); await p.waitForTimeout(400);
+  check('收合後營養素只剩一條比例條＋一句話', (await p.$$('.macro')).length === 0 && !!(await p.$('.mstrip')));
 
   console.log('\n[5c] 目標設成「維持」時沒有中間地帶（上限就是 TDEE）');
   await openSet(p, 'goal');

@@ -21,9 +21,14 @@ function check(n, c, g) {
 
   console.log('\n[1] 導覽列有「營養」，首頁三大方塊可點進去');
   check('nav 有營養', !!(await p.$('[data-nav="macros"]')));
-  check('首頁三大方塊可點', !!(await p.$('[data-nav2="macros"]')));
+  check('首頁營養素條可點進營養頁', !!(await p.$('[data-nav2="macros"]')));
+  check('首頁收合時是一條比例條＋一句白話', !!(await p.$('.mstrip .split')) && !!(await p.$('.mstrip-lb')));
+  await p.click('[data-act="toggle-detail"]');
+  await p.waitForTimeout(500);
   const boxTxt = await p.textContent('.macro b');
-  check('首頁方塊顯示 目前/目標', /\//.test(boxTxt || ''), boxTxt);
+  check('展開明細才顯示 目前/目標 公克數', /\//.test(boxTxt || ''), boxTxt);
+  await p.click('[data-act="toggle-detail"]');
+  await p.waitForTimeout(400);
 
   console.log('\n[2] 沒紀錄時的空狀態');
   await p.click('[data-nav="macros"]');

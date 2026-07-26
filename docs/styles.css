@@ -74,7 +74,7 @@ input,textarea,select{font-family:inherit; font-size:16px; color:inherit;}
 
 /* ---------- 熱量環 ---------- */
 .ring-card{margin:4px 16px 14px; background:var(--card); border-radius:22px; box-shadow:var(--shadow); padding:20px 18px 16px;}
-.ring-wrap{display:flex; align-items:center; gap:18px;}
+.ring-wrap{width:100%; text-align:left; display:flex; align-items:center; gap:18px;}
 .ring{width:132px; height:132px; flex:0 0 auto; position:relative;}
 .ring svg{transform:rotate(-90deg); display:block;}
 .ring .mid{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;}
@@ -86,6 +86,24 @@ input,textarea,select{font-family:inherit; font-size:16px; color:inherit;}
 .kv b{font-size:16px; font-weight:800;}
 .kv.eat b{color:var(--ink);} .kv.burn b{color:var(--acc-deep);} .kv.goal b{color:var(--muted);}
 .kv.tdee{font-size:12px;} .kv.tdee b{font-size:13.5px; color:#b0b8ac;}
+.kv.net b{color:var(--ink);}
+.kv.more{gap:5px; color:var(--muted); margin-top:1px;}
+.kv.more span{font-size:12.5px; font-weight:700;}
+.kv.more b{font-size:13px; font-weight:800; color:#c9d2c4;}
+
+/* 熱量卡的明細（展開才有）：解釋用的數字都收在這裡 */
+.detail{margin-top:13px; padding-top:13px; border-top:1px solid #f1f4ee;
+  display:flex; flex-direction:column; gap:9px;}
+.detail .macros{margin-top:5px;}
+
+/* 收合時的營養素：一條比例條＋一句白話 */
+.mstrip{width:100%; text-align:left; margin-top:14px; min-height:48px;}  /* 整條可點，要滿足 44px */
+.mstrip-lb{display:flex; align-items:center; gap:8px; margin-top:9px;
+  font-size:12.5px; font-weight:700; color:var(--muted);}
+.mstrip-lb span{flex:1; min-width:0;}
+.mstrip-lb i{font-style:normal; font-size:17px; color:#c9d2c4;}
+.mstrip-lb.warn{color:#a86d12;}
+.mstrip-lb.ok{color:var(--acc-deep);}
 .over-tag{margin-top:12px; border-radius:14px; padding:9px 12px; font-size:13px; font-weight:700; text-align:center;}
 .over-tag.ok{background:var(--acc-soft); color:var(--acc-deep);}
 .over-tag.near{background:var(--warn-soft); color:#a86d12;}

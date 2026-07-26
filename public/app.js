@@ -39,6 +39,7 @@ var users=[];                   /* 使用者名冊 */
 var me=null;                    /* 目前是誰在用 */
 var db={ profile:defaultProfile(), foods:[], days:{} };
 var view="today";               /* today | history | settings（picker 是獨立全螢幕） */
+var showDetail=false;           /* 首頁熱量卡的明細（每日上限／TDEE／營養素公克數）是否展開 */
 var picking=false;              /* 是否停在「誰在用？」畫面 */
 var curDate=dateKey();
 var histDates=[];
@@ -319,7 +320,8 @@ function viewToday(){
   }else if(target>0 && net/target>=0.85){
     tag='<div class="over-tag near">快到上限了，剩 '+kcal(target-net)+' 大卡</div>';
   }else{
-    tag='<div class="over-tag ok">還在額度內，剩 '+kcal(target-net)+' 大卡</div>';
+    /* 一切正常時刻意不顯示：「還在額度內，剩 X」跟圓環中央是同一句話，講兩次只是佔版面 */
+    tag='';
   }
 
   var h=headHtml(me.name);
@@ -332,22 +334,35 @@ function viewToday(){
       (isToday?"":'<button class="today-btn" data-act="go-today">今天</button>')+
      '</div>';
 
+  /* 熱量卡分兩層（定案）：
+   * 收合＝每天真的要看的三件事（還能吃多少／已經吃多少／營養素有沒有歪掉）；
+   * 展開＝解釋用的數字（每日上限、TDEE、淨攝取、營養素公克數）。
+   * 全部攤開的話一張卡上有九個數字，反而看不出重點。 */
+  var goalLb=(num(db.profile.goal)<0?"每日上限":"每日目標");
   h+='<section class="ring-card">'+
-      '<div class="ring-wrap">'+ringHtml(net, target, tdee)+
+      '<button class="ring-wrap" data-act="toggle-detail" aria-expanded="'+(showDetail?"true":"false")+'">'+
+        ringHtml(net, target, tdee)+
         '<div class="ring-side">'+
           '<div class="kv eat"><span>已攝取</span><b class="num">'+kcal(eaten)+'</b></div>'+
           (burn?'<div class="kv burn"><span>運動消耗</span><b class="num">−'+kcal(burn)+'</b></div>':'')+
-          '<div class="kv goal"><span>'+(num(db.profile.goal)<0?"每日上限":"每日目標")+
-            '</span><b class="num">'+kcal(target)+'</b></div>'+
-          (num(db.profile.goal)<0
-            ? '<div class="kv tdee"><span>維持體重（TDEE）</span><b class="num">'+kcal(tdee)+'</b></div>'
-            : '')+
+          '<div class="kv more"><span>'+(showDetail?"收起明細":"看明細")+'</span>'+
+            '<b>'+(showDetail?"⌃":"⌄")+'</b></div>'+
         '</div>'+
-      '</div>'+
-      tag+
-      '<button class="macros" data-nav2="macros">'+
-        macroBox("蛋白","var(--p)",m.p,mt.p)+macroBox("碳水","var(--c)",m.c,mt.c)+macroBox("脂肪","var(--f)",m.f,mt.f)+
       '</button>'+
+      (showDetail
+        ? '<div class="detail">'+
+            '<div class="kv goal"><span>'+goalLb+'</span><b class="num">'+kcal(target)+'</b></div>'+
+            (num(db.profile.goal)<0
+              ? '<div class="kv tdee"><span>維持體重（TDEE）</span><b class="num">'+kcal(tdee)+'</b></div>'
+              : '')+
+            (burn?'<div class="kv net"><span>淨攝取（已扣運動）</span><b class="num">'+kcal(net)+'</b></div>':'')+
+            '<div class="macros">'+
+              macroBox("蛋白","var(--p)",m.p,mt.p)+macroBox("碳水","var(--c)",m.c,mt.c)+macroBox("脂肪","var(--f)",m.f,mt.f)+
+            '</div>'+
+          '</div>'
+        : '')+
+      tag+
+      macroStripHtml(m, mt, lateEnough)+
      '</section>';
 
   /* 沒設過身體資料 -> TDEE 是用預設值算的，等於假的，一定要先講 */
@@ -449,6 +464,41 @@ function weighHtml(d){
       '</div>'+
       '<span class="chev">›</span>'+
      '</button></section>';
+}
+
+/* 收合時的營養素：一條「熱量來自哪裡」的比例條＋一句白話。
+ * 每天要知道的是「有沒有歪掉」，公克數是想懂才看的（展開或點進營養頁）。 */
+function macroStripHtml(m, mt, lateEnough){
+  var pk=num(m.p)*4, ck=num(m.c)*4, fk=num(m.f)*9, tot=pk+ck+fk;
+  var bar='<div class="split">'+(tot>0
+    ? '<i style="width:'+(pk/tot*100).toFixed(1)+'%;background:var(--p)"></i>'+
+      '<i style="width:'+(ck/tot*100).toFixed(1)+'%;background:var(--c)"></i>'+
+      '<i style="width:'+(fk/tot*100).toFixed(1)+'%;background:var(--f)"></i>'
+    : '')+'</div>';
+  var v=macroVerdict(m, mt, lateEnough);
+  return '<button class="mstrip" data-nav2="macros">'+bar+
+    '<div class="mstrip-lb '+v.cls+'"><span>'+esc(v.text)+'</span><i>›</i></div></button>';
+}
+function macroVerdict(m, mt, lateEnough){
+  if(!num(m.p) && !num(m.c) && !num(m.f)) return { text:"還沒有營養素資料", cls:"" };
+  var over=[];
+  if(mt.c>0 && num(m.c)>mt.c*1.05) over.push("碳水");
+  if(mt.f>0 && num(m.f)>mt.f*1.05) over.push("脂肪");
+  /* 蛋白質吃多一點不是問題，門檻放寬到 1.2 倍才算超 */
+  if(mt.p>0 && num(m.p)>mt.p*1.2)  over.push("蛋白質");
+  if(over.length) return { text:over.join("、")+"超標", cls:"warn" };
+  if(mt.p>0 && num(m.p)<mt.p*0.9){
+    /* 一天才過一半就說「蛋白質不夠」很煩（跟「吃太少」那條同一個判斷）：
+     * 還沒到晚上就改成中性地報比例，讓那條彩色條至少有圖例。 */
+    if(lateEnough) return { text:"蛋白質還差 "+kcal(Math.round(mt.p-num(m.p)))+" g", cls:"warn" };
+    return { text:macroPctText(m), cls:"" };
+  }
+  return { text:"三大營養素都在範圍內", cls:"ok" };
+}
+function macroPctText(m){
+  var pk=num(m.p)*4, ck=num(m.c)*4, fk=num(m.f)*9, tot=pk+ck+fk;
+  if(tot<=0) return "還沒有營養素資料";
+  return "蛋白 "+Math.round(pk/tot*100)+"% · 碳水 "+Math.round(ck/tot*100)+"% · 脂肪 "+Math.round(fk/tot*100)+"%";
 }
 
 function macroBox(label,color,v,target){
@@ -891,7 +941,7 @@ function viewSettings(){
   });
   if(grp) h+='</div>';
 
-  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v2.6</p>';
+  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v2.7</p>';
   return h;
 }
 
@@ -1154,6 +1204,7 @@ function doAct(act, el){
   if(act==="prev-day"){ curDate=shiftDate(curDate,-1); ensureDays([curDate]); render(); return; }
   if(act==="next-day"){ if(curDate<dateKey()){ curDate=shiftDate(curDate,1); ensureDays([curDate]); render(); } return; }
   if(act==="go-today"){ curDate=dateKey(); ensureDays([curDate]); render(); return; }
+  if(act==="toggle-detail"){ showDetail=!showDetail; render(); return; }
   if(act==="open-day"){ curDate=el.getAttribute("data-date"); view="today"; ensureDays([curDate]); render(); window.scrollTo(0,0); return; }
   if(act==="add"){ if(requireWrite()) openAddSheet(el.getAttribute("data-meal")); return; }
   if(act==="add-move"){ if(requireWrite()) openMoveSheet(null); return; }
