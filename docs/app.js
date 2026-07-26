@@ -48,17 +48,76 @@ var booted=false;
 
 function dayOf(key){ return db.days[key] || (db.days[key]=emptyDay(key)); }
 
-/* ============ 持久化（樂觀更新：畫面先動，背景寫入，失敗才 toast） ============ */
-var persistChains={}; /* 同一份檔案的寫入排隊，避免快速連點時並發互蓋 */
-function chainPersist(key, job){
+/* ============ 持久化（樂觀更新：畫面先動，背景寫入） ============
+ * 待同步佇列（別拿掉）：樂觀更新的代價是「畫面說已記錄，雲端其實還沒有」。
+ * 以前寫入失敗只跳一個 3 秒的 toast 就放棄，使用者根本不知道資料沒上去，
+ * 關掉 app 就真的沒了（2026-07-26 踩過，一整餐 6 筆消失）。
+ * 現在失敗的寫入留在 pending 裡，回到前景／網路恢復／按重試時再送，
+ * 並在畫面最上面掛一條橫幅，直到真的寫進去為止。 */
+var persistChains={};
+var pending={};                    /* key -> {job, label}，key 同時也是「哪一份檔案」 */
+var pendingTimer=null, pendingFails=0;
+
+function chainPersist(key, job, label){
   var run=function(){
-    return job().catch(function(e){
-      toast("儲存失敗："+(e.userMessage||e.message||""), true);
+    return job().then(function(r){
+      if(pending[key]){ delete pending[key]; drawSyncBar(); }
+      pendingFails=0;
+      return r;
+    }, function(e){
+      pending[key]={ job:job, label:label||"資料" };
+      toast((label||"資料")+"還沒同步到雲端，會自動重試", true);
+      drawSyncBar();
+      schedulePendingRetry();
     });
   };
-  persistChains[key]=(persistChains[key]||Promise.resolve()).then(run);
-  return persistChains[key];
+  /* 手機版（GitHub Contents API）：一次 PUT ＝ 一個 commit，衝突發生在「分支」層級，
+   * 不是檔案層級——不同檔案平行寫一樣會 409。所以手機版所有寫入共用一條佇列。
+   * 本機版是直接寫檔案，沒有這個問題，維持 per-file 排隊（比較快）。 */
+  var lane = STORE.local ? key : "gh";
+  persistChains[lane]=(persistChains[lane]||Promise.resolve()).then(run);
+  return persistChains[lane];
 }
+
+function schedulePendingRetry(){
+  if(pendingTimer) return;
+  pendingFails++;
+  var delay=Math.min(60000, 6000*Math.pow(2, Math.min(3, pendingFails-1))); /* 6s→12s→24s→48s→60s */
+  pendingTimer=setTimeout(function(){ pendingTimer=null; retryPending(); }, delay);
+}
+function retryPending(){
+  var keys=Object.keys(pending);
+  if(!keys.length){ pendingFails=0; return; }
+  if(navigator.onLine===false){ schedulePendingRetry(); return; }
+  keys.forEach(function(k){
+    var it=pending[k];
+    delete pending[k];              /* 重新入列；再失敗會被放回來 */
+    chainPersist(k, it.job, it.label);
+  });
+  drawSyncBar();
+}
+function drawSyncBar(){
+  var el=document.getElementById("sync-bar");
+  if(!el) return;
+  var keys=Object.keys(pending);
+  if(!keys.length){
+    el.hidden=true; el.innerHTML="";
+    document.body.classList.remove("has-sync");
+    return;
+  }
+  var names=keys.map(function(k){ return pending[k].label; });
+  el.innerHTML='<span>'+esc(names.join("、"))+'還沒同步到雲端</span>'+
+               '<button type="button" id="sync-retry">立即重試</button>';
+  el.hidden=false;
+  document.body.classList.add("has-sync");
+  el.querySelector("#sync-retry").onclick=function(){
+    clearTimeout(pendingTimer); pendingTimer=null; pendingFails=0;
+    retryPending();
+    toast("重新送出中…");
+  };
+}
+window.addEventListener("online", function(){ retryPending(); });
+document.addEventListener("visibilitychange", function(){ if(!document.hidden) retryPending(); });
 /* chain key 一律帶 uid：切換使用者後不會跟前一個人的寫入排在同一條鏈上 */
 function persistDay(key){
   var d=db.days[key];
@@ -69,7 +128,9 @@ function persistDay(key){
   var at=histDates.indexOf(key);
   if(dayHasData(d)){ if(at<0) histDates.push(key); }
   else if(at>=0) histDates.splice(at,1);
-  return chainPersist(u+":day:"+key, function(){ return STORE.saveDay(u, d); });
+  /* 送快照不送 live 物件：失敗重送時 db 可能已經切成別人了，不能寫錯人的檔案 */
+  var snap=JSON.parse(JSON.stringify(d));
+  return chainPersist(u+":day:"+key, function(){ return STORE.saveDay(u, snap); }, fmtMD(key)+" 的紀錄");
 }
 /* 與 server.js 判斷「這天是不是空的、可以刪檔」的條件一致 */
 function dayHasData(d){
@@ -81,16 +142,17 @@ function persistProfile(){
   /* 存過就不再顯示「還沒設定身體資料」。落檔的時間戳由 serializeProfile 蓋，
    * 這裡標記的是「這個 session 已經設定過了」。 */
   db.profile.updatedAt=new Date().toISOString();
-  var u=me.id, p=db.profile;
-  return chainPersist(u+":profile", function(){ return STORE.saveProfile(u, p); });
+  var u=me.id, snap=JSON.parse(JSON.stringify(db.profile));
+  return chainPersist(u+":profile", function(){ return STORE.saveProfile(u, snap); }, "身體資料");
 }
 function persistFoods(){
   if(!me) return Promise.resolve();
-  var u=me.id, l=db.foods;
-  return chainPersist(u+":foods", function(){ return STORE.saveFoods(u, l); });
+  var u=me.id, snap=JSON.parse(JSON.stringify(db.foods));
+  return chainPersist(u+":foods", function(){ return STORE.saveFoods(u, snap); }, "常吃清單");
 }
 function persistUsers(){
-  return chainPersist("users", function(){ return STORE.saveUsers(users); });
+  var snap=JSON.parse(JSON.stringify(users));
+  return chainPersist("users", function(){ return STORE.saveUsers(snap); }, "使用者名冊");
 }
 
 /* 唯讀守門（Pages 沒貼 GitHub 金鑰時） */
@@ -120,7 +182,8 @@ function rememberFood(item){
   }
   db.foods.sort(function(a,b){ return (num(b.n)-num(a.n)) || a.name.localeCompare(b.name,"zh-Hant"); });
   if(db.foods.length>200) db.foods.length=200; /* 清單無限長對手機沒好處 */
-  persistFoods();
+  /* 這裡刻意只動記憶體、不寫檔：一次記 6 筆會變成 6 次寫入，
+   * 跟同時進行的「當天紀錄」寫入互撞（GitHub 回 409）。寫檔由呼叫端整批做一次。 */
 }
 
 /* ============ 畫面 ============ */
@@ -828,7 +891,7 @@ function viewSettings(){
   });
   if(grp) h+='</div>';
 
-  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v2.5</p>';
+  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v2.6</p>';
   return h;
 }
 
@@ -1593,6 +1656,7 @@ function addEntries(items){
     }));
     rememberFood(it);
   });
+  persistFoods();      /* 整批只寫一次（rememberFood 不自己寫檔） */
   persistDay(curDate);
   pendingPhoto=null; aiResult=null;
   closeAllSheets();

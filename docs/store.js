@@ -304,6 +304,8 @@ function netOf(day){ return sumKcal(day.entries) - sumKcal(day.moves); }
 
 /* ============ DataStore ============ */
 var GH = { owner:"xd1104", repo:"lose-weight-helper", branch:"main" };
+var PUT_RETRIES = 3;                 /* 409/422 之後最多再試幾次（退避 300/600/1200ms） */
+function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
 var IS_LOCAL = ["localhost","127.0.0.1","::1",""].indexOf(location.hostname)>=0;
 var FORCE_GH = /[?&]store=github\b/.test(location.search);
 var TOKEN_KEY = "lwh_gh_pat";
@@ -395,7 +397,7 @@ var GitHubStore = {
     if(status===401) return "GitHub 金鑰無效或已過期，請到「設定」重新貼上金鑰。";
     if(status===403) return "GitHub 金鑰權限不足：需 fine-grained PAT，授權 lose-weight-helper repo，Contents 設為 Read and write。";
     if(status===404) return "找不到資源（可能路徑錯或金鑰未授權此 repo）。";
-    if(status===409) return "資料版本衝突（有其他裝置剛改過），請重試。";
+    if(status===409) return "GitHub 上同時有其他寫入，稍後再送一次。";
     if(status===422) return "GitHub 拒絕此次寫入（"+((body&&body.message)||"格式問題")+"）。";
     return "GitHub 錯誤 "+status+"："+((body&&body.message)||"");
   },
@@ -433,25 +435,32 @@ var GitHubStore = {
       throw uiError(self._msgForStatus(r.status, null));
     },function(){ throw uiError("目前離線或連不到 GitHub。"); });
   },
+  /* 409 有兩種，處理方式不一樣：
+   *   (a) 檔案的 sha 過期／沒帶 sha  -> 重抓 sha 就好
+   *   (b) 分支剛被別的 commit 動過（Contents API 一次 PUT ＝ 一個 commit）
+   *       -> 重抓 sha 沒用，要等對方落地，所以退避之後再試
+   * 以前只立刻重試一次，遇到 (b) 常常第二次又撞上，錯誤就丟到使用者臉上了。 */
   _putFile:function(pathRel, contentB64, message, sha){
     var self=this;
     var body={ message:message, content:contentB64, branch:GH.branch };
     if(sha) body.sha=sha;
-    return this._ghFetch(this.apiBase+"/contents/"+pathRel, {method:"PUT", body:JSON.stringify(body)}, true)
-      .then(function(res){ return res.json(); })
-      .then(function(j){ if(j&&j.content) self._sha[pathRel]=j.content.sha; return j; })
-      .catch(function(e){
-        if(e.status===409||e.status===422){
-          /* sha 過期或缺 sha（檔案已存在）：重取 sha 再試一次，last-write-wins */
-          return self._getFile(pathRel).then(function(cur){
-            body.sha=cur?cur.sha:undefined;
-            return self._ghFetch(self.apiBase+"/contents/"+pathRel, {method:"PUT", body:JSON.stringify(body)}, true)
-              .then(function(res){ return res.json(); })
-              .then(function(j){ if(j&&j.content) self._sha[pathRel]=j.content.sha; return j; });
+    var send=function(){
+      return self._ghFetch(self.apiBase+"/contents/"+pathRel, {method:"PUT", body:JSON.stringify(body)}, true)
+        .then(function(res){ return res.json(); })
+        .then(function(j){ if(j&&j.content) self._sha[pathRel]=j.content.sha; return j; });
+    };
+    var attempt=function(n){
+      return send().catch(function(e){
+        if((e.status===409||e.status===422) && n<PUT_RETRIES){
+          return self._getFile(pathRel).catch(function(){ return null; }).then(function(cur){
+            if(cur) body.sha=cur.sha; else delete body.sha;
+            return sleep(300*Math.pow(2,n)).then(function(){ return attempt(n+1); });  /* 300 / 600 / 1200ms */
           });
         }
         throw e;
       });
+    };
+    return attempt(0);
   },
   _deleteFile:function(pathRel, message){
     var self=this;
