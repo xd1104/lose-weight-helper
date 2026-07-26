@@ -121,6 +121,30 @@ function check(name, cond, got) {
   check('小美看得到「未設定身體資料」提醒', !!nudge2);
   await p.screenshot({ path: '/tmp/qc-newuser.png', fullPage: true });
 
+  console.log('\n[G0] 空的餐段不各佔一張卡，收成「還沒記」一列');
+  await p.click('[data-nav="today"]');
+  await p.waitForTimeout(700);
+  const chips = await p.$$eval('.addchips .chip', (e) => e.map((x) => x.textContent.trim()));
+  check('四餐＋運動都還沒記時，五個都在「還沒記」裡', chips.length === 5, chips);
+  check('沒有任何一張「＋ 記一筆◯◯」的空卡',
+    !(await p.$$eval('.row', (e) => e.filter((x) => /記一筆/.test(x.textContent)).length)));
+  const chipH = await p.$$eval('.addchips .chip', (e) => e.map((x) => x.getBoundingClientRect().height));
+  check('每個都 ≥ 44px', chipH.every((x) => x >= 44), chipH);
+
+  await p.click('.addchips [data-meal="lunch"]');
+  await p.waitForTimeout(500);
+  await p.click('[data-tab="manual"]');
+  await p.waitForTimeout(300);
+  await p.fill('#m-name', '滷肉飯');
+  await p.fill('#m-kcal', '480');
+  await p.click('#f-manual button[type="submit"]');
+  await p.waitForTimeout(1500);
+  const chips2 = await p.$$eval('.addchips .chip', (e) => e.map((x) => x.textContent.trim()));
+  check('記了午餐之後，午餐從「還沒記」消失', chips2.length === 4 && !chips2.some((t) => /午餐/.test(t)), chips2);
+  check('出現午餐的區塊', /午餐/.test(await p.textContent('.sec-head h2')));
+  const rowSub = await p.$eval('.row-mid span', (e) => getComputedStyle(e).whiteSpace);
+  check('每一筆的份量說明固定一行（太長就截斷，列高才會一致）', rowSub === 'nowrap', rowSub);
+
   console.log('\n[G] 觸控目標尺寸（iOS 44px 規範）與輸入字級（防自動放大）');
   const small = await p.$$eval('button, .row, .weigh, a', (els) => els
     .filter((e) => e.offsetParent !== null)

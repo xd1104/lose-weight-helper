@@ -356,13 +356,10 @@ function viewToday(){
               ? '<div class="kv tdee"><span>維持體重（TDEE）</span><b class="num">'+kcal(tdee)+'</b></div>'
               : '')+
             (burn?'<div class="kv net"><span>淨攝取（已扣運動）</span><b class="num">'+kcal(net)+'</b></div>':'')+
-            '<div class="macros">'+
-              macroBox("蛋白","var(--p)",m.p,mt.p)+macroBox("碳水","var(--c)",m.c,mt.c)+macroBox("脂肪","var(--f)",m.f,mt.f)+
-            '</div>'+
           '</div>'
         : '')+
       tag+
-      macroStripHtml(m, mt, lateEnough)+
+      macroRowHtml(m, mt)+
      '</section>';
 
   /* 沒設過身體資料 -> TDEE 是用預設值算的，等於假的，一定要先講 */
@@ -376,39 +373,36 @@ function viewToday(){
   /* 體重（減重 app 的主角，放在熱量環正下方） */
   h+=weighHtml(d);
 
-  /* 四個餐段 */
+  /* 餐段：只列「有記東西」的。
+   * 以前四個餐段＋運動不管有沒有東西都各佔一張卡，一天有一半是空卡，
+   * 光滑過那些「＋ 記一筆晚餐」就要滑半頁。空的收成下面一列快速新增。 */
+  var empties=[];
   MEALS.forEach(function(mk){
     var list=(d.entries||[]).filter(function(e){ return e.meal===mk; });
     var info=MEAL_INFO[mk];
+    if(!list.length){ empties.push({ act:'data-act="add" data-meal="'+mk+'"', label:info.emoji+' '+info.label }); return; }
     h+='<section class="sec">'+
         '<div class="sec-head"><h2>'+info.emoji+' '+info.label+'</h2>'+
-          (list.length?'<span class="n">'+kcal(sumKcal(list))+' 大卡</span>':'')+'</div>'+
+          '<span class="n">'+kcal(sumKcal(list))+' 大卡</span></div>'+
         '<div class="list">';
-    if(!list.length){
-      h+='<button class="row" data-act="add" data-meal="'+mk+'"><div class="row-mid">'+
-         '<b style="color:var(--muted);font-weight:600">＋ 記一筆'+info.label+'</b></div></button>';
-    }else{
-      list.forEach(function(e){
-        h+='<button class="row" data-act="edit-entry" data-id="'+esc(e.id)+'">'+
-            '<div class="row-mid"><b>'+esc(e.name)+'</b>'+
-              (e.portion||e.time ? '<span>'+esc([e.time,e.portion].filter(Boolean).join(" · "))+'</span>' : '')+
-            '</div>'+
-            '<div class="row-kcal num">'+kcal(e.kcal)+'<i>大卡</i></div>'+
-           '</button>';
-      });
-    }
+    list.forEach(function(e){
+      h+='<button class="row" data-act="edit-entry" data-id="'+esc(e.id)+'">'+
+          '<div class="row-mid"><b>'+esc(e.name)+'</b>'+
+            (e.portion||e.time ? '<span>'+esc([e.time,e.portion].filter(Boolean).join(" · "))+'</span>' : '')+
+          '</div>'+
+          '<div class="row-kcal num">'+kcal(e.kcal)+'<i>大卡</i></div>'+
+         '</button>';
+    });
     h+='</div></section>';
   });
 
   /* 運動 */
-  h+='<section class="sec">'+
-      '<div class="sec-head"><h2>🏃 運動</h2>'+
-        (d.moves.length?'<span class="n">−'+kcal(burn)+' 大卡</span>':'')+'</div>'+
-      '<div class="list">';
   if(!d.moves.length){
-    h+='<button class="row" data-act="add-move"><div class="row-mid">'+
-       '<b style="color:var(--muted);font-weight:600">＋ 記一筆額外運動</b></div></button>';
+    empties.push({ act:'data-act="add-move"', label:"🏃 運動" });
   }else{
+    h+='<section class="sec">'+
+        '<div class="sec-head"><h2>🏃 運動</h2><span class="n">−'+kcal(burn)+' 大卡</span></div>'+
+        '<div class="list">';
     d.moves.forEach(function(mv){
       h+='<button class="row" data-act="edit-move" data-id="'+esc(mv.id)+'">'+
           '<div class="row-mid"><b>'+esc(mv.name)+'</b>'+(mv.time?'<span>'+esc(mv.time)+'</span>':'')+'</div>'+
@@ -416,9 +410,16 @@ function viewToday(){
          '</button>';
     });
     h+='<button class="row" data-act="add-move"><div class="row-mid">'+
-       '<b style="color:var(--muted);font-weight:600">＋ 再記一筆</b></div></button>';
+       '<b style="color:var(--muted);font-weight:600">＋ 再記一筆</b></div></button>'+
+      '</div></section>';
   }
-  h+='</div></section>';
+
+  if(empties.length){
+    h+='<section class="sec"><div class="sec-head"><h2>還沒記</h2></div>'+
+        '<div class="chips addchips">'+
+          empties.map(function(x){ return '<button class="chip" '+x.act+'>＋ '+x.label+'</button>'; }).join("")+
+        '</div></section>';
+  }
 
   /* 最近 7 天 */
   h+='<section class="sec"><div class="sec-head"><h2>最近 7 天</h2></div>'+sparkHtml(target)+'</section>';
@@ -466,46 +467,26 @@ function weighHtml(d){
      '</button></section>';
 }
 
-/* 收合時的營養素：一條「熱量來自哪裡」的比例條＋一句白話。
- * 每天要知道的是「有沒有歪掉」，公克數是想懂才看的（展開或點進營養頁）。 */
-function macroStripHtml(m, mt, lateEnough){
-  var pk=num(m.p)*4, ck=num(m.c)*4, fk=num(m.f)*9, tot=pk+ck+fk;
-  var bar='<div class="split">'+(tot>0
-    ? '<i style="width:'+(pk/tot*100).toFixed(1)+'%;background:var(--p)"></i>'+
-      '<i style="width:'+(ck/tot*100).toFixed(1)+'%;background:var(--c)"></i>'+
-      '<i style="width:'+(fk/tot*100).toFixed(1)+'%;background:var(--f)"></i>'
-    : '')+'</div>';
-  var v=macroVerdict(m, mt, lateEnough);
-  return '<button class="mstrip" data-nav2="macros">'+bar+
-    '<div class="mstrip-lb '+v.cls+'"><span>'+esc(v.text)+'</span><i>›</i></div></button>';
+/* 三大營養素：一格一個，直接寫「目前／目標」。
+ * 曾經換成「熱量來自哪裡」的三色比例條，但那回答的是另一個問題——
+ * 每天想知道的是「夠不夠、超了沒」，不是「熱量的組成」。（Benson 反映看不懂，改回來）
+ * 原本的方塊唯一的問題是 bar 卡在 100%、超標看不出來，所以補上超標狀態。 */
+function macroRowHtml(m, mt){
+  return '<button class="macros" data-nav2="macros">'+
+    macroBox("蛋白","var(--p)",m.p,mt.p,1.2)+   /* 蛋白質吃多一點不是問題，門檻放寬 */
+    macroBox("碳水","var(--c)",m.c,mt.c,1.05)+
+    macroBox("脂肪","var(--f)",m.f,mt.f,1.05)+
+  '</button>';
 }
-function macroVerdict(m, mt, lateEnough){
-  if(!num(m.p) && !num(m.c) && !num(m.f)) return { text:"還沒有營養素資料", cls:"" };
-  var over=[];
-  if(mt.c>0 && num(m.c)>mt.c*1.05) over.push("碳水");
-  if(mt.f>0 && num(m.f)>mt.f*1.05) over.push("脂肪");
-  /* 蛋白質吃多一點不是問題，門檻放寬到 1.2 倍才算超 */
-  if(mt.p>0 && num(m.p)>mt.p*1.2)  over.push("蛋白質");
-  if(over.length) return { text:over.join("、")+"超標", cls:"warn" };
-  if(mt.p>0 && num(m.p)<mt.p*0.9){
-    /* 一天才過一半就說「蛋白質不夠」很煩（跟「吃太少」那條同一個判斷）：
-     * 還沒到晚上就改成中性地報比例，讓那條彩色條至少有圖例。 */
-    if(lateEnough) return { text:"蛋白質還差 "+kcal(Math.round(mt.p-num(m.p)))+" g", cls:"warn" };
-    return { text:macroPctText(m), cls:"" };
-  }
-  return { text:"三大營養素都在範圍內", cls:"ok" };
-}
-function macroPctText(m){
-  var pk=num(m.p)*4, ck=num(m.c)*4, fk=num(m.f)*9, tot=pk+ck+fk;
-  if(tot<=0) return "還沒有營養素資料";
-  return "蛋白 "+Math.round(pk/tot*100)+"% · 碳水 "+Math.round(ck/tot*100)+"% · 脂肪 "+Math.round(fk/tot*100)+"%";
-}
-
-function macroBox(label,color,v,target){
-  var pct = target>0 ? Math.min(1, v/target) : 0;
-  return '<div class="macro"><div class="lb"><span class="dot" style="background:'+color+'"></span>'+label+'</div>'+
+function macroBox(label,color,v,target,overAt){
+  var pct = target>0 ? v/target : 0;
+  var over = target>0 && pct>(overAt||1.05);
+  return '<div class="macro'+(over?" over":"")+'">'+
+         '<div class="lb"><span class="dot" style="background:'+(over?"var(--warn)":color)+'"></span>'+label+
+           (over?'<em>超標</em>':'')+'</div>'+
          '<b class="num">'+kcal(v)+'<i>/'+kcal(target)+'g</i></b>'+
-         '<div class="mbar"><i style="width:'+(pct*100).toFixed(0)+'%;background:'+color+'"></i></div></div>';
+         '<div class="mbar"><i style="width:'+(Math.min(1,pct)*100).toFixed(0)+'%;'+
+           'background:'+(over?"var(--warn)":color)+'"></i></div></div>';
 }
 
 function sparkHtml(target){
@@ -941,7 +922,7 @@ function viewSettings(){
   });
   if(grp) h+='</div>';
 
-  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v2.7</p>';
+  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v2.8</p>';
   return h;
 }
 

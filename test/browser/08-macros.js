@@ -21,14 +21,10 @@ function check(n, c, g) {
 
   console.log('\n[1] 導覽列有「營養」，首頁三大方塊可點進去');
   check('nav 有營養', !!(await p.$('[data-nav="macros"]')));
-  check('首頁營養素條可點進營養頁', !!(await p.$('[data-nav2="macros"]')));
-  check('首頁收合時是一條比例條＋一句白話', !!(await p.$('.mstrip .split')) && !!(await p.$('.mstrip-lb')));
-  await p.click('[data-act="toggle-detail"]');
-  await p.waitForTimeout(500);
+  check('首頁三大方塊可點進營養頁', !!(await p.$('[data-nav2="macros"]')));
+  check('首頁不用展開就看得到三大營養素', (await p.$$('.macros .macro')).length === 3);
   const boxTxt = await p.textContent('.macro b');
-  check('展開明細才顯示 目前/目標 公克數', /\//.test(boxTxt || ''), boxTxt);
-  await p.click('[data-act="toggle-detail"]');
-  await p.waitForTimeout(400);
+  check('顯示 目前/目標 公克數', /\//.test(boxTxt || ''), boxTxt);
 
   console.log('\n[2] 沒紀錄時的空狀態');
   await p.click('[data-nav="macros"]');
@@ -119,6 +115,24 @@ function check(n, c, g) {
   const tip2 = await p.textContent('.tip').catch(() => '');
   check('改顯示達標訊息', /達標/.test(tip2 || ''), tip2);
   await p.screenshot({ path: '/tmp/mac-2.png', fullPage: true });
+
+  console.log('\n[6b] 超標的營養素要在首頁標出來（以前 bar 卡在 100%，看不出超了）');
+  await p.click('[data-nav="today"]');
+  await p.waitForTimeout(500);
+  await p.click('.fab');
+  await p.waitForTimeout(400);
+  await p.click('[data-tab="manual"]');
+  await p.waitForTimeout(300);
+  await p.fill('#m-name', '大碗麵加飯');
+  await p.fill('#m-kcal', '900');
+  await p.fill('#m-c', '400');            // 遠超過碳水目標
+  await p.click('#f-manual button[type="submit"]');
+  await p.waitForTimeout(1500);
+  const carbBox = await p.$eval('.macros .macro:nth-child(2)', (e) => ({ cls: e.className, t: e.textContent.replace(/\s+/g, ' ') }));
+  check('碳水那格標成超標', /over/.test(carbBox.cls) && /超標/.test(carbBox.t), carbBox);
+  const protBox = await p.$eval('.macros .macro:nth-child(1)', (e) => e.className);
+  check('沒超的不會被誤標', !/over/.test(protBox), protBox);
+  await p.screenshot({ path: '/tmp/mac-over.png' });
 
   console.log('\n[7] 設定頁可調目標，且會反映到營養頁');
   await openSet(p, 'macros');

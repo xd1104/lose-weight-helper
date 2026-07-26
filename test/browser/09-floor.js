@@ -120,9 +120,9 @@ const fail=[]; const check=(n,c,g)=>{ if(c) console.log('  ok  '+n); else {conso
   await p.click('[data-act="toggle-detail"]'); await p.waitForTimeout(500);
   const kvs = await p.$$eval('.kv', e=>e.map(x=>x.textContent.replace(/\s+/g,' ').trim()));
   check('展開後列出維持體重（TDEE）2,064', kvs.some(t=>/維持體重（TDEE）/.test(t) && /2,064/.test(t)), kvs);
-  check('展開後才有三大營養素的公克數', (await p.$$('.detail .macro')).length === 3);
+  check('明細裡只有熱量的算式，營養素不重複放', (await p.$$('.detail .macro')).length === 0);
   await p.click('[data-act="toggle-detail"]'); await p.waitForTimeout(400);
-  check('收合後營養素只剩一條比例條＋一句話', (await p.$$('.macro')).length === 0 && !!(await p.$('.mstrip')));
+  check('三大營養素固定在收合的卡上（每天都要看的東西）', (await p.$$('.macros .macro')).length === 3);
 
   console.log('\n[5c] 目標設成「維持」時沒有中間地帶（上限就是 TDEE）');
   await openSet(p, 'goal');
