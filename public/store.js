@@ -189,15 +189,40 @@ function parseDay(date, text){
 }
 
 function defaultProfile(){
-  return { sex:"male", age:30, height:170, weight:65, activity:1.375,
+  return { sex:"male", age:30, birth:"", height:170, weight:65, activity:1.375,
            tdee:0, goal:0, proteinPerKg:1.6, fatPct:25,
            model:"claude-sonnet-5", updatedAt:"" };
+}
+/* 生日（YYYY-MM-DD，選填）。填了之後 age 一律由它推算——
+ * cleanProfile 在每次讀檔／存檔都會重算，所以生日一過年齡就自己 +1，
+ * BMR 與 TDEE 跟著更新，不用手動去改年齡。格式不合或未來日期一律當沒填。 */
+function cleanBirth(v){
+  var s=String(v||"").trim();
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(s)) return "";
+  var y=+s.slice(0,4), mo=+s.slice(5,7), da=+s.slice(8,10);
+  if(y<1900 || mo<1 || mo>12 || da<1 || da>31) return "";
+  var d=new Date(y, mo-1, da);
+  if(d.getFullYear()!==y || d.getMonth()!==mo-1 || d.getDate()!==da) return ""; /* 例如 2-30 */
+  var now=new Date();
+  if(d>new Date(now.getFullYear(), now.getMonth(), now.getDate())) return "";   /* 未來的生日 */
+  return s;
+}
+function ageFromBirth(birth){
+  var s=cleanBirth(birth);
+  if(!s) return 0;
+  var y=+s.slice(0,4), mo=+s.slice(5,7), da=+s.slice(8,10);
+  var now=new Date();
+  var a=now.getFullYear()-y;
+  var m=(now.getMonth()+1)-mo;
+  if(m<0 || (m===0 && now.getDate()<da)) a--;   /* 今年還沒過生日 */
+  return Math.max(0, a);
 }
 function cleanProfile(p){
   var d=defaultProfile();
   var o={
     sex:(p&&p.sex)==="female"?"female":"male",
     age:Math.min(120,Math.max(1, round((p&&p.age)||d.age))),
+    birth:cleanBirth(p&&p.birth),
     height:Math.min(260,Math.max(80, round((p&&p.height)||d.height))),
     weight:Math.min(400,Math.max(20, round((p&&p.weight)||d.weight))),
     activity:num(p&&p.activity)||d.activity,
@@ -212,6 +237,8 @@ function cleanProfile(p){
   if(!(o.activity>=1 && o.activity<=2.5)) o.activity=d.activity;
   if(!(o.proteinPerKg>=0.8 && o.proteinPerKg<=3)) o.proteinPerKg=d.proteinPerKg;
   if(!(o.fatPct>=15 && o.fatPct<=45)) o.fatPct=d.fatPct;
+  /* 有生日就以生日為準（每次讀寫都重算 -> 生日過了自動加一歲） */
+  if(o.birth) o.age=Math.min(120, Math.max(1, ageFromBirth(o.birth)));
   return o;
 }
 function serializeProfile(p){
@@ -220,6 +247,7 @@ function serializeProfile(p){
   var L=["---"];
   L.push("sex: "+fmString(o.sex));
   L.push("age: "+fmNumber(o.age));
+  L.push("birth: "+fmString(o.birth));
   L.push("height: "+fmNumber(o.height));
   L.push("weight: "+fmNumber(o.weight));
   L.push("activity: "+fmNumber(o.activity));
@@ -240,7 +268,7 @@ function parseProfile(text){
     var kv=parseFmLine(line);
     if(!kv) return;
     var k=kv[0], v=kv[1];
-    if(k==="sex"||k==="model"||k==="updatedAt") p[k]=String(v);
+    if(k==="sex"||k==="model"||k==="updatedAt"||k==="birth") p[k]=String(v);
     else if(k in p) p[k]=num(v);
   });
   return cleanProfile(p);

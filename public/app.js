@@ -905,7 +905,7 @@ function viewSettings(){
   });
   if(grp) h+='</div>';
 
-  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v2.9</p>';
+  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v3.0</p>';
   return h;
 }
 
@@ -939,15 +939,27 @@ function setBody(sec){
   var p=db.profile;
 
   if(sec==="body"){
+    /* 生日是選填，但填了就以它為準：年齡改成唯讀顯示，生日過了自己 +1。
+     * 沒填生日的人維持原本自己輸入年齡的方式（不強迫交出生日）。 */
+    var ageField = p.birth
+      ? '<div class="field"><label>年齡</label>'+
+          '<div class="static-val">'+p.age+' 歲<span>生日到了會自動加</span></div></div>'
+      : '<div class="field"><label>年齡</label>'+
+          '<input type="number" inputmode="numeric" data-num="age" value="'+p.age+'"></div>';
     return '<p class="desc" style="margin-top:0">用 Mifflin-St Jeor 公式算基礎代謝。體重在首頁「量體重」記錄時也會同步更新。</p>'+
       '<div class="field"><label>性別</label><div class="chips">'+
         '<button class="chip '+(p.sex==="male"?"on":"")+'" data-set="sex" data-val="male">男</button>'+
         '<button class="chip '+(p.sex==="female"?"on":"")+'" data-set="sex" data-val="female">女</button>'+
       '</div></div>'+
       '<div class="grid2">'+
-        '<div class="field"><label>年齡</label><input type="number" inputmode="numeric" data-num="age" value="'+p.age+'"></div>'+
+        ageField+
         '<div class="field"><label>身高 (cm)</label><input type="number" inputmode="decimal" data-num="height" value="'+p.height+'"></div>'+
       '</div>'+
+      '<div class="field"><label>生日（選填）</label>'+
+        '<input type="date" id="s-birth" data-birth="1" value="'+esc(p.birth)+'" max="'+esc(dateKey())+'">'+
+        '<div class="hint">'+(p.birth
+          ? '年齡由生日推算，生日過了會自動 +1，TDEE 跟著更新。清空就改回自己填年齡。'
+          : '填了之後年齡會自動更新，不用每年自己改。')+'</div></div>'+
       '<div class="field"><label>體重 (kg)</label><input type="number" inputmode="decimal" step="0.1" data-num="weight" value="'+p.weight+'"></div>'+
       '<div id="set-live">'+setLive(sec)+'</div>';
   }
@@ -1092,6 +1104,19 @@ function wireSetSheet(root, sec, redraw){
       render();
       var live=root.querySelector("#set-live");
       if(live) live.innerHTML=setLive(sec);   /* 只換計算結果，別動到 input */
+    };
+  });
+  root.querySelectorAll("[data-birth]").forEach(function(inp){
+    inp.onchange=function(){
+      readNums();
+      var was=db.profile.age;
+      db.profile.birth=inp.value;
+      db.profile=cleanProfile(db.profile);   /* 這裡會依生日重算 age */
+      if(inp.value && !db.profile.birth) toast("生日格式不對或還沒到，先不採用", true);
+      persistProfile();
+      render();
+      redraw(false);                          /* 年齡欄要在「可輸入／唯讀」之間切換 */
+      if(db.profile.birth && db.profile.age!==was) toast("年齡更新為 "+db.profile.age+" 歲");
     };
   });
   root.querySelectorAll("[data-edit-user]").forEach(function(b){

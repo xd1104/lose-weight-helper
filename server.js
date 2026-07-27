@@ -379,7 +379,9 @@ function parseDay(date, text) {
 
 function defaultProfile() {
   return {
-    sex: 'male', age: 30, height: 170, weight: 65,
+    sex: 'male', age: 30,
+    birth: '',       // 生日 YYYY-MM-DD（選填）：填了就由它推算年齡，生日過了自動 +1
+    height: 170, weight: 65,
     activity: 1.375, // 久坐1.2／輕度1.375／中度1.55／高度1.725／極高1.9
     tdee: 0,         // >0 = 手動覆寫，0 = 用 Mifflin-St Jeor 自動算
     goal: 0,         // 每日熱量調整：-400 減脂、0 維持、+300 增肌
@@ -389,11 +391,38 @@ function defaultProfile() {
     updatedAt: '',
   };
 }
+// 生日（YYYY-MM-DD，選填）。填了之後 age 一律由它推算——cleanProfile 每次讀檔／存檔
+// 都會重算，所以生日一過年齡就自己 +1，BMR 與 TDEE 跟著更新。
+// 格式不合、不存在的日期（2-30）、未來日期，一律當作沒填。
+// ⚠️ 與 public/store.js 的 cleanBirth / ageFromBirth 是鏡像，改要一起改。
+function cleanBirth(v) {
+  const s = String(v || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return '';
+  const y = +s.slice(0, 4), mo = +s.slice(5, 7), da = +s.slice(8, 10);
+  if (y < 1900 || mo < 1 || mo > 12 || da < 1 || da > 31) return '';
+  const d = new Date(y, mo - 1, da);
+  if (d.getFullYear() !== y || d.getMonth() !== mo - 1 || d.getDate() !== da) return '';
+  const now = new Date();
+  if (d > new Date(now.getFullYear(), now.getMonth(), now.getDate())) return '';
+  return s;
+}
+function ageFromBirth(birth) {
+  const s = cleanBirth(birth);
+  if (!s) return 0;
+  const y = +s.slice(0, 4), mo = +s.slice(5, 7), da = +s.slice(8, 10);
+  const now = new Date();
+  let a = now.getFullYear() - y;
+  const m = (now.getMonth() + 1) - mo;
+  if (m < 0 || (m === 0 && now.getDate() < da)) a--;
+  return Math.max(0, a);
+}
+
 function cleanProfile(p) {
   const d = defaultProfile();
   const o = {
     sex: (p && p.sex) === 'female' ? 'female' : 'male',
     age: Math.min(120, Math.max(1, round((p && p.age) || d.age))),
+    birth: cleanBirth(p && p.birth),
     height: Math.min(260, Math.max(80, round((p && p.height) || d.height))),
     weight: Math.min(400, Math.max(20, round((p && p.weight) || d.weight))),
     activity: num(p && p.activity) || d.activity,
@@ -412,6 +441,8 @@ function cleanProfile(p) {
   if (!(o.proteinPerKg >= 0.8 && o.proteinPerKg <= 3)) o.proteinPerKg = d.proteinPerKg;
   // 脂肪低於 15% 會影響荷爾蒙，高於 45% 就擠掉蛋白質與碳水了
   if (!(o.fatPct >= 15 && o.fatPct <= 45)) o.fatPct = d.fatPct;
+  // 有生日就以生日為準（每次讀寫都重算 -> 生日過了自動加一歲）
+  if (o.birth) o.age = Math.min(120, Math.max(1, ageFromBirth(o.birth)));
   return o;
 }
 function serializeProfile(p) {
@@ -420,6 +451,7 @@ function serializeProfile(p) {
   const L = ['---'];
   L.push('sex: ' + fmString(o.sex));
   L.push('age: ' + fmNumber(o.age));
+  L.push('birth: ' + fmString(o.birth));
   L.push('height: ' + fmNumber(o.height));
   L.push('weight: ' + fmNumber(o.weight));
   L.push('activity: ' + fmNumber(o.activity));
@@ -441,7 +473,7 @@ function parseProfile(text) {
     const parsed = parseFrontmatterLine(line);
     if (!parsed) continue;
     const [k, v] = parsed;
-    if (k === 'sex' || k === 'model' || k === 'updatedAt') p[k] = String(v);
+    if (k === 'sex' || k === 'model' || k === 'updatedAt' || k === 'birth') p[k] = String(v);
     else if (k in p) p[k] = num(v);
   }
   return cleanProfile(p);
@@ -695,4 +727,5 @@ module.exports = {
   serializeDay, parseDay, serializeProfile, parseProfile,
   serializeFoods, parseFoods, serializeUsers, parseUsers,
   defaultProfile, cleanEntry, cleanUser, normalizeUsers, safeDate, safeName, slugify,
+  cleanBirth, ageFromBirth,
 };

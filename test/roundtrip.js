@@ -107,6 +107,49 @@ t('profile 欄位原樣回來', () => {
   assert.strictEqual(back.model, 'claude-opus-5');
 });
 
+t('生日：填了就由生日推算年齡，生日過了自動 +1', () => {
+  const today = new Date();
+  const iso = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+
+  // 生日剛好是今天 -> 整整 30 歲
+  const hadBirthday = new Date(today.getFullYear() - 30, today.getMonth(), today.getDate());
+  assert.strictEqual(S.ageFromBirth(iso(hadBirthday)), 30, '生日當天要算滿歲');
+
+  // 生日還沒到（明天）-> 還是 29 歲
+  const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+  const notYet = new Date(today.getFullYear() - 30, tomorrow.getMonth(), tomorrow.getDate());
+  if (notYet.getMonth() !== today.getMonth() || notYet.getDate() !== today.getDate()) {
+    assert.strictEqual(S.ageFromBirth(iso(notYet)), 29, '今年還沒過生日要少一歲');
+  }
+
+  // 存檔時 age 由生日蓋掉：故意填一個錯的年齡
+  const back = S.parseProfile(S.serializeProfile({ age: 99, birth: iso(hadBirthday), height: 170, weight: 70 }));
+  assert.strictEqual(back.birth, iso(hadBirthday), '生日要原樣存回來');
+  assert.strictEqual(back.age, 30, '有生日時 age 一律以生日為準（自己填的 99 要被蓋掉）');
+});
+
+t('生日：格式不對／不存在的日期／未來日期一律當沒填', () => {
+  const next = new Date(); next.setFullYear(next.getFullYear() + 1);
+  const futureIso = next.getFullYear() + '-01-01';
+  ['', '1990/01/01', '90-1-1', '1990-02-30', '1899-12-31', futureIso, 'abc'].forEach((v) => {
+    assert.strictEqual(S.cleanBirth(v), '', JSON.stringify(v) + ' 應該被當作沒填');
+  });
+  // 沒填生日時，自己輸入的年齡要留著（不強迫交出生日）
+  const back = S.parseProfile(S.serializeProfile({ age: 41, birth: '1990-02-30', height: 170, weight: 70 }));
+  assert.strictEqual(back.birth, '');
+  assert.strictEqual(back.age, 41, '生日無效時要沿用自己填的年齡');
+});
+
+t('生日：舊的 profile 檔（沒有 birth 這行）照樣讀得動', () => {
+  const legacy = ['---', 'sex: "male"', 'age: 27', 'height: 168', 'weight: 80',
+    'activity: 1.2', 'tdee: 0', 'goal: -300', 'proteinPerKg: 1.6', 'fatPct: 25',
+    'model: "claude-sonnet-5"', 'updatedAt: "2026-07-25T10:11:50.481Z"', '---', ''].join('\n');
+  const back = S.parseProfile(legacy);
+  assert.strictEqual(back.birth, '', '沒有 birth 就是空字串');
+  assert.strictEqual(back.age, 27, '沒有生日時年齡照舊');
+  assert.strictEqual(back.updatedAt, '2026-07-25T10:11:50.481Z', '其他欄位不受影響');
+});
+
 t('缺檔／亂七八糟的 profile 落到安全預設', () => {
   const back = S.parseProfile('這不是 frontmatter');
   assert.strictEqual(back.sex, 'male');
@@ -206,7 +249,7 @@ t('store.js 與 server.js 的區段標題／欄位順序一致', () => {
     assert.ok(store.indexOf(marker) >= 0, 'store.js 缺少區段 ' + marker);
     assert.ok(server.indexOf(marker) >= 0, 'server.js 缺少區段 ' + marker);
   }
-  for (const key of ['sex:', 'age:', 'height:', 'weight:', 'activity:', 'tdee:', 'goal:', 'model:']) {
+  for (const key of ['sex:', 'age:', 'birth:', 'height:', 'weight:', 'activity:', 'tdee:', 'goal:', 'model:']) {
     assert.ok(store.indexOf('"' + key.slice(0, -1) + '"') >= 0 || store.indexOf(key) >= 0,
       'store.js profile 缺 ' + key);
     assert.ok(server.indexOf(key) >= 0, 'server.js profile 缺 ' + key);
@@ -246,6 +289,10 @@ t('前端 store.js 的 serializeDay 產出與 server.js 逐字相同', () => {
   const prof = { sex: 'female', age: 34, height: 162, weight: 55, activity: 1.55, tdee: 0, goal: -300, model: 'claude-opus-5' };
   assert.strictEqual(strip(front.serializeProfile(prof)), strip(S.serializeProfile(prof)),
     'profile 序列化兩邊必須逐字相同');
+  // 生日推年齡也是鏡像邏輯，兩邊算出來必須一樣（不然手機與電腦的 TDEE 會差一歲）
+  const withBirth = Object.assign({}, prof, { age: 99, birth: '1990-03-15' });
+  assert.strictEqual(strip(front.serializeProfile(withBirth)), strip(S.serializeProfile(withBirth)),
+    '有生日時 profile 序列化兩邊也必須逐字相同（含推算出來的 age）');
 });
 
 console.log('\n' + pass + ' passed' + (process.exitCode ? ', 有失敗' : ''));

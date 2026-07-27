@@ -70,6 +70,44 @@ function check(n, c, g) {
   const same = await p.evaluate(() => document.activeElement && document.activeElement.getAttribute('data-num') === 'age');
   check('焦點還在同一個 input 上（元素沒被換掉）', same);
 
+  console.log('\n[3b] 生日：填了之後年齡改由生日推算，生日過了會自己 +1');
+  check('有生日欄位（選填）', !!(await p.$('#s-birth')));
+  check('還沒填生日時，年齡是可以自己輸入的', !!(await p.$('[data-num="age"]')));
+  check('生日欄擋掉未來日期', (await p.getAttribute('#s-birth', 'max')) !== null);
+
+  const today = new Date();
+  const iso = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const bday = iso(new Date(today.getFullYear() - 30, today.getMonth(), today.getDate()));  // 今天生日，滿 30
+  await p.fill('#s-birth', bday);
+  await p.dispatchEvent('#s-birth', 'change');
+  await p.waitForTimeout(1200);
+  check('年齡自動變成 30 歲', /30 歲/.test((await p.textContent('.static-val')) || ''), await p.textContent('.static-val').catch(() => ''));
+  check('年齡改成唯讀（由生日決定，不讓人手改到不一致）', !(await p.$('[data-num="age"]')));
+  check('BMR 跟著重算', /基礎代謝/.test((await p.textContent('#set-live')) || ''));
+  await p.screenshot({ path: '/tmp/set-birth.png' });
+
+  await closeSet(p);
+  check('索引摘要的年齡也跟著變', /30 歲/.test(await p.textContent('.set-row[data-sec="body"] b span')),
+    await p.textContent('.set-row[data-sec="body"] b span'));
+
+  // 真的落到檔案裡，而且年齡是推算出來的（不是當初填的 32）
+  const saved = await fetch(BASE + '/api/core?u=' + u).then((r) => r.json());
+  check('生日寫進 profile', saved.profile.birth === bday, saved.profile.birth);
+  check('存起來的年齡是推算的 30，不是原本填的 32', saved.profile.age === 30, saved.profile.age);
+
+  console.log('\n[3c] 清掉生日 → 改回自己填年齡');
+  await openSet(p, 'body');
+  await p.fill('#s-birth', '');
+  await p.dispatchEvent('#s-birth', 'change');
+  await p.waitForTimeout(1200);
+  check('年齡欄變回可輸入', !!(await p.$('[data-num="age"]')));
+  check('年齡沿用最後推算出來的 30（不會突然跳回預設）', (await p.inputValue('[data-num="age"]')) === '30',
+    await p.inputValue('[data-num="age"]'));
+  // 還原成 [3] 設的 45，下面的斷言才接得上
+  await p.fill('[data-num="age"]', '45');
+  await p.dispatchEvent('[data-num="age"]', 'change');
+  await p.waitForTimeout(900);
+
   console.log('\n[4] 改 chip：sheet 重畫，底下的索引摘要也跟著更新');
   await p.click('[data-set="sex"][data-val="female"]');
   await p.waitForTimeout(900);

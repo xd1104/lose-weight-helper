@@ -172,6 +172,11 @@ input,textarea,select{font-family:inherit; font-size:16px; color:inherit;}
 .card > .desc, .sheet-body > .desc{font-size:12.5px; color:var(--muted); line-height:1.6; margin-bottom:12px;}
 .field{margin-top:12px;}
 .field label{display:block; font-size:12.5px; color:var(--muted); font-weight:700; margin-bottom:5px;}
+/* 由生日推算出來的年齡：長得像輸入框但不能改 */
+.static-val{min-height:46px; display:flex; align-items:center; gap:8px; padding:10px 12px;
+  border:1px solid var(--line); border-radius:12px; background:#f7f9f5;
+  font-size:16px; font-weight:800;}
+.static-val span{font-size:11.5px; color:var(--muted); font-weight:700;}
 .field input, .field select, .field textarea{
   width:100%; min-height:46px; border:1px solid var(--line); border-radius:12px; padding:10px 12px;
   background:#fbfcfa; outline:none;}
