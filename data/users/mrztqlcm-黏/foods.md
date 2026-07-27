@@ -32,4 +32,8 @@
 - {"id":"xms2qc9zy3w0h","name":"紫米素粽","kcal":460,"p":9,"c":85,"f":9,"portion":"1顆約290克（含糯米、香菇、花生、素料餡）","n":1}
 - {"id":"xms1qj1udn9j7","name":"蛤蜊魚湯","kcal":100,"p":10,"c":4,"f":4,"portion":"約一碗，含少量魚肉與蛤蜊","n":1}
 - {"id":"xmrzvwpid4f6t","name":"碗粿","kcal":320,"p":8,"c":50,"f":10,"portion":"一碗，約350g，含花生粉與醬汁","n":1}
+- {"id":"xms33mrorijgv","name":"滷豆乾","kcal":120,"p":10,"c":4,"f":7,"portion":"約4-5小塊","n":1}
+- {"id":"xms33mroqfzbt","name":"滷海帶","kcal":30,"p":1,"c":4,"f":1,"portion":"約1/2碗","n":1}
+- {"id":"xms33mronx8de","name":"滷菜頭","kcal":40,"p":1,"c":8,"portion":"約1/2碗，切塊","n":1}
+- {"id":"xms33mroscx1r","name":"滷豬皮","kcal":90,"p":8,"c":2,"f":6,"portion":"約1/2碗","n":1}
 - {"id":"xmrzvy2cobh9k","name":"蕈菇燉飯","kcal":520,"p":14,"c":72,"f":18,"portion":"約一碗份量(含飯約200g熟重、綜合菇類、起司醬汁)","n":1}
