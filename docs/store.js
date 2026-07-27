@@ -124,7 +124,24 @@ function cleanFood(f){
 }
 
 function emptyDay(date){
-  return { date:date, weight:0, updatedAt:"", entries:[], moves:[], notes:"" };
+  return { date:date, weight:0, updatedAt:"", entries:[], moves:[], coach:null, notes:"" };
+}
+/* AI 營養師講評（一天最多一則，重新評估就覆蓋）。
+ * 存在那一天的檔案裡：跟日期綁在一起、跨裝置同步、刪掉那天就一起刪。
+ * ⚠️ 與 server.js 的 cleanCoach 是鏡像，改要一起改。 */
+function cleanCoach(c){
+  if(!c || !String(c.verdict||"").trim()) return null;
+  var arr=function(v){
+    return (Array.isArray(v)?v:[]).map(function(x){ return String(x||"").trim(); })
+      .filter(Boolean).slice(0,4);
+  };
+  return {
+    at:String(c.at||""),
+    verdict:String(c.verdict||"").trim(),
+    good:arr(c.good),
+    issues:arr(c.issues),
+    next:String(c.next||"").trim()
+  };
 }
 
 function serializeDay(d){
@@ -136,6 +153,9 @@ function serializeDay(d){
   (d.entries||[]).forEach(function(e){ L.push("- "+JSON.stringify(cleanEntry(e))); });
   L.push("","## 運動","");
   (d.moves||[]).forEach(function(m){ L.push("- "+JSON.stringify(cleanMove(m))); });
+  L.push("","## 講評","");
+  var co=cleanCoach(d.coach);
+  if(co) L.push("- "+JSON.stringify(co));
   L.push("","## 備註","");
   var notes=String(d.notes||"").replace(/\r\n/g,"\n");
   if(notes.trim()) L.push(notes.replace(/\s+$/,""));
@@ -173,6 +193,7 @@ function parseDay(date, text){
       var name=h2[1].trim();
       if(name==="飲食") section="eat";
       else if(name==="運動") section="move";
+      else if(name==="講評") section="coach";
       else if(name==="備註") inNotes=true;
       else section=null;
       return;
@@ -183,6 +204,7 @@ function parseDay(date, text){
     try{ obj=JSON.parse(im[1]); }catch(e){ return; } /* 壞列跳過，不整檔炸掉 */
     if(section==="eat") d.entries.push(cleanEntry(obj));
     else if(section==="move") d.moves.push(cleanMove(obj));
+    else if(section==="coach") d.coach=cleanCoach(obj);
   });
   d.notes=notesBuf.join("\n").trim();
   return d;

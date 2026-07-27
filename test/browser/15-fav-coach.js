@@ -178,16 +178,50 @@ const getFoods = (u) => fetch(BASE + '/api/core?u=' + encodeURIComponent(u)).the
 
   console.log('\n[B4] 同一天再點開不會重複收費（要重看得自己按「重新評估」）');
   await p.click('[data-sheet="close"]');
-  await p.waitForTimeout(500);
+  await p.waitForTimeout(1200);
   const n1 = coachReqs.length;
   await p.click('[data-act="coach"]');
   await p.waitForTimeout(1200);
   check('沒有再打 AI', coachReqs.length === n1, coachReqs.length - n1);
   check('內容還在', /熱量守得不錯/.test((await p.textContent('.coach-top')) || ''));
+  check('標出什麼時候評的', /\d+\/\d+ \d\d:\d\d 評的/.test((await p.textContent('.coach-top')) || ''),
+    await p.textContent('.coach-top'));
   check('有「重新評估」', !!(await p.$('[data-coach="again"]')));
   await p.click('[data-coach="again"]');
   await p.waitForTimeout(2200);
   check('按了才會再打一次', coachReqs.length === n1 + 1, coachReqs.length - n1);
+  await p.click('[data-sheet="close"]');
+  await p.waitForTimeout(1200);
+
+  console.log('\n[B5] 講評存進那一天的檔案，重開 app 還在（不用再花錢）');
+  const saved = await fetch(BASE + '/api/days?u=' + u + '&dates=' + D()).then((r) => r.json());
+  check('day 檔裡有講評', !!(saved.days[0] && saved.days[0].coach), saved.days[0] && saved.days[0].coach);
+  check('四個欄位都存了',
+    saved.days[0].coach.verdict && saved.days[0].coach.good.length === 2 &&
+    saved.days[0].coach.issues.length === 2 && saved.days[0].coach.next, saved.days[0].coach);
+  check('有存評估時間', !!saved.days[0].coach.at, saved.days[0].coach.at);
+
+  const n2 = coachReqs.length;
+  await p.reload({ waitUntil: 'networkidle' });
+  await p.waitForTimeout(1800);
+  const btn = (await p.textContent('[data-act="coach"]')) || '';
+  check('重開之後按鈕直接顯示總評', /熱量守得不錯/.test(btn), btn);
+  await p.click('[data-act="coach"]');
+  await p.waitForTimeout(1200);
+  check('點開看的是存下來的那份，沒有再打 AI', coachReqs.length === n2, coachReqs.length - n2);
+  check('內容一樣', /清蒸魚/.test((await p.textContent('.coach-sec.next p')) || ''));
+  await p.click('[data-sheet="close"]');
+  await p.waitForTimeout(600);
+
+  console.log('\n[B6] 歷史頁標出哪幾天有講評（不用另開分頁就找得到）');
+  await p.click('[data-nav="history"]');
+  await p.waitForTimeout(2000);
+  const marked = await p.$$('.hrow .has-coach');
+  check('今天那一列有 🥗 記號', marked.length === 1, marked.length);
+  await p.screenshot({ path: '/tmp/coach-hist.png' });
+  await p.click('.hrow[data-date="' + D() + '"]');
+  await p.waitForTimeout(1500);
+  check('點進去那天就看得到講評入口', /熱量守得不錯/.test((await p.textContent('[data-act="coach"]')) || ''));
 
   console.log('\npageerrors:', errs.length ? errs : 'none');
   console.log(fail.length ? '\n❌ ' + fail.length + ' 項未過：\n  - ' + fail.join('\n  - ') : '\n✅ 全部通過');

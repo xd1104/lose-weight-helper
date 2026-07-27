@@ -93,6 +93,48 @@ t('0 值的營養素不寫進檔案，但讀回來是 0 不是 undefined', () =>
   assert.strictEqual(back.entries[0].kcal, 0);
 });
 
+t('AI 講評 round-trip：存在那一天的檔案裡，之後回頭看不用再花錢', () => {
+  const coach = {
+    at: '2026-07-27T13:30:00.000Z',
+    verdict: '熱量守得不錯，但油脂偏高',
+    good: ['三餐都有蔬菜', '早餐的豆漿選無糖的很好'],
+    issues: ['午餐的燒鴨油脂高，可以換成滷雞腿', '蛋白質還差 18 g'],
+    next: '晚餐吃清蒸魚配一碗糙米飯',
+  };
+  const day = { date: '2026-07-27', weight: 0, entries: [{ id: 'a', name: '燒餅', kcal: 280, meal: 'breakfast' }], moves: [], coach, notes: '外食' };
+  const md = S.serializeDay(day);
+  assert.ok(md.indexOf('## 講評') >= 0, '要有講評這一段');
+  assert.ok(md.indexOf('## 講評') < md.indexOf('## 備註'), '講評必須排在備註之前（備註會吃掉後面全部）');
+  const back = S.parseDay('2026-07-27', md);
+  assert.strictEqual(back.coach.verdict, coach.verdict);
+  assert.deepStrictEqual(back.coach.good, coach.good);
+  assert.deepStrictEqual(back.coach.issues, coach.issues);
+  assert.strictEqual(back.coach.next, coach.next);
+  assert.strictEqual(back.coach.at, coach.at);
+  assert.strictEqual(back.notes, '外食', '備註不受影響');
+  assert.strictEqual(back.entries.length, 1, '飲食不受影響');
+});
+
+t('AI 講評：沒有講評、或內容是空的，一律當作沒有', () => {
+  const md = S.serializeDay({ date: '2026-07-27', entries: [], moves: [], notes: '' });
+  assert.strictEqual(S.parseDay('2026-07-27', md).coach, null, '沒評過就是 null');
+  assert.strictEqual(S.cleanCoach({ verdict: '  ' }), null, '總評是空白就當沒有');
+  assert.strictEqual(S.cleanCoach(null), null);
+  // 陣列最多留 4 點，避免 AI 一次噴十點把版面塞爆
+  const many = S.cleanCoach({ verdict: 'x', good: ['1', '2', '3', '4', '5', '6'], issues: [], next: '' });
+  assert.strictEqual(many.good.length, 4);
+});
+
+t('AI 講評：舊的 day 檔（沒有 ## 講評 這段）照樣讀得動', () => {
+  const legacy = ['---', 'date: "2026-07-25"', 'weight: 0', 'updatedAt: "2026-07-25T11:23:05.598Z"', '---', '',
+    '## 飲食', '', '- {"id":"x","time":"12:44","meal":"breakfast","name":"碗粿","kcal":320}', '',
+    '## 運動', '', '', '## 備註', '', '今天外食'].join('\n');
+  const back = S.parseDay('2026-07-25', legacy);
+  assert.strictEqual(back.coach, null, '沒有講評段就是 null');
+  assert.strictEqual(back.entries.length, 1);
+  assert.strictEqual(back.notes, '今天外食');
+});
+
 console.log('profile round-trip');
 
 t('profile 欄位原樣回來', () => {
@@ -245,7 +287,7 @@ t('store.js 與 server.js 的區段標題／欄位順序一致', () => {
   const store = fs.readFileSync(path.join(__dirname, '..', 'public', 'store.js'), 'utf8');
   const server = fs.readFileSync(path.join(__dirname, '..', 'server.js'), 'utf8');
   // 這幾個字串一改就會兩邊分岔，資料在電腦端與手機端會長不一樣
-  for (const marker of ['## 飲食', '## 運動', '## 備註', '## 食物', '## 使用者']) {
+  for (const marker of ['## 飲食', '## 運動', '## 講評', '## 備註', '## 食物', '## 使用者']) {
     assert.ok(store.indexOf(marker) >= 0, 'store.js 缺少區段 ' + marker);
     assert.ok(server.indexOf(marker) >= 0, 'server.js 缺少區段 ' + marker);
   }

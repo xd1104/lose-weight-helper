@@ -314,6 +314,11 @@ function serializeDay(d) {
   L.push('');
   for (const m of d.moves || []) L.push('- ' + JSON.stringify(cleanMove(m)));
   L.push('');
+  L.push('## 講評');
+  L.push('');
+  const co = cleanCoach(d.coach);
+  if (co) L.push('- ' + JSON.stringify(co));
+  L.push('');
   L.push('## 備註');
   L.push('');
   const notes = String(d.notes || '').replace(/\r\n/g, '\n');
@@ -332,8 +337,24 @@ function parseFrontmatterLine(line) {
   return [key, value];
 }
 
+// AI 營養師講評（一天最多一則，重新評估就覆蓋）。存在那一天的檔案裡：
+// 跟日期綁在一起、跨裝置同步、刪掉那天就一起刪。
+// ⚠️ 與 public/store.js 的 cleanCoach 是鏡像，改要一起改。
+function cleanCoach(c) {
+  if (!c || !String(c.verdict || '').trim()) return null;
+  const arr = (v) => (Array.isArray(v) ? v : [])
+    .map((x) => String(x || '').trim()).filter(Boolean).slice(0, 4);
+  return {
+    at: String(c.at || ''),
+    verdict: String(c.verdict || '').trim(),
+    good: arr(c.good),
+    issues: arr(c.issues),
+    next: String(c.next || '').trim(),
+  };
+}
+
 function emptyDay(date) {
-  return { date: date, weight: 0, updatedAt: '', entries: [], moves: [], notes: '' };
+  return { date: date, weight: 0, updatedAt: '', entries: [], moves: [], coach: null, notes: '' };
 }
 
 function parseDay(date, text) {
@@ -362,6 +383,7 @@ function parseDay(date, text) {
       const name = h2[1].trim();
       if (name === '飲食') section = 'eat';
       else if (name === '運動') section = 'move';
+      else if (name === '講評') section = 'coach';
       else if (name === '備註') { inNotes = true; }
       else section = null;
       continue;
@@ -372,6 +394,7 @@ function parseDay(date, text) {
     try { obj = JSON.parse(im[1]); } catch { continue; } // 壞列跳過，不整檔炸掉
     if (section === 'eat') d.entries.push(cleanEntry(obj));
     else if (section === 'move') d.moves.push(cleanMove(obj));
+    else if (section === 'coach') d.coach = cleanCoach(obj);
   }
   d.notes = notesBuf.join('\n').trim();
   return d;
@@ -726,6 +749,6 @@ if (require.main === module) {
 module.exports = {
   serializeDay, parseDay, serializeProfile, parseProfile,
   serializeFoods, parseFoods, serializeUsers, parseUsers,
-  defaultProfile, cleanEntry, cleanUser, normalizeUsers, safeDate, safeName, slugify,
+  defaultProfile, cleanEntry, cleanCoach, cleanUser, normalizeUsers, safeDate, safeName, slugify,
   cleanBirth, ageFromBirth,
 };

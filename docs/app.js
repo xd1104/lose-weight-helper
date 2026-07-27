@@ -424,11 +424,14 @@ function viewToday(){
         '</div></section>';
   }
 
-  /* 營養師講評：手動按才打 AI（每按一次都要錢），有記東西才給按 */
+  /* 營養師講評：手動按才打 AI（每按一次都要錢），有記東西才給按。
+   * 已經評過的日子直接顯示總評，點進去看存下來的那份，不會再收一次費。 */
   if((d.entries||[]).length){
-    h+='<section class="sec"><button class="coach-btn" data-act="coach">'+
+    var co=d.coach;
+    h+='<section class="sec"><button class="coach-btn'+(co?" done":"")+'" data-act="coach">'+
         '<span class="ico">🥗</span>'+
-        '<b>今天吃得怎樣？<span>讓 AI 幫你看一下三餐，給具體建議</span></b>'+
+        '<b>'+(co?"營養師講評":"今天吃得怎樣？")+
+          '<span>'+esc(co ? co.verdict : (isToday?"讓 AI 幫你看一下三餐，給具體建議":"讓 AI 看看這天吃得如何"))+'</span></b>'+
         '<span class="chev">›</span></button></section>';
   }
 
@@ -494,6 +497,14 @@ function paceHtml(net, tdee, eaten, lateEnough){
         : "今天比 TDEE 多 "+kcal(-gap)+" 大卡")+'</b>'+
       '<span>維持這個步調，一週約 '+weekPace(gap)+'</span>'+
     '</div>';
+}
+
+/* ISO 時間戳 -> 「7/27 21:30」 */
+function fmtStamp(iso){
+  var d=new Date(iso);
+  if(isNaN(d.getTime())) return "";
+  return (d.getMonth()+1)+"/"+d.getDate()+" "+
+    String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
 }
 
 function macroRowHtml(m, mt){
@@ -738,7 +749,8 @@ function viewHistory(){
     var over=v!=null&&v>target;
     var cls=over ? ((tdeeH>0 && v<=tdeeH) ? "mid" : "over") : "";
     h+='<button class="hrow" data-act="open-day" data-date="'+esc(k)+'">'+
-        '<div class="d">'+esc(fmtMD(k))+'<small>'+(d&&num(d.weight)?num(d.weight).toFixed(1)+' kg':'週'+WD[parseDateKey(k).getDay()])+'</small></div>'+
+        '<div class="d">'+esc(fmtMD(k))+(d&&d.coach?'<i class="has-coach" title="有營養師講評">🥗</i>':'')+
+          '<small>'+(d&&num(d.weight)?num(d.weight).toFixed(1)+' kg':'週'+WD[parseDateKey(k).getDay()])+'</small></div>'+
         '<div class="hbar"><i class="'+cls+'" style="width:'+(pct*100).toFixed(0)+'%"></i></div>'+
         '<div class="v num '+(v==null?"none":cls)+'">'+(v==null?"—":kcal(v))+'</div>'+
        '</button>';
@@ -954,7 +966,7 @@ function viewSettings(){
   });
   if(grp) h+='</div>';
 
-  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v3.4</p>';
+  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v3.5</p>';
   return h;
 }
 
@@ -1414,7 +1426,7 @@ function switchUser(id, after){
   me=u;
   setCurUserId(u.id);
   db={ profile:defaultProfile(), foods:[], days:{} };
-  histDates=[]; histLoaded=false; coachCache={};
+  histDates=[]; histLoaded=false;
   curDate=dateKey();
   view="today"; picking=false;
   $app.innerHTML='<div class="spin" style="padding-top:140px"><div class="dots"><i></i><i></i><i></i></div>載入 '+esc(u.name)+' 的紀錄…</div>';
@@ -1885,9 +1897,9 @@ function drawAiResult(){
 }
 
 /* ============ 今天吃得怎樣（營養師講評） ============
- * 手動按才打 AI，因為每按一次就是一次費用。結果放在記憶體裡（以日期為 key），
- * 同一天再點開不會重複收費；要重新看再按「重新評估」。 */
-var coachCache={};
+ * 手動按才打 AI，因為每按一次就是一次費用。
+ * 結果存進那一天的紀錄裡（day md 的「## 講評」段）：跨裝置看得到、之後回頭
+ * 也能重看，不用再花一次錢。一天只留最新的一則，重新評估就覆蓋。 */
 
 function coachPrompt(){
   var d=dayOf(curDate), p=db.profile;
@@ -1926,7 +1938,8 @@ function coachPrompt(){
 }
 
 function coachBodyHtml(r){
-  var h='<div class="coach-top"><b>'+esc(r.verdict)+'</b></div>';
+  var h='<div class="coach-top"><b>'+esc(r.verdict)+'</b>'+
+        (r.at?'<span>'+esc(fmtStamp(r.at))+' 評的</span>':'')+'</div>';
   if((r.good||[]).length){
     h+='<div class="coach-sec good"><h3>做得好</h3><ul>'+
        r.good.map(function(x){ return '<li>'+esc(x)+'</li>'; }).join("")+'</ul></div>';
@@ -1961,15 +1974,19 @@ function openCoachSheet(force){
     if(again) again.onclick=function(){ openCoachSheet(true); };
   };
 
-  if(!force && coachCache[key]){
-    draw(true, coachBodyHtml(coachCache[key]), { onDraw:wire });
+  var saved=dayOf(key).coach;
+  if(!force && saved){
+    draw(true, coachBodyHtml(saved), { onDraw:wire });
     return;
   }
   var isNew=!force;
   draw(isNew, '<div class="spin"><div class="dots"><i></i><i></i><i></i></div>營養師正在看你今天吃了什麼…</div>', {});
   aiCoachDay(db.profile.model, coachPrompt()).then(function(r){
-    coachCache[key]=r;
+    r.at=new Date().toISOString();
+    dayOf(key).coach=r;
+    persistDay(key);              /* 存進那一天，之後回頭看不用再花錢 */
     draw(false, coachBodyHtml(r), { onDraw:wire });
+    if(!picking) render();        /* 按鈕文案要換成「看講評」 */
   }).catch(function(e){
     toast(e.userMessage||"評估失敗", true);
     closeSheet();
