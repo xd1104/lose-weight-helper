@@ -9,7 +9,9 @@
 - {"id":"xms1iqck4o6ni","name":"水餃","kcal":315,"p":12,"c":38,"f":12,"portion":"7顆，豬肉高麗菜餡","n":1}
 - {"id":"xms1ii7edhh0y","name":"冬瓜檸檬冰沙","kcal":130,"c":33,"portion":"半杯約300ml（原份量700ml的一半）","n":1}
 - {"id":"xms1ijk5nrvux","name":"巧克力厚片吐司","kcal":180,"p":4,"c":24,"f":8,"portion":"半片，約半份塗抹巧克力醬的厚片吐司","n":1}
+- {"id":"xms3cawqebeag","name":"全麥吐司","kcal":80,"p":3,"c":15,"f":1,"portion":"1片（約30克）","n":1}
 - {"id":"xms33q6zy2764","name":"地瓜、茶豆、滷菜、香菇雞湯","kcal":800,"n":1}
+- {"id":"xms3cawqff79y","name":"低脂起司片","kcal":50,"p":5,"c":1,"f":3,"portion":"1片（約20克）","n":1}
 - {"id":"xms08zonpdvn9","name":"油雞腿肉（去皮）","kcal":140,"p":20,"c":3,"f":6,"portion":"約1隻腿肉份量，80克","n":1}
 - {"id":"xms1izpsc744j","name":"炸麻糬","kcal":420,"p":6,"c":66,"f":16,"portion":"手掌大小2片，約每片60克含裹粉油炸","n":1}
 - {"id":"xms1ii7eboqes","name":"烏龍麵","kcal":110,"p":3,"c":24,"portion":"一小包，約100克熟重","n":1}
