@@ -312,12 +312,19 @@ input,textarea,select{font-family:inherit; font-size:16px; color:inherit;}
 .photo-prev{width:100%; border-radius:16px; display:block; margin-bottom:10px;}
 .food-item{display:flex; align-items:stretch; gap:8px; margin-bottom:8px;}
 .food-row{flex:1; min-width:0; display:flex; align-items:center; gap:10px; padding:12px 13px; background:var(--card);
-  border-radius:14px; box-shadow:var(--shadow); text-align:left;}
+  border-radius:14px; box-shadow:var(--shadow); text-align:left; min-height:56px;}
 .food-del{flex:0 0 44px; width:44px; border-radius:14px; background:var(--card); box-shadow:var(--shadow);
   color:var(--muted); font-size:15px; font-weight:800;}
-.food-del:active{background:var(--bad); color:#fff;}
-.food-row b{flex:1; font-size:14.5px; font-weight:700; overflow-wrap:anywhere;}
+.food-del:active{background:#eef1ea;}
+.food-row b{flex:1; min-width:0; font-size:14.5px; font-weight:700; overflow-wrap:anywhere;}
+.food-row b .por{display:block; font-size:11.5px; color:var(--muted); font-weight:600;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .food-row .k{font-size:14px; font-weight:800; font-variant-numeric:tabular-nums;}
+/* 勾選狀態：一次可以挑好幾樣，不用一筆一筆開 sheet */
+.food-row .tick{flex:0 0 22px; width:22px; height:22px; border-radius:7px; border:2px solid var(--line);
+  display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:900; color:#fff;}
+.food-row.on{background:var(--acc-soft);}
+.food-row.on .tick{background:var(--acc); border-color:var(--acc);}
 
 /* 待同步橫幅：寫入失敗時掛在最上面，直到真的寫上去才消失。
  * [hidden] 要指名 #sync-bar，否則 id 選擇器會壓過瀏覽器預設的 [hidden]（踩過）。 */
@@ -340,6 +347,30 @@ body.has-sync #app{padding-top:58px;}
 .pace.big{margin:0 16px 14px; padding:13px 15px;}
 .pace.big b{font-size:14px;}
 .pace.big span{font-size:12px;}
+
+/* 今天吃得怎樣（營養師講評） */
+.coach-btn{width:100%; display:flex; align-items:center; gap:12px; text-align:left; min-height:64px;
+  padding:13px 15px; background:var(--card); border-radius:18px; box-shadow:var(--shadow);}
+.coach-btn .ico{flex:0 0 38px; height:38px; border-radius:12px; background:var(--acc-soft);
+  display:flex; align-items:center; justify-content:center; font-size:19px;}
+.coach-btn b{flex:1; min-width:0; font-size:15px; font-weight:800;}
+.coach-btn b span{display:block; font-size:12px; color:var(--muted); font-weight:600; margin-top:2px;}
+.coach-btn .chev{flex:0 0 auto; color:#c9d2c4; font-size:19px;}
+
+.coach-top{background:var(--acc-soft); border-radius:14px; padding:13px 15px;}
+.coach-top b{font-size:15.5px; font-weight:800; color:var(--acc-deep); line-height:1.5;}
+.coach-sec{margin-top:14px;}
+.coach-sec h3{font-size:12px; font-weight:800; color:var(--muted); letter-spacing:.06em; padding-left:2px;}
+.coach-sec ul{list-style:none; margin-top:7px;}
+.coach-sec li, .coach-sec p{position:relative; padding:9px 13px 9px 30px; border-radius:12px;
+  background:#fafbf8; font-size:13.5px; line-height:1.65; margin-top:7px;}
+.coach-sec p{padding-left:13px;}
+.coach-sec li::before{position:absolute; left:12px; top:9px; font-weight:900;}
+.coach-sec.good li{background:var(--acc-soft); color:var(--acc-deep);}
+.coach-sec.good li::before{content:"✓"; color:var(--acc);}
+.coach-sec.warn li{background:var(--warn-soft); color:#a86d12;}
+.coach-sec.warn li::before{content:"!"; color:#a86d12;}
+.coach-sec.next p{background:#eef4ff; color:#2c5aa0; font-weight:600;}
 
 /* toast */
 #toast{position:fixed; left:50%; transform:translateX(-50%); bottom:calc(96px + var(--safe-b)); z-index:80;

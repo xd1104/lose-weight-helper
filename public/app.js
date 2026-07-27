@@ -424,6 +424,14 @@ function viewToday(){
         '</div></section>';
   }
 
+  /* 營養師講評：手動按才打 AI（每按一次都要錢），有記東西才給按 */
+  if((d.entries||[]).length){
+    h+='<section class="sec"><button class="coach-btn" data-act="coach">'+
+        '<span class="ico">🥗</span>'+
+        '<b>今天吃得怎樣？<span>讓 AI 幫你看一下三餐，給具體建議</span></b>'+
+        '<span class="chev">›</span></button></section>';
+  }
+
   /* 最近 7 天 */
   h+='<section class="sec"><div class="sec-head"><h2>最近 7 天</h2></div>'+sparkHtml(target)+'</section>';
 
@@ -946,7 +954,7 @@ function viewSettings(){
   });
   if(grp) h+='</div>';
 
-  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v3.3</p>';
+  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v3.4</p>';
   return h;
 }
 
@@ -1274,6 +1282,7 @@ function doAct(act, el){
   if(act==="go-today"){ curDate=dateKey(); ensureDays([curDate]); render(); return; }
   if(act==="toggle-detail"){ showDetail=!showDetail; render(); return; }
   if(act==="toggle-mnote"){ showMNote=!showMNote; render(); return; }
+  if(act==="coach"){ openCoachSheet(false); return; }
   if(act==="open-day"){ curDate=el.getAttribute("data-date"); view="today"; ensureDays([curDate]); render(); window.scrollTo(0,0); return; }
   if(act==="add"){ if(requireWrite()) openAddSheet(el.getAttribute("data-meal")); return; }
   if(act==="add-move"){ if(requireWrite()) openMoveSheet(null); return; }
@@ -1405,7 +1414,7 @@ function switchUser(id, after){
   me=u;
   setCurUserId(u.id);
   db={ profile:defaultProfile(), foods:[], days:{} };
-  histDates=[]; histLoaded=false;
+  histDates=[]; histLoaded=false; coachCache={};
   curDate=dateKey();
   view="today"; picking=false;
   $app.innerHTML='<div class="spin" style="padding-top:140px"><div class="dots"><i></i><i></i><i></i></div>載入 '+esc(u.name)+' 的紀錄…</div>';
@@ -1482,10 +1491,13 @@ function guessMeal(){
 }
 var addTab="text";
 var addMeal=null;
+var favPick={};                 /* 常吃分頁的勾選（可一次加好幾樣） */
+var favQ="";                    /* 常吃分頁的搜尋字串：sheet 會重畫好幾次，得撐得住 */
 
 function openAddSheet(meal){
   addMeal=meal||guessMeal();
   addTab=hasAiKey()?"text":"manual";
+  favPick={}; favQ="";
   drawAddSheet(true);
 }
 function drawAddSheet(isNew){
@@ -1544,12 +1556,16 @@ function addTabBody(){
   if(addTab==="fav"){
     if(!db.foods.length){
       return '<div class="card" style="margin:14px 0 0"><p class="desc" style="margin:0">'+
-             esc(me.name)+' 還沒有常吃項目。用 AI 或手動記過的東西會自動存進這裡，下次一鍵就能加。</p></div>';
+             esc(me.name)+' 還沒有常吃項目。用 AI 或手動記過的東西會自動存進這裡，'+
+             '也可以直接自己建一筆。</p></div>'+
+             '<button class="btn" type="button" data-fav-new="1">＋ 新增常吃項目</button>';
     }
     return '<div class="field"><label>搜尋</label>'+
       '<input type="text" id="i-fav-q" placeholder="輸入食物名稱" autocomplete="off"></div>'+
-      '<div id="fav-list">'+favListHtml("")+'</div>'+
-      '<p class="hint" style="padding:2px 4px 0">點項目直接加入今天；右邊的 ✕ 可以把估錯的項目從常吃移除。</p>';
+      '<button class="btn ghost" type="button" data-fav-new="1" style="margin-top:8px">＋ 新增常吃項目</button>'+
+      '<div id="fav-list">'+favListHtml(favQ)+'</div>'+
+      '<div id="fav-go">'+favGoHtml()+'</div>'+
+      '<p class="hint" style="padding:2px 4px 0">點項目＝勾選，可以一次勾好幾樣；右邊的 ✎ 可以改內容或刪掉。</p>';
   }
   /* manual */
   return '<form id="f-manual">'+
@@ -1587,21 +1603,87 @@ function photoPickHtml(){
     '</div>';
 }
 
+/* 常吃清單（定案）：
+ *   點整列 ＝ 勾選（可以一次勾好幾樣，最後按一次加入）——以前一次只能加一筆，
+ *   早餐固定三樣就要開三次 sheet。
+ *   點 ✎ ＝ 編輯內容或刪除。刪除刻意收進編輯裡，一列不要塞兩顆破壞性按鈕。 */
 function favListHtml(q){
   q=String(q||"").trim().toLowerCase();
   var list=db.foods.filter(function(f){ return !q || f.name.toLowerCase().indexOf(q)>=0; }).slice(0,60);
   if(!list.length) return '<p class="empty">找不到符合的項目</p>';
-  /* 刪除鈕跟加入鈕是兩個獨立的 button（不能互相巢狀），外面用 .food-item 包成一列 */
   return list.map(function(f){
+    var on=!!favPick[f.id];
     return '<div class="food-item">'+
-      '<button class="food-row" data-fav="'+esc(f.id)+'">'+
-        '<b>'+esc(f.name)+(f.portion?'<span style="display:block;font-size:11.5px;color:var(--muted);font-weight:600">'+esc(f.portion)+'</span>':'')+'</b>'+
+      '<button class="food-row'+(on?" on":"")+'" data-fav="'+esc(f.id)+'" aria-pressed="'+(on?"true":"false")+'">'+
+        '<span class="tick">'+(on?"✓":"")+'</span>'+
+        '<b>'+esc(f.name)+(f.portion?'<span class="por">'+esc(f.portion)+'</span>':'')+'</b>'+
         '<span class="k num">'+kcal(f.kcal)+'</span>'+
-        '<span style="color:var(--acc);font-size:20px">＋</span>'+
       '</button>'+
-      '<button class="food-del" data-fav-del="'+esc(f.id)+'" aria-label="從常吃移除 '+esc(f.name)+'">✕</button>'+
+      '<button class="food-del" data-fav-edit="'+esc(f.id)+'" aria-label="編輯 '+esc(f.name)+'">✎</button>'+
     '</div>';
   }).join("");
+}
+function favGoHtml(){
+  var picked=db.foods.filter(function(f){ return favPick[f.id]; });
+  if(!picked.length) return "";
+  var t=0; picked.forEach(function(f){ t+=num(f.kcal); });
+  return '<button class="btn" type="button" data-fav-go="1">加入 '+picked.length+' 筆 · 共 '+kcal(t)+' 大卡</button>';
+}
+
+/* 新增／編輯一筆常吃項目。以前只能靠「記過一次」被動長出來，
+ * 想自己建（或改掉 AI 估歪的數字）都做不到。 */
+function openFoodSheet(id){
+  var f = id ? db.foods.filter(function(x){ return x.id===id; })[0] : null;
+  if(id && !f) return;
+  var d = f || { name:"", portion:"", kcal:0, p:0, c:0, f:0 };
+  var body='<form id="f-food">'+
+    '<div class="field" style="margin-top:0"><label>名稱</label>'+
+      '<input type="text" id="fd-name" value="'+esc(d.name)+'" placeholder="例如：滷雞腿便當" autocomplete="off" required></div>'+
+    '<div class="field"><label>份量（選填）</label>'+
+      '<input type="text" id="fd-por" value="'+esc(d.portion||"")+'" placeholder="例如：一個便當盒" autocomplete="off"></div>'+
+    '<div class="ai-nums">'+
+      '<label><span>大卡</span><input type="number" inputmode="numeric" id="fd-kcal" value="'+round(d.kcal)+'"></label>'+
+      '<label><span>蛋白 g</span><input type="number" inputmode="numeric" id="fd-p" value="'+round(d.p)+'"></label>'+
+      '<label><span>碳水 g</span><input type="number" inputmode="numeric" id="fd-c" value="'+round(d.c)+'"></label>'+
+      '<label><span>脂肪 g</span><input type="number" inputmode="numeric" id="fd-f" value="'+round(d.f)+'"></label>'+
+    '</div>'+
+    '<button class="btn" type="submit">'+(f?"儲存":"加進常吃清單")+'</button>'+
+    (f?'<button class="btn danger" type="button" data-fd-del="1">從常吃清單刪除</button>':'')+
+  '</form>';
+
+  openSheet(f?"編輯常吃項目":"新增常吃項目", body, { onDraw:function(root){
+    root.querySelector("#f-food").onsubmit=function(ev){
+      ev.preventDefault();
+      if(!requireWrite()) return;
+      var name=(root.querySelector("#fd-name").value||"").trim();
+      if(!name){ toast("請填名稱", true); return; }
+      var o={
+        name:name,
+        portion:(root.querySelector("#fd-por").value||"").trim(),
+        kcal:Math.max(0, Number(root.querySelector("#fd-kcal").value)||0),
+        p:Math.max(0, Number(root.querySelector("#fd-p").value)||0),
+        c:Math.max(0, Number(root.querySelector("#fd-c").value)||0),
+        f:Math.max(0, Number(root.querySelector("#fd-f").value)||0)
+      };
+      if(f){ Object.keys(o).forEach(function(k){ f[k]=o[k]; }); }
+      else { o.id=uid(); o.n=1; db.foods.unshift(o); }
+      persistFoods();
+      closeSheet();
+      drawAddSheet(false);
+      toast(f?"已更新":"已加進常吃清單");
+    };
+    var del=root.querySelector("[data-fd-del]");
+    if(del) del.onclick=function(){
+      if(!requireWrite()) return;
+      if(!confirm("把「"+f.name+"」從常吃清單刪除？（已經記進去的飲食不受影響）")) return;
+      db.foods=db.foods.filter(function(x){ return x.id!==f.id; });
+      delete favPick[f.id];
+      persistFoods();
+      closeSheet();
+      drawAddSheet(false);
+      toast("已刪除");
+    };
+  }});
 }
 
 function wireAddSheet(root){
@@ -1666,7 +1748,16 @@ function wireAddSheet(root){
   }
 
   var q=root.querySelector("#i-fav-q");
-  if(q) q.oninput=function(){ root.querySelector("#fav-list").innerHTML=favListHtml(q.value); wireFav(root); };
+  if(q){
+    q.value=favQ;
+    q.oninput=function(){
+      favQ=q.value;
+      root.querySelector("#fav-list").innerHTML=favListHtml(favQ);
+      var goEl=root.querySelector("#fav-go");
+      if(goEl) goEl.innerHTML=favGoHtml();
+      wireFav(root);
+    };
+  }
   wireFav(root);
 
   var fMan=root.querySelector("#f-manual");
@@ -1687,31 +1778,34 @@ var pendingPhoto=null;
 var lastHint="";                /* 上次照片的補充說明：回來「再估一次」時不用重打 */
 
 function wireFav(root){
+  /* 只換清單那一塊，不整份重畫：搜尋框正在輸入時重畫會把焦點與鍵盤弄掉 */
+  var redrawList=function(){
+    var listEl=root.querySelector("#fav-list"), goEl=root.querySelector("#fav-go");
+    if(listEl) listEl.innerHTML=favListHtml(favQ);
+    if(goEl) goEl.innerHTML=favGoHtml();
+    wireFav(root);
+  };
   root.querySelectorAll("[data-fav]").forEach(function(b){
     b.onclick=function(){
       var id=b.getAttribute("data-fav");
-      var f=db.foods.filter(function(x){ return x.id===id; })[0];
-      if(!f) return;
-      addEntries([{ id:uid(), name:f.name, kcal:f.kcal, p:f.p||0, c:f.c||0, f:f.f||0,
-                    portion:f.portion||"", src:"preset" }]);
+      if(favPick[id]) delete favPick[id]; else favPick[id]=true;
+      redrawList();
     };
   });
-  /* AI 偶爾會把配料拆成「甜椒配料 3 大卡」這種沒用的項目，之前只能整份清空 */
-  root.querySelectorAll("[data-fav-del]").forEach(function(b){
-    b.onclick=function(){
-      if(!requireWrite()) return;
-      var id=b.getAttribute("data-fav-del");
-      var f=db.foods.filter(function(x){ return x.id===id; })[0];
-      if(!f) return;
-      if(!confirm("把「"+f.name+"」從常吃清單移除？（已經記進去的飲食不受影響）")) return;
-      db.foods=db.foods.filter(function(x){ return x.id!==id; });
-      persistFoods();
-      toast("已移除「"+f.name+"」");
-      var qEl=root.querySelector("#i-fav-q"), listEl=root.querySelector("#fav-list");
-      if(db.foods.length && listEl){ listEl.innerHTML=favListHtml(qEl?qEl.value:""); wireFav(root); }
-      else drawAddSheet(false);   /* 全刪光了 -> 換成空狀態說明 */
-    };
+  root.querySelectorAll("[data-fav-edit]").forEach(function(b){
+    b.onclick=function(){ openFoodSheet(b.getAttribute("data-fav-edit")); };
   });
+  var nw=root.querySelector("[data-fav-new]");
+  if(nw) nw.onclick=function(){ openFoodSheet(null); };
+  var go=root.querySelector("[data-fav-go]");
+  if(go) go.onclick=function(){
+    var picked=db.foods.filter(function(f){ return favPick[f.id]; });
+    if(!picked.length) return;
+    addEntries(picked.map(function(f){
+      return { id:uid(), name:f.name, kcal:f.kcal, p:f.p||0, c:f.c||0, f:f.f||0,
+               portion:f.portion||"", src:"preset" };
+    }));
+  };
 }
 
 /* ---- 呼叫 AI 並顯示可編輯的預覽 ---- */
@@ -1788,6 +1882,98 @@ function drawAiResult(){
       drawAddSheet(false);
     };
   }});
+}
+
+/* ============ 今天吃得怎樣（營養師講評） ============
+ * 手動按才打 AI，因為每按一次就是一次費用。結果放在記憶體裡（以日期為 key），
+ * 同一天再點開不會重複收費；要重新看再按「重新評估」。 */
+var coachCache={};
+
+function coachPrompt(){
+  var d=dayOf(curDate), p=db.profile;
+  var mt=macroTargets(p), m=macrosOf(d);
+  var eaten=sumKcal(d.entries), burn=sumKcal(d.moves), net=eaten-burn;
+  var target=targetOf(p), tdee=tdeeOf(p);
+  var isToday=curDate===dateKey();
+  var L=[];
+  L.push(isToday
+    ? "今天是 "+curDate+"，現在 "+nowHM()+"。"
+    : "這是 "+curDate+" 的紀錄（過去的日子，已經結束了）。");
+  L.push("我的目標：TDEE "+tdee+" 大卡，每日"+(num(p.goal)<0?"上限":"目標")+" "+target+" 大卡"+
+         "（"+(num(p.goal)<0?"減脂中，缺口 "+Math.abs(round(p.goal)):"維持／增肌")+"）。");
+  L.push("三大營養素目標：蛋白質 "+mt.p+" g、脂肪 "+mt.f+" g、碳水 "+mt.c+" g。");
+  L.push("目前累計：吃了 "+eaten+" 大卡"+(burn?"、運動消耗 "+burn+" 大卡，淨 "+net+" 大卡":"")+
+         "；蛋白質 "+Math.round(m.p)+" g、脂肪 "+Math.round(m.f)+" g、碳水 "+Math.round(m.c)+" g。");
+  if(isToday) L.push("距離每日"+(num(p.goal)<0?"上限":"目標")+"還有 "+(target-net)+" 大卡。");
+  L.push("");
+  L.push("今天吃的東西：");
+  MEALS.forEach(function(mk){
+    var list=(d.entries||[]).filter(function(e){ return e.meal===mk; });
+    if(!list.length) return;
+    L.push("【"+MEAL_INFO[mk].label+"】");
+    list.forEach(function(e){
+      L.push("- "+e.name+(e.portion?"（"+e.portion+"）":"")+
+        "："+round(e.kcal)+" 大卡"+
+        (num(e.p)||num(e.c)||num(e.f)
+          ? "，蛋白 "+round(e.p)+"g／碳水 "+round(e.c)+"g／脂肪 "+round(e.f)+"g" : ""));
+    });
+  });
+  if((d.moves||[]).length){
+    L.push("【運動】");
+    d.moves.forEach(function(mv){ L.push("- "+mv.name+"：消耗 "+round(mv.kcal)+" 大卡"); });
+  }
+  return L.join("\n");
+}
+
+function coachBodyHtml(r){
+  var h='<div class="coach-top"><b>'+esc(r.verdict)+'</b></div>';
+  if((r.good||[]).length){
+    h+='<div class="coach-sec good"><h3>做得好</h3><ul>'+
+       r.good.map(function(x){ return '<li>'+esc(x)+'</li>'; }).join("")+'</ul></div>';
+  }
+  if((r.issues||[]).length){
+    h+='<div class="coach-sec warn"><h3>可以更好</h3><ul>'+
+       r.issues.map(function(x){ return '<li>'+esc(x)+'</li>'; }).join("")+'</ul></div>';
+  }
+  if(r.next){
+    h+='<div class="coach-sec next"><h3>接下來</h3><p>'+esc(r.next)+'</p></div>';
+  }
+  h+='<p class="hint" style="padding:12px 4px 0">AI 給的建議僅供參考，有疾病或特殊需求還是要問醫師或營養師。</p>'+
+     '<button class="btn ghost" data-coach="again">重新評估（會再用一次 AI）</button>';
+  return h;
+}
+
+function openCoachSheet(force){
+  if(!hasAiKey()){
+    openSheet("今天吃得怎樣", noKeyBox(), { onDraw:function(root){
+      var g=root.querySelector('[data-act2="go-settings"]');
+      if(g) g.onclick=function(){ closeAllSheets(); view="settings"; render(); };
+    }});
+    return;
+  }
+  var key=curDate;
+  var draw=function(isNew, body, opts){
+    if(isNew) openSheet("今天吃得怎樣", body, opts||{});
+    else replaceSheet("今天吃得怎樣", body, opts||{});
+  };
+  var wire=function(root){
+    var again=root.querySelector('[data-coach="again"]');
+    if(again) again.onclick=function(){ openCoachSheet(true); };
+  };
+
+  if(!force && coachCache[key]){
+    draw(true, coachBodyHtml(coachCache[key]), { onDraw:wire });
+    return;
+  }
+  var isNew=!force;
+  draw(isNew, '<div class="spin"><div class="dots"><i></i><i></i><i></i></div>營養師正在看你今天吃了什麼…</div>', {});
+  aiCoachDay(db.profile.model, coachPrompt()).then(function(r){
+    coachCache[key]=r;
+    draw(false, coachBodyHtml(r), { onDraw:wire });
+  }).catch(function(e){
+    toast(e.userMessage||"評估失敗", true);
+    closeSheet();
+  });
 }
 
 /* ---- 修正其中一項（idx<0 = 補一項） ----

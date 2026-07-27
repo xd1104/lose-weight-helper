@@ -138,6 +138,78 @@ var AI_MOVE_SCHEMA = {
   additionalProperties:false
 };
 
+/* ---- 今天吃得怎樣（營養師） ----
+ * 刻意要求「講他今天實際吃的東西」而不是通則：
+ * 「多吃蛋白質」誰都會講，「午餐那盤燙青菜換成滷雞腿」才有辦法照做。 */
+var AI_COACH_SYSTEM =
+  "你是台灣的營養師，正在看使用者今天的飲食紀錄，給一段簡短、務實的回饋。\n"+
+  "原則：\n"+
+  "1. 一律用繁體中文，台灣用語。\n"+
+  "2. 具體到「哪一餐的哪一樣」，並用台灣常見、買得到的食物給替代方案"+
+  "（超商、自助餐、便當店、小吃攤都可以）。不要只說「多吃蛋白質」這種空話。\n"+
+  "3. 語氣像朋友，不要說教、不要恐嚇、不要用「應該」「必須」。就算今天吃很差也先講一個做得好的地方。\n"+
+  "4. 熱量與三大營養素的數字我已經算好給你了，不要重算，也不要把數字整串複述一遍。\n"+
+  "5. 如果一天還沒過完（會告訴你現在幾點、還剩多少額度），建議要針對「接下來那一餐」；"+
+  "如果已經是晚上或看的是過去的日子，就給「明天可以怎麼調整」。\n"+
+  "6. 每一點都要短，手機上看得完。";
+
+var AI_COACH_SCHEMA = {
+  type:"object",
+  properties:{
+    verdict:{ type:"string", description:"一句話總評，20 個中文字以內，例如「熱量守得不錯，但油脂偏高」" },
+    good:{ type:"array", items:{ type:"string" },
+      description:"今天做得好的地方，1-2 點，每點 30 字內，要指名實際吃的東西" },
+    issues:{ type:"array", items:{ type:"string" },
+      description:"可以更好的地方，1-3 點，每點 40 字內，要指名是哪一餐的哪一樣，並給具體替代方案" },
+    next:{ type:"string", description:"接下來那一餐（或明天）的具體建議，50 字內，直接講可以吃什麼" }
+  },
+  required:["verdict","good","issues","next"],
+  additionalProperties:false
+};
+
+/* 這一支不共用 aiRequest：system 與 schema 都不一樣（aiRequest 綁的是「估熱量」那組） */
+function aiCoachDay(model, userText){
+  var key=getAiKey();
+  if(!key) return Promise.reject(aiError("還沒設定 API key，到「設定」貼上就能用。","nokey"));
+  var body={
+    model: model,
+    max_tokens: 2000,
+    system: AI_COACH_SYSTEM,
+    messages: [{ role:"user", content:[{ type:"text", text:String(userText||"") }] }],
+    output_config: outputConfigFor(model, AI_COACH_SCHEMA)
+  };
+  return fetch("https://api.anthropic.com/v1/messages", {
+    method:"POST",
+    headers:{
+      "content-type":"application/json",
+      "x-api-key":key,
+      "anthropic-version":"2023-06-01",
+      "anthropic-dangerous-direct-browser-access":"true"
+    },
+    body: JSON.stringify(body)
+  }).then(function(res){
+    if(res.ok) return res.json();
+    return res.json().catch(function(){ return {}; }).then(function(j){
+      throw aiError(aiMsgForStatus(res.status, j), "http"+res.status);
+    });
+  },function(){ throw aiError("連不到 Anthropic，檢查一下網路。","offline"); })
+  .then(function(j){
+    addUsage(model, j.usage);
+    var txt="";
+    (j.content||[]).forEach(function(b){ if(b.type==="text") txt+=b.text; });
+    var o=null;
+    try{ o=JSON.parse(txt); }
+    catch(e){ var mm=/\{[\s\S]*\}/.exec(txt); if(mm){ try{ o=JSON.parse(mm[0]); }catch(e2){} } }
+    if(!o || !o.verdict) throw aiError("AI 回傳的內容看不懂，再試一次。","bad-json");
+    return {
+      verdict:String(o.verdict||""),
+      good:(o.good||[]).map(String).slice(0,3),
+      issues:(o.issues||[]).map(String).slice(0,4),
+      next:String(o.next||"")
+    };
+  });
+}
+
 function aiError(message, code){ var e=new Error(message); e.userMessage=message; e.code=code||""; return e; }
 
 function aiMsgForStatus(status, body){

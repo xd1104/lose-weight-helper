@@ -236,21 +236,23 @@ async function addManual(p, name, kcal) {
     await p.click('[data-tab="fav"]');
     await p.waitForTimeout(400);
     check('兩筆都在常吃清單', (await p.$$('[data-fav]')).length === 2);
-    check('每一筆都有刪除鈕', (await p.$$('[data-fav-del]')).length === 2);
+    /* v3.4 起刪除收進「編輯」裡（一列不塞兩顆破壞性按鈕），入口變成 ✎ */
+    check('每一筆都有編輯鈕', (await p.$$('[data-fav-edit]')).length === 2);
 
-    const box = await p.$eval('[data-fav-del]', (e) => { const r = e.getBoundingClientRect(); return { w: r.width, h: r.height }; });
-    check('刪除鈕觸控目標 ≥ 44px', box.w >= 44 && box.h >= 44, box);
+    const box = await p.$eval('[data-fav-edit]', (e) => { const r = e.getBoundingClientRect(); return { w: r.width, h: r.height }; });
+    check('編輯鈕觸控目標 ≥ 44px', box.w >= 44 && box.h >= 44, box);
 
     /* 誤觸保護：取消就不能刪 */
-    const junk = await p.$('[data-fav-del][aria-label*="甜椒"]');
+    await (await p.$('[data-fav-edit][aria-label*="甜椒"]')).click();
+    await p.waitForTimeout(600);
     p.once('dialog', (d) => d.dismiss());
-    await junk.click();
+    await p.click('[data-fd-del]');
     await p.waitForTimeout(800);
-    check('取消確認時不會刪掉', (await p.$$('[data-fav]')).length === 2);
+    check('取消確認時不會刪掉', !!(await p.$('[data-fd-del]')));
 
     p.once('dialog', (d) => d.accept());
-    await (await p.$('[data-fav-del][aria-label*="甜椒"]')).click();
-    await p.waitForTimeout(1200);
+    await p.click('[data-fd-del]');
+    await p.waitForTimeout(1500);
     check('確認後從畫面移除', (await p.$$('[data-fav]')).length === 1);
     const names = await p.$$eval('.food-row b', (e) => e.map((x) => x.textContent.trim()));
     check('留下來的是滷肉飯', /滷肉飯/.test(names[0] || ''), names);
