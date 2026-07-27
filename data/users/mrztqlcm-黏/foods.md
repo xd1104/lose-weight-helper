@@ -24,6 +24,7 @@
 - {"id":"xmrzy5yk1ytpk","name":"南瓜濃湯","kcal":90,"p":2,"c":12,"f":4,"portion":"半碗，約120ml","n":1}
 - {"id":"xms04tjkxap09","name":"紅心芭樂","kcal":100,"p":2,"c":22,"f":1,"portion":"一顆，約250公克","n":1}
 - {"id":"xms0a5vclkgqx","name":"苦瓜排骨湯","kcal":150,"p":10,"c":6,"f":9,"portion":"約一碗，含少量排骨與苦瓜","n":1}
+- {"id":"xms33p56znhje","name":"香菇雞湯（含雞肉、香菇）","kcal":220,"p":22,"c":6,"f":11,"portion":"燉盅約550ml，含雞肉塊約100克、香菇約3朵","n":1}
 - {"id":"xms05mh8p4qi0","name":"香蕉","kcal":70,"p":1,"c":18,"portion":"小根一根，約80克","n":1}
 - {"id":"xms33i0zvs3yi","name":"烤地瓜","kcal":190,"p":3,"c":44,"portion":"中型一條，約200克","n":1}
 - {"id":"xms05gf4qcob3","name":"清蒸魚","kcal":320,"p":48,"c":2,"f":13,"portion":"整條約600克(含骨頭)，可食用魚肉約250克","n":1}
