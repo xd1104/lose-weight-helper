@@ -309,7 +309,7 @@ function viewToday(){
       /* 超過減脂上限、但還在 TDEE 以內：今天不會胖，只是這天沒有減脂進度。
        * 「每日上限」是 TDEE 扣掉缺口之後的數字，很容易被誤讀成「超過就是吃太多」。 */
       tag='<div class="over-tag mid">超過上限 '+kcal(net-target)+' 大卡 · 距離 TDEE 還有 '+kcal(tdee-net)+
-          '<span>今天大致是維持體重，不會胖，但也幾乎沒有減脂進度</span></div>';
+          '<span>不會胖，只是今天的缺口比計畫小</span></div>';
     }else{
       tag='<div class="over-tag over">超過上限 '+kcal(net-target)+' 大卡'+
           (tdee>0?' · 已超出 TDEE '+kcal(net-tdee):'')+
@@ -361,6 +361,7 @@ function viewToday(){
           '</div>'
         : '')+
       tag+
+      paceHtml(net, tdee, eaten, lateEnough)+
       macroRowHtml(m, mt)+
      '</section>';
 
@@ -473,6 +474,20 @@ function weighHtml(d){
  * 曾經換成「熱量來自哪裡」的三色比例條，但那回答的是另一個問題——
  * 每天想知道的是「夠不夠、超了沒」，不是「熱量的組成」。（Benson 反映看不懂，改回來）
  * 原本的方塊唯一的問題是 bar 卡在 100%、超標看不出來，所以補上超標狀態。 */
+/* 今天實際做出多少缺口 -> 一週大概幾公斤。
+ * 刻意等到晚上 8 點（或看過去的日子）才顯示：中午只吃了 300 大卡時
+ * 算出來會是「一週 −1.6 kg」，那是假的，只會誤導。 */
+function paceHtml(net, tdee, eaten, lateEnough){
+  if(!lateEnough || !(tdee>0) || !(eaten>0)) return "";
+  var gap=tdee-net;
+  return '<div class="pace'+(gap>0?"":" over")+'">'+
+      '<b>'+(gap>0
+        ? "今天比 TDEE 少 "+kcal(gap)+" 大卡"
+        : "今天比 TDEE 多 "+kcal(-gap)+" 大卡")+'</b>'+
+      '<span>維持這個步調，一週約 '+weekPace(gap)+'</span>'+
+    '</div>';
+}
+
 function macroRowHtml(m, mt){
   return '<button class="macros" data-nav2="macros">'+
     macroBox("蛋白","var(--p)",m.p,mt.p,1.2)+   /* 蛋白質吃多一點不是問題，門檻放寬 */
@@ -679,6 +694,20 @@ function viewHistory(){
       '<div><span>每日目標</span><b class="num">'+kcal(target)+'</b></div>'+
      '</div>';
 
+  /* 這一段是「實際的進度」：拿真的吃了多少去比 TDEE，不是設定裡那個理論值。
+   * 一週平均沒有「今天才過一半」的問題，所以這裡不用等到晚上。 */
+  var tdeeH=tdeeOf(db.profile);
+  if(avg7>0 && tdeeH>0){
+    var gap7=tdeeH-avg7;
+    h+='<div class="pace big'+(gap7>0?"":" over")+'">'+
+        '<b>'+(gap7>0
+          ? "最近 7 天平均每天比 TDEE 少 "+kcal(gap7)+" 大卡"
+          : "最近 7 天平均每天比 TDEE 多 "+kcal(-gap7)+" 大卡")+'</b>'+
+        '<span>照這個步調，一週約 '+weekPace(gap7)+
+          '（理論值，實際會被水分與肝醣蓋過去，看兩週以上的體重趨勢比較準）</span>'+
+       '</div>';
+  }
+
   h+=weightTrendHtml(keys);
 
   if(!histLoaded){
@@ -696,11 +725,14 @@ function viewHistory(){
     /* 只量體重、沒記飲食的日子顯示「—」而不是 0（0 會被誤讀成「今天沒吃」） */
     var v=(d && (d.entries||[]).length) ? netOf(d) : null;
     var pct=v!=null&&target>0 ? Math.max(0,Math.min(1,v/target)) : 0;
+    /* 跟首頁圓環同一套三段：超過上限但沒超過 TDEE ＝ 黃（那天沒瘦，但也沒胖），
+     * 超過 TDEE 才是紅。全部畫成紅色的話，會跟上面「你一週在瘦 0.18 kg」打架。 */
     var over=v!=null&&v>target;
+    var cls=over ? ((tdeeH>0 && v<=tdeeH) ? "mid" : "over") : "";
     h+='<button class="hrow" data-act="open-day" data-date="'+esc(k)+'">'+
         '<div class="d">'+esc(fmtMD(k))+'<small>'+(d&&num(d.weight)?num(d.weight).toFixed(1)+' kg':'週'+WD[parseDateKey(k).getDay()])+'</small></div>'+
-        '<div class="hbar"><i class="'+(over?"over":"")+'" style="width:'+(pct*100).toFixed(0)+'%"></i></div>'+
-        '<div class="v num '+(v==null?"none":(over?"over":""))+'">'+(v==null?"—":kcal(v))+'</div>'+
+        '<div class="hbar"><i class="'+cls+'" style="width:'+(pct*100).toFixed(0)+'%"></i></div>'+
+        '<div class="v num '+(v==null?"none":cls)+'">'+(v==null?"—":kcal(v))+'</div>'+
        '</button>';
   });
   h+='</div></div>';
@@ -791,6 +823,14 @@ function deficitPct(p){
   if(gap<=0 || tdee<=0) return 0;
   return Math.round(gap/tdee*100);
 }
+/* 把「每天缺口幾大卡」翻成「一週幾公斤」。
+ * 「少 211 大卡」很抽象，「一週 −0.19 公斤」才有感覺——Benson 說這樣比較有動力。
+ * gap > 0 ＝ 吃得比 TDEE 少 ＝ 會瘦（顯示負號）。 */
+function weekPace(gapPerDay){
+  var kg=num(gapPerDay)*7/7700;
+  return (kg>=0?"−":"+")+Math.abs(kg).toFixed(2)+" kg";
+}
+
 /* 1 公斤脂肪約 7700 大卡。這是理論值，實際會被水分與肝醣蓋過去，要看兩週以上的趨勢。 */
 function weeklyLoss(p){
   var gap=-round(p.goal);
@@ -906,7 +946,7 @@ function viewSettings(){
   });
   if(grp) h+='</div>';
 
-  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v3.2</p>';
+  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v3.3</p>';
   return h;
 }
 

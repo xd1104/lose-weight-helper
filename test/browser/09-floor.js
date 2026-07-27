@@ -104,7 +104,7 @@ const fail=[]; const check=(n,c,g)=>{ if(c) console.log('  ok  '+n); else {conso
   check('黃：超過上限但還在 TDEE 以內', /mid/.test(amber.cls), amber);
   check('黃：算出超過上限 284', /超過上限 284/.test(amber.tag), amber.tag);
   check('黃：算出距離 TDEE 還有 16', /距離 TDEE 還有 16/.test(amber.tag), amber.tag);
-  check('黃：明講今天不會胖、但也沒減脂進度', /不會胖/.test(amber.tag) && /沒有減脂進度/.test(amber.tag), amber.tag);
+  check('黃：明講不會胖、只是缺口比計畫小', /不會胖/.test(amber.tag) && /缺口比計畫小/.test(amber.tag), amber.tag);
   check('黃：圓環不是紅色', !/--bad/.test(amber.stroke||''), amber.stroke);
   check('黃：中間寫「超過上限 284」', /284/.test(amber.mid) && /超過上限/.test(amber.mid), amber.mid);
   await p.screenshot({ path:'/tmp/ring-amber.png', fullPage:false });

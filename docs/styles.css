@@ -162,8 +162,10 @@ input,textarea,select{font-family:inherit; font-size:16px; color:inherit;}
 .hbar{flex:1; height:8px; border-radius:99px; background:#eef1ea; overflow:hidden;}
 .hbar i{display:block; height:100%; border-radius:99px; background:var(--acc);}
 .hbar i.over{background:var(--bad);}
+.hbar i.mid{background:var(--warn);}   /* 超過上限但沒超過 TDEE：沒瘦，但也沒胖 */
 .hrow .v{flex:0 0 auto; font-size:13.5px; font-weight:800; font-variant-numeric:tabular-nums;}
 .hrow .v.over{color:var(--bad);}
+.hrow .v.mid{color:#a86d12;}
 .hrow .v.none{color:var(--muted); font-weight:600;}
 
 /* ---------- 設定 ---------- */
@@ -327,6 +329,17 @@ input,textarea,select{font-family:inherit; font-size:16px; color:inherit;}
 #sync-bar button{flex:0 0 auto; min-height:44px; padding:0 15px; border-radius:99px;
   background:#a86d12; color:#fff; font-size:13px; font-weight:800;}
 body.has-sync #app{padding-top:58px;}
+
+/* 「一週約 −0.19 kg」：把抽象的大卡翻成看得懂的進度 */
+.pace{margin-top:12px; border-radius:14px; padding:10px 13px; background:var(--acc-soft);}
+.pace b{display:block; font-size:13px; font-weight:800; color:var(--acc-deep);}
+.pace span{display:block; font-size:11.5px; font-weight:600; color:var(--acc-deep); opacity:.85;
+  margin-top:3px; line-height:1.55;}
+.pace.over{background:var(--bad-soft);}
+.pace.over b, .pace.over span{color:var(--bad);}
+.pace.big{margin:0 16px 14px; padding:13px 15px;}
+.pace.big b{font-size:14px;}
+.pace.big span{font-size:12px;}
 
 /* toast */
 #toast{position:fixed; left:50%; transform:translateX(-50%); bottom:calc(96px + var(--safe-b)); z-index:80;
