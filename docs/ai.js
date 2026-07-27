@@ -325,6 +325,26 @@ function aiAnalyzePhoto(model, dataUrl, hint){
   return aiRequest(model, blocks);
 }
 
+/* 只重估「其中一項」。
+ * 照片一起送是關鍵——使用者最常遇到的是「東西認錯了」（叉燒被當成燒鴨），
+ * 光靠文字 AI 看不到真正的份量，帶著原圖它才有辦法一邊看圖一邊修正。
+ * 刻意告訴它「其他項目不用列」，回來才只換掉那一項。 */
+function aiAnalyzeOne(model, dataUrl, wrongName, said){
+  var blocks=[];
+  if(dataUrl){
+    var m=/^data:(image\/[a-z+]+);base64,(.*)$/i.exec(String(dataUrl));
+    if(m) blocks.push({ type:"image", source:{ type:"base64", media_type:m[1], data:m[2] } });
+  }
+  var t=blocks.length
+    ? "這張照片你剛才幫我拆成好幾項，其中一項判斷錯了。只要重新估那一項，其他項目不用列出來。\n"
+    : "幫我估一項東西的熱量。\n";
+  if(wrongName) t+="你原本判斷成：「"+String(wrongName)+"」\n";
+  t+="正確的是：「"+String(said)+"」\n"+
+     "請只回這一項；除非這句話明顯包含兩樣以上的東西，才拆成多項。";
+  blocks.push({ type:"text", text:t });
+  return aiRequest(model, blocks);
+}
+
 /* ---- 照片壓縮：長邊 1024px、JPEG 0.85 ----
  * 手機原圖動輒 4000px / 4MB，直接送上去又慢又貴（圖片 token 隨解析度增加）。
  * 1024px 對「這盤是什麼、大概多少」已經非常夠用。 */

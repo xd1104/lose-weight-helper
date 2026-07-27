@@ -906,7 +906,7 @@ function viewSettings(){
   });
   if(grp) h+='</div>';
 
-  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v3.1</p>';
+  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v3.2</p>';
   return h;
 }
 
@@ -1497,8 +1497,8 @@ function addTabBody(){
       '<input type="file" id="i-cam" accept="image/*" capture="environment" hidden>'+
       '<input type="file" id="i-lib" accept="image/*" hidden>'+
       '<div class="field"><label>補充說明（選填）</label>'+
-        '<input type="text" id="i-hint" placeholder="例如：這碗是大碗、白飯只吃一半" autocomplete="off"></div>'+
-      '<button class="btn" type="submit" id="b-photo" disabled>交給 AI 估算</button>'+
+        '<input type="text" id="i-hint" value="'+esc(lastHint)+'" placeholder="例如：這碗是大碗、白飯只吃一半" autocomplete="off"></div>'+
+      '<button class="btn" type="submit" id="b-photo"'+(pendingPhoto?"":" disabled")+'>交給 AI 估算</button>'+
     '</form>';
   }
   if(addTab==="fav"){
@@ -1524,7 +1524,18 @@ function addTabBody(){
   '</form>';
 }
 
+/* 已經選過照片就要把預覽畫回來（別讓人以為要重拍）。
+ * 這一頁會因為切換分頁、AI 估完退回來等原因重畫好幾次，
+ * 而 pendingPhoto 一直都還在記憶體裡——以前這裡固定畫「加一張照片」的空狀態，
+ * 送出鈕又是 disabled，看起來就像照片不見了，所以只好重拍一次（Benson 踩過）。 */
 function photoPickHtml(){
+  if(pendingPhoto){
+    return '<img class="photo-prev" src="'+pendingPhoto+'" alt="餐點照片">'+
+      '<div class="photo-btns after">'+
+        '<label class="pbtn" for="i-cam">📷 重拍</label>'+
+        '<label class="pbtn" for="i-lib">🖼️ 換一張</label>'+
+      '</div>';
+  }
   return '<div class="photo-pick">'+
       '<i>🍱</i>'+
       '<b>加一張餐點照片</b>'+
@@ -1608,8 +1619,9 @@ function wireAddSheet(root){
       ev.preventDefault();
       if(!pendingPhoto){ toast("請先選一張照片", true); return; }
       var hint=(root.querySelector("#i-hint")||{}).value||"";
+      lastHint=hint;
       var photo=pendingPhoto;
-      runAi(function(){ return aiAnalyzePhoto(db.profile.model, photo, hint); });
+      runAi(function(){ return aiAnalyzePhoto(db.profile.model, photo, hint); }, photo);
     };
   }
 
@@ -1632,6 +1644,7 @@ function wireAddSheet(root){
   };
 }
 var pendingPhoto=null;
+var lastHint="";                /* 上次照片的補充說明：回來「再估一次」時不用重打 */
 
 function wireFav(root){
   root.querySelectorAll("[data-fav]").forEach(function(b){
@@ -1662,14 +1675,17 @@ function wireFav(root){
 }
 
 /* ---- 呼叫 AI 並顯示可編輯的預覽 ---- */
-function runAi(fn){
+function runAi(fn, photo){
   replaceSheet("AI 估算中",
     '<div class="spin"><div class="dots"><i></i><i></i><i></i></div>Claude 正在看你吃了什麼…</div>', {});
   fn().then(function(res){
     aiResult=res;
+    /* 記住是哪張照片估出來的：之後「重估某一項」要把同一張圖再送一次 */
+    aiResult.photo=photo||null;
     drawAiResult();
   }).catch(function(e){
     toast(e.userMessage||"AI 估算失敗", true);
+    if(photo) addTab="photo";   /* 照片還在，退回去就看得到，不用重拍 */
     drawAddSheet(false); /* 退回輸入畫面，讓他改描述重試 */
   });
 }
@@ -1683,7 +1699,8 @@ function drawAiResult(){
     var cf = it.confidence==="high" ? "" :
       '<span class="conf '+it.confidence+'">'+(it.confidence==="low"?"不太確定":"約略")+'</span>';
     body+='<div class="ai-item">'+
-      '<div class="t"><b>'+esc(it.name)+cf+'</b>'+
+      '<div class="t"><button class="ai-name" data-fix="'+idx+'">'+esc(it.name)+cf+
+          '<i class="pen">✎</i></button>'+
         '<button data-drop="'+idx+'" aria-label="移除">✕</button></div>'+
       (it.portion?'<div class="por">'+esc(it.portion)+'</div>':'')+
       '<div class="ai-nums">'+
@@ -1694,9 +1711,11 @@ function drawAiResult(){
       '</div>'+
     '</div>';
   });
+  body+='<button class="btn ghost" data-fix="-1">＋ 補一項（AI 漏掉的）</button>';
   var total=0; aiResult.items.forEach(function(i){ total+=num(i.kcal); });
   body+='<button class="btn" data-ai="save">加入 '+aiResult.items.length+' 筆 · 共 '+kcal(total)+' 大卡</button>'+
-        '<button class="btn ghost" data-ai="retry">重新描述</button>';
+        '<button class="btn ghost" data-ai="retry">'+
+          (aiResult.photo?"補充說明，整批再估一次":"重新描述")+'</button>';
 
   replaceSheet("AI 估算結果 · "+me.name, body, { onDraw:function(root){
     root.querySelectorAll("[data-meal-pick]").forEach(function(b){
@@ -1718,12 +1737,90 @@ function drawAiResult(){
         drawAiResult();
       };
     });
+    root.querySelectorAll("[data-fix]").forEach(function(b){
+      b.onclick=function(){ openAiItemSheet(+b.getAttribute("data-fix")); };
+    });
     var save=root.querySelector('[data-ai="save"]');
     if(save) save.onclick=function(){ addEntries(aiResult.items); };
     var retry=root.querySelector('[data-ai="retry"]');
-    if(retry) retry.onclick=function(){ drawAddSheet(false); };
+    if(retry) retry.onclick=function(){
+      if(aiResult.photo) addTab="photo";   /* 照片還在，直接回到照片那一頁 */
+      drawAddSheet(false);
+    };
   }});
 }
+
+/* ---- 修正其中一項（idx<0 = 補一項） ----
+ * 使用者最常遇到的是「東西認錯了」。原本只能整批重來（而且畫面害他以為要重拍），
+ * 為了一項錯誤重做六項很煩。這裡只動那一項，其他項目原封不動。 */
+function openAiItemSheet(idx){
+  var isNew = idx<0;
+  var it = isNew ? { name:"", portion:"" } : aiResult.items[idx];
+  var orig = it.name || "";
+
+  var body='<form id="f-aifix">'+
+    '<div class="field" style="margin-top:0"><label>這一項是什麼</label>'+
+      '<input type="text" id="fix-name" value="'+esc(it.name||"")+'" '+
+        'placeholder="例如：叉燒，3 片" autocomplete="off" required></div>'+
+    '<div class="field"><label>份量（選填）</label>'+
+      '<input type="text" id="fix-por" value="'+esc(it.portion||"")+'" '+
+        'placeholder="例如：約 80 克、半碗" autocomplete="off"></div>'+
+    '<p class="hint" style="padding:0 4px">'+
+      (aiResult.photo
+        ? '會帶著原本那張照片一起問，其他項目不會動到。'
+        : '只重估這一項，其他項目不會動到。')+'</p>'+
+    '<button class="btn" type="submit" id="fix-go">'+(isNew?"讓 AI 估這一項":"重新估這一項")+'</button>'+
+    (isNew
+      ? '<button class="btn ghost" type="button" data-fix2="manual">先加進去，數字我自己填</button>'
+      : '<button class="btn ghost" type="button" data-fix2="rename">只改名稱，數字不動</button>')+
+  '</form>';
+
+  openSheet(isNew?"補一項":"修正這一項", body, { onDraw:function(root){
+    var nameEl=root.querySelector("#fix-name"), porEl=root.querySelector("#fix-por");
+    var go=root.querySelector("#fix-go");
+
+    root.querySelector("#f-aifix").onsubmit=function(ev){
+      ev.preventDefault();
+      var said=(nameEl.value||"").trim();
+      if(!said){ toast("先寫這一項是什麼", true); return; }
+      var por=(porEl.value||"").trim();
+      go.disabled=true; go.textContent="估算中…";
+      aiAnalyzeOne(db.profile.model, aiResult.photo, isNew?"":orig,
+                   por ? said+"（"+por+"）" : said)
+        .then(function(res){
+          var got=(res&&res.items)||[];
+          if(!got.length) throw aiErrorLike("AI 沒有回傳結果，再試一次。");
+          if(isNew) aiResult.items=aiResult.items.concat(got);
+          else Array.prototype.splice.apply(aiResult.items, [idx,1].concat(got));
+          closeSheet();      /* 回到結果頁 */
+          drawAiResult();
+          toast(isNew?"已補上":"已重估這一項");
+        })
+        .catch(function(e){
+          go.disabled=false; go.textContent=isNew?"讓 AI 估這一項":"重新估這一項";
+          toast(e.userMessage||e.message||"重估失敗", true);
+        });
+    };
+
+    var alt=root.querySelector("[data-fix2]");
+    if(alt) alt.onclick=function(){
+      var said=(nameEl.value||"").trim();
+      if(!said){ toast("先寫這一項是什麼", true); return; }
+      var por=(porEl.value||"").trim();
+      if(alt.getAttribute("data-fix2")==="manual"){
+        /* 不打 AI：先塞一筆 0 大卡的，數字在結果頁直接改 */
+        aiResult.items.push({ id:uid(), name:said, portion:por, kcal:0, p:0, c:0, f:0,
+                              confidence:"low", src:"manual" });
+      }else{
+        aiResult.items[idx].name=said;
+        aiResult.items[idx].portion=por;
+      }
+      closeSheet();
+      drawAiResult();
+    };
+  }});
+}
+function aiErrorLike(msg){ var e=new Error(msg); e.userMessage=msg; return e; }
 
 /* ---- 真的寫進當天 ---- */
 function addEntries(items){
@@ -1738,7 +1835,7 @@ function addEntries(items){
   });
   persistFoods();      /* 整批只寫一次（rememberFood 不自己寫檔） */
   persistDay(curDate);
-  pendingPhoto=null; aiResult=null;
+  pendingPhoto=null; aiResult=null; lastHint="";
   closeAllSheets();
   render();
   toast("已記錄 "+items.length+" 筆");
