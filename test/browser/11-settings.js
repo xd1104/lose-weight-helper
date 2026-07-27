@@ -78,9 +78,29 @@ function check(n, c, g) {
   const today = new Date();
   const iso = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   const bday = iso(new Date(today.getFullYear() - 30, today.getMonth(), today.getDate()));  // 今天生日，滿 30
+
+  /* iOS 的原生日期選單只要那個 <input> 被換掉就會整個關閉。
+   * 原本這裡會整份重畫面板，使用者才滾完「年」選單就被關掉、值還被套用了。
+   * 所以 change 之後：日期欄必須是「同一個元素」而且焦點還在上面。 */
+  await p.focus('#s-birth');
+  await p.evaluate(() => { document.getElementById('s-birth').dataset.tag = 'keepme'; });
+  await p.fill('#s-birth', '1990-01-01');          // 模擬「才剛滾完年份」
+  await p.dispatchEvent('#s-birth', 'change');
+  await p.waitForTimeout(300);
+  check('滾年份之後日期欄沒有被重建 ← 重建就是 iOS 選單被關掉的原因',
+    (await p.getAttribute('#s-birth', 'data-tag')) === 'keepme');
+  check('焦點還留在日期欄上', await p.evaluate(() => document.activeElement && document.activeElement.id === 's-birth'));
+  check('年齡已經即時跟著變（1990 -> 30 幾歲）', /\d+ 歲/.test((await p.textContent('.static-val')) || ''),
+    await p.textContent('.static-val').catch(() => ''));
+
+  // 還沒落檔：滾一次年份就寫一次的話，手機上每次寫入都是一個 commit
+  const mid = await fetch(BASE + '/api/core?u=' + u).then((r) => r.json());
+  check('編輯中先不落檔（等使用者選完）', mid.profile.birth === '', mid.profile.birth);
+
   await p.fill('#s-birth', bday);
   await p.dispatchEvent('#s-birth', 'change');
-  await p.waitForTimeout(1200);
+  await p.dispatchEvent('#s-birth', 'blur');       // 關掉選單 = 這時才存
+  await p.waitForTimeout(1400);
   check('年齡自動變成 30 歲', /30 歲/.test((await p.textContent('.static-val')) || ''), await p.textContent('.static-val').catch(() => ''));
   check('年齡改成唯讀（由生日決定，不讓人手改到不一致）', !(await p.$('[data-num="age"]')));
   check('BMR 跟著重算', /基礎代謝/.test((await p.textContent('#set-live')) || ''));

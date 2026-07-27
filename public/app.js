@@ -41,6 +41,7 @@ var db={ profile:defaultProfile(), foods:[], days:{} };
 var view="today";               /* today | history | settings（picker 是獨立全螢幕） */
 var showDetail=false;           /* 首頁熱量卡的明細（每日上限／TDEE／淨攝取）是否展開 */
 var showMNote=false;            /* 營養頁「目標是怎麼算的」是否展開 */
+var birthSaveTimer=null;        /* 生日欄延後落檔：滾一次年份就 change 一次，別每次都寫檔 */
 var picking=false;              /* 是否停在「誰在用？」畫面 */
 var curDate=dateKey();
 var histDates=[];
@@ -905,7 +906,7 @@ function viewSettings(){
   });
   if(grp) h+='</div>';
 
-  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v3.0</p>';
+  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v3.1</p>';
   return h;
 }
 
@@ -939,27 +940,18 @@ function setBody(sec){
   var p=db.profile;
 
   if(sec==="body"){
-    /* 生日是選填，但填了就以它為準：年齡改成唯讀顯示，生日過了自己 +1。
-     * 沒填生日的人維持原本自己輸入年齡的方式（不強迫交出生日）。 */
-    var ageField = p.birth
-      ? '<div class="field"><label>年齡</label>'+
-          '<div class="static-val">'+p.age+' 歲<span>生日到了會自動加</span></div></div>'
-      : '<div class="field"><label>年齡</label>'+
-          '<input type="number" inputmode="numeric" data-num="age" value="'+p.age+'"></div>';
     return '<p class="desc" style="margin-top:0">用 Mifflin-St Jeor 公式算基礎代謝。體重在首頁「量體重」記錄時也會同步更新。</p>'+
       '<div class="field"><label>性別</label><div class="chips">'+
         '<button class="chip '+(p.sex==="male"?"on":"")+'" data-set="sex" data-val="male">男</button>'+
         '<button class="chip '+(p.sex==="female"?"on":"")+'" data-set="sex" data-val="female">女</button>'+
       '</div></div>'+
       '<div class="grid2">'+
-        ageField+
+        '<div class="field" id="age-field">'+ageFieldHtml(p)+'</div>'+
         '<div class="field"><label>身高 (cm)</label><input type="number" inputmode="decimal" data-num="height" value="'+p.height+'"></div>'+
       '</div>'+
       '<div class="field"><label>生日（選填）</label>'+
         '<input type="date" id="s-birth" data-birth="1" value="'+esc(p.birth)+'" max="'+esc(dateKey())+'">'+
-        '<div class="hint">'+(p.birth
-          ? '年齡由生日推算，生日過了會自動 +1，TDEE 跟著更新。清空就改回自己填年齡。'
-          : '填了之後年齡會自動更新，不用每年自己改。')+'</div></div>'+
+        '<div class="hint" id="birth-hint">'+birthHintText(p)+'</div></div>'+
       '<div class="field"><label>體重 (kg)</label><input type="number" inputmode="decimal" step="0.1" data-num="weight" value="'+p.weight+'"></div>'+
       '<div id="set-live">'+setLive(sec)+'</div>';
   }
@@ -1068,6 +1060,20 @@ function setBody(sec){
   return "";
 }
 
+/* 生日是選填，但填了就以它為準：年齡改成唯讀顯示，生日過了自己 +1。
+ * 沒填生日的人維持原本自己輸入年齡的方式（不強迫交出生日）。
+ * 抽成獨立一塊是為了「只換這一小塊」——見 wireSetSheet 裡的 data-birth。 */
+function ageFieldHtml(p){
+  return '<label>年齡</label>'+(p.birth
+    ? '<div class="static-val">'+p.age+' 歲<span>生日到了會自動加</span></div>'
+    : '<input type="number" inputmode="numeric" data-num="age" value="'+p.age+'">');
+}
+function birthHintText(p){
+  return p.birth
+    ? '年齡由生日推算，生日過了會自動 +1，TDEE 跟著更新。清空就改回自己填年齡。'
+    : '填了之後年齡會自動更新，不用每年自己改。';
+}
+
 function openSettingsSheet(sec){
   if(!SET_TITLES[sec]) return;
   function draw(isNew){
@@ -1097,26 +1103,59 @@ function wireSetSheet(root, sec, redraw){
       redraw(false);     /* chip 的選中狀態要重畫 */
     };
   });
-  root.querySelectorAll("[data-num]").forEach(function(inp){
-    inp.onchange=function(){
-      readNums();
-      persistProfile();
-      render();
-      var live=root.querySelector("#set-live");
-      if(live) live.innerHTML=setLive(sec);   /* 只換計算結果，別動到 input */
-    };
-  });
+  function wireNums(){
+    root.querySelectorAll("[data-num]").forEach(function(inp){
+      inp.onchange=function(){
+        readNums();
+        persistProfile();
+        render();
+        var live=root.querySelector("#set-live");
+        if(live) live.innerHTML=setLive(sec);   /* 只換計算結果，別動到 input */
+      };
+    });
+  }
+  wireNums();
+
+  /* 生日：絕對不能在這裡整份重畫。
+   * iOS 的原生日期選單只要那個 <input> 被換掉就會立刻關閉——使用者才滾完「年」
+   * 就被關掉、而且值已經被套用（踩過）。所以這裡只換衍生出來的三小塊：
+   * 年齡欄、生日下面的說明、BMR/TDEE，日期欄本身完全不動，選單就會留著。
+   * 落檔也要延後：滾一次年份就 change 一次，手機上每次寫入＝一個 commit。 */
   root.querySelectorAll("[data-birth]").forEach(function(inp){
-    inp.onchange=function(){
+    var apply=function(){
       readNums();
-      var was=db.profile.age;
       db.profile.birth=inp.value;
       db.profile=cleanProfile(db.profile);   /* 這裡會依生日重算 age */
-      if(inp.value && !db.profile.birth) toast("生日格式不對或還沒到，先不採用", true);
+      /* 年齡欄只在「可輸入 <-> 唯讀」真的要換型態時才重建；
+       * 其餘情況只改裡面的數字。少動 DOM 一次，就少一次把使用者
+       * 正要點的元素抽掉的機會。 */
+      var af=root.querySelector("#age-field");
+      if(af){
+        var wantStatic=!!db.profile.birth, isStatic=!!af.querySelector(".static-val");
+        if(wantStatic!==isStatic) af.innerHTML=ageFieldHtml(db.profile);
+        else if(wantStatic) af.querySelector(".static-val").innerHTML=
+          db.profile.age+' 歲<span>生日到了會自動加</span>';
+      }
+      var bh=root.querySelector("#birth-hint");
+      if(bh) bh.innerHTML=birthHintText(db.profile);
+      var live=root.querySelector("#set-live");
+      if(live) live.innerHTML=setLive(sec);
+      wireNums();                                     /* 年齡欄可能剛被換掉 */
+      render();                                        /* 底下索引的摘要跟著更新 */
+    };
+    inp.onchange=function(){
+      apply();
+      clearTimeout(birthSaveTimer);
+      birthSaveTimer=setTimeout(function(){ persistProfile(); }, 900);
+    };
+    /* 選完關掉選單（或跳去別的欄位）就立刻落檔，不用等那 0.9 秒。
+     * 這裡刻意「只落檔、不重畫」：blur 發生在焦點移到下一個欄位的當下，
+     * 這時候動 DOM 會把使用者正要輸入的那個欄位抽掉。畫面在 change 時就已經更新過了。 */
+    inp.onblur=function(){
+      clearTimeout(birthSaveTimer);
+      if(inp.value!==db.profile.birth) apply();   /* 保險：真的還沒同步才補一次 */
+      if(inp.value && !db.profile.birth) toast("這個生日不能用（格式不對或還沒到）", true);
       persistProfile();
-      render();
-      redraw(false);                          /* 年齡欄要在「可輸入／唯讀」之間切換 */
-      if(db.profile.birth && db.profile.age!==was) toast("年齡更新為 "+db.profile.age+" 歲");
     };
   });
   root.querySelectorAll("[data-edit-user]").forEach(function(b){
