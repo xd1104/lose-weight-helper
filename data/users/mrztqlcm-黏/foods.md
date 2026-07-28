@@ -1,6 +1,7 @@
 ## 食物
 
 - {"id":"xms2o2x82w45j","name":"全麥吐司","kcal":80,"p":3,"c":15,"f":1,"portion":"1片，約30克","star":true,"n":1}
+- {"id":"xms2o2x84vwps","name":"低脂起司片","kcal":50,"p":5,"c":1,"f":3,"portion":"1片，約20克","star":true,"n":1}
 - {"id":"xmrzxrybqo6vq","name":"無糖豆漿","kcal":30,"p":3,"c":1,"f":2,"portion":"半杯，約120ml","n":3}
 - {"id":"xms2pgsffun8t","name":"冷凍毛豆(茶豆)","kcal":180,"p":15,"c":13,"f":8,"portion":"150克，去殼後淨重約估算，含殼帶皮秤重","n":2}
 - {"id":"xms08qs8ecwxz","name":"炒空心菜","kcal":120,"p":3,"c":6,"f":9,"portion":"約一小盤，含蒜末與油","n":2}
@@ -17,7 +18,6 @@
 - {"id":"xms1k9j196fuo","name":"白飯","kcal":280,"p":5,"c":62,"portion":"一般碗白飯約1碗(210克)","n":1}
 - {"id":"xms1k9j1735nj","name":"羊肉片","kcal":220,"p":18,"f":16,"portion":"約100克涮煮羊肉片","n":1}
 - {"id":"xms2pb1x7w36i","name":"肉鬆蛋捲","kcal":103,"p":2,"c":11,"f":5,"n":1}
-- {"id":"xms2o2x84vwps","name":"低脂起司片","kcal":50,"p":5,"c":1,"f":3,"portion":"1片，約20克","n":1}
 - {"id":"xms3c39qv0iud","name":"芒果","kcal":90,"p":1,"c":23,"portion":"約一個拳頭大小，去皮去籽淨重約150克","n":1}
 - {"id":"xms1k9j181x2h","name":"昆布鍋底食材(高麗菜、豆腐、菇類等)","kcal":120,"p":8,"c":12,"f":5,"portion":"什錦火鍋料一份，約200克蔬菜豆腐類","n":1}
 - {"id":"xms1qj1ub7gp4","name":"炒蕃薯葉","kcal":90,"p":3,"c":6,"f":6,"portion":"約一人份，一小盤","n":1}
