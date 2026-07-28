@@ -294,6 +294,10 @@ function cleanFood(f) {
   if (num(f && f.c)) o.c = round(f.c);
   if (num(f && f.f)) o.f = round(f.f);
   if (f && f.portion) o.portion = String(f.portion);
+  // star＝使用者主動釘選的「真的常吃」，排最上面（記過的東西都會進這份清單，
+  // 很快就幾十筆、大半只吃過一次，不釘選就找不到常吃的那幾樣）。
+  // ⚠️ 與 public/store.js 的 cleanFood 是鏡像。
+  if (f && f.star) o.star = true;
   o.n = Math.max(1, round(f && f.n) || 1); // 用過次數：常吃清單的排序依據
   return o;
 }

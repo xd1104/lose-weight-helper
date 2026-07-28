@@ -119,6 +119,10 @@ function cleanFood(f){
   if(num(f&&f.c)) o.c=round(f.c);
   if(num(f&&f.f)) o.f=round(f.f);
   if(f&&f.portion) o.portion=String(f.portion);
+  /* star＝使用者主動釘選的「真的常吃」。
+   * 記過的東西一律會進這份清單，很快就是幾十筆、大半只吃過一次，
+   * 真正天天吃的那幾樣會被淹掉。釘選的排最上面，才找得到。 */
+  if(f&&f.star) o.star=true;
   o.n=Math.max(1, round(f&&f.n)||1);
   return o;
 }

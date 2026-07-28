@@ -40,6 +40,19 @@ const getFoods = (u) => fetch(BASE + '/api/core?u=' + encodeURIComponent(u)).the
   await p.route('https://api.anthropic.com/**', (r) => {
     const body = JSON.parse(r.request().postData());
     coachReqs.push(body);
+    // 「估一項食物」的請求（常吃清單的「讓 AI 幫我填」）跟講評不是同一組 schema
+    if (!/營養師/.test(body.system || '')) {
+      return r.fulfill({
+        status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' },
+        body: JSON.stringify({
+          id: 'm', type: 'message', role: 'assistant', stop_reason: 'end_turn',
+          content: [{ type: 'text', text: JSON.stringify({
+            items: [{ name: '滷排骨便當', portion: '一個便當盒', kcal: 700, protein: 20, carbs: 95, fat: 22, confidence: 'medium' }],
+          }) }],
+          usage: { input_tokens: 200, output_tokens: 80 },
+        }),
+      });
+    }
     return r.fulfill({
       status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' },
       body: JSON.stringify({
@@ -137,6 +150,61 @@ const getFoods = (u) => fetch(BASE + '/api/core?u=' + encodeURIComponent(u)).the
   const foods3 = await getFoods(u);
   check('真的刪掉了', !foods3.some((x) => x.id === 'f3'), foods3.map((x) => x.name));
   check('清單剩三筆', (await p.$$('[data-fav]')).length === 3);
+
+  console.log('\n[A4b] 從今天記過的一筆，一鍵加入常吃（不用自己記碳水蛋白質）');
+  await p.click('[data-sheet="close"]');
+  await p.waitForTimeout(500);
+  await p.click('.row[data-act="edit-entry"]');
+  await p.waitForTimeout(600);
+  check('編輯那一筆時有「加入常吃清單」', !!(await p.$('#e-star')));
+  check('還沒釘選時是空心星', /☆/.test((await p.textContent('#e-star')) || ''), await p.textContent('#e-star'));
+  await p.click('#e-star');
+  await p.waitForTimeout(1500);
+  check('按了變成實心星', /★ 已在常吃清單/.test((await p.textContent('#e-star')) || ''));
+  const fs = await getFoods(u);
+  const star1 = fs.filter((x) => x.star);
+  check('那一筆被標成釘選', star1.length === 1 && /燒餅/.test(star1[0].name), star1);
+  check('營養素直接沿用那一筆，不用自己填', star1[0].c === 40 && star1[0].p === 6, star1[0]);
+  check('沒有長出重複的一筆（同名的就更新）',
+    fs.filter((x) => x.name === '燒餅').length === 1, fs.map((x) => x.name));
+  await p.click('[data-sheet="close"]');
+  await p.waitForTimeout(500);
+
+  console.log('\n[A4c] 釘選的排在最上面，並且分成兩區');
+  await p.click('.fab');
+  await p.waitForTimeout(400);
+  await p.click('[data-tab="fav"]');
+  await p.waitForTimeout(500);
+  const grps = await p.$$eval('.fav-grp', (e) => e.map((x) => x.textContent.trim()));
+  check('出現「★ 常吃」與「吃過的」兩個分區', grps.length === 2 && /常吃/.test(grps[0]) && /吃過/.test(grps[1]), grps);
+  const order = await p.$$eval('.food-row b', (e) => e.map((x) => x.childNodes[0].textContent.trim()));
+  check('釘選的排第一個', order[0] === '燒餅', order);
+  await p.screenshot({ path: '/tmp/fav-star.png' });
+
+  console.log('\n[A4d] 新增時可以讓 AI 幫忙填數字（不用自己記碳水蛋白質）');
+  const n0ai = coachReqs.length;
+  await p.click('[data-fav-new]');
+  await p.waitForTimeout(600);
+  check('有「讓 AI 幫我填數字」', !!(await p.$('#fd-ai')));
+  await p.click('#fd-ai');
+  await p.waitForTimeout(700);
+  check('沒填名稱時不會白打 AI', coachReqs.length === n0ai, coachReqs.length - n0ai);
+  await p.fill('#fd-name', '滷排骨便當');
+  await p.click('#fd-ai');
+  await p.waitForTimeout(2000);
+  check('打了一次 AI', coachReqs.length === n0ai + 1, coachReqs.length - n0ai);
+  check('四個數字都被填上', (await p.inputValue('#fd-kcal')) === '700' &&
+    (await p.inputValue('#fd-p')) === '20' && (await p.inputValue('#fd-c')) === '95' &&
+    (await p.inputValue('#fd-f')) === '22',
+    [await p.inputValue('#fd-kcal'), await p.inputValue('#fd-p'), await p.inputValue('#fd-c'), await p.inputValue('#fd-f')]);
+  check('新增時也可以直接釘選', !!(await p.$('#fd-star')));
+  await p.click('#fd-star');
+  await p.waitForTimeout(300);
+  await p.click('#f-food button[type="submit"]');
+  await p.waitForTimeout(1800);
+  const fs2 = await getFoods(u);
+  const nb = fs2.filter((x) => x.name === '滷排骨便當')[0];
+  check('存進去了，而且是釘選的', nb && nb.star === true && nb.kcal === 700, nb);
 
   console.log('\n[A5] 搜尋時不會把已勾選的狀態弄丟');
   await p.click('[data-fav="f1"]');

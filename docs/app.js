@@ -168,6 +168,13 @@ function requireWrite(){
 /* ============ 常吃食物 ============ */
 /* AI 算過一次就記起來，下次同一樣東西直接從「常吃」點，不用再花錢問 AI。
  * 兩個人的清單是分開的（各自獨立是拍板的決定）。 */
+/* 釘選的排最上面，其餘按吃過的次數 */
+function sortFoods(a,b){
+  return ((b.star?1:0)-(a.star?1:0)) ||
+         (num(b.n)-num(a.n)) ||
+         String(a.name).localeCompare(String(b.name),"zh-Hant");
+}
+
 function rememberFood(item){
   var key=String(item.name||"").trim();
   if(!key) return;
@@ -183,7 +190,7 @@ function rememberFood(item){
     db.foods.push({ id:uid(), name:key, kcal:round(item.kcal), p:round(item.p), c:round(item.c),
                     f:round(item.f), portion:item.portion||"", n:1 });
   }
-  db.foods.sort(function(a,b){ return (num(b.n)-num(a.n)) || a.name.localeCompare(b.name,"zh-Hant"); });
+  db.foods.sort(sortFoods);
   if(db.foods.length>200) db.foods.length=200; /* 清單無限長對手機沒好處 */
   /* 這裡刻意只動記憶體、不寫檔：一次記 6 筆會變成 6 次寫入，
    * 跟同時進行的「當天紀錄」寫入互撞（GitHub 回 409）。寫檔由呼叫端整批做一次。 */
@@ -966,7 +973,7 @@ function viewSettings(){
   });
   if(grp) h+='</div>';
 
-  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v3.5</p>';
+  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v3.6</p>';
   return h;
 }
 
@@ -1619,21 +1626,33 @@ function photoPickHtml(){
  *   點整列 ＝ 勾選（可以一次勾好幾樣，最後按一次加入）——以前一次只能加一筆，
  *   早餐固定三樣就要開三次 sheet。
  *   點 ✎ ＝ 編輯內容或刪除。刪除刻意收進編輯裡，一列不要塞兩顆破壞性按鈕。 */
+function favRowHtml(f){
+  var on=!!favPick[f.id];
+  return '<div class="food-item">'+
+    '<button class="food-row'+(on?" on":"")+'" data-fav="'+esc(f.id)+'" aria-pressed="'+(on?"true":"false")+'">'+
+      '<span class="tick">'+(on?"✓":"")+'</span>'+
+      '<b>'+esc(f.name)+(f.portion?'<span class="por">'+esc(f.portion)+'</span>':'')+'</b>'+
+      '<span class="k num">'+kcal(f.kcal)+'</span>'+
+    '</button>'+
+    '<button class="food-del" data-fav-edit="'+esc(f.id)+'" aria-label="編輯 '+esc(f.name)+'">✎</button>'+
+  '</div>';
+}
+/* 分成「★ 常吃」與「吃過的」兩區：記過的東西都會自動進這份清單，
+ * 很快就幾十筆、大半只吃過一次，不分區的話真正天天吃的那幾樣會被淹掉。
+ * 版面成本只有一條分區標題。 */
 function favListHtml(q){
   q=String(q||"").trim().toLowerCase();
-  var list=db.foods.filter(function(f){ return !q || f.name.toLowerCase().indexOf(q)>=0; }).slice(0,60);
+  var list=db.foods.filter(function(f){ return !q || f.name.toLowerCase().indexOf(q)>=0; });
   if(!list.length) return '<p class="empty">找不到符合的項目</p>';
-  return list.map(function(f){
-    var on=!!favPick[f.id];
-    return '<div class="food-item">'+
-      '<button class="food-row'+(on?" on":"")+'" data-fav="'+esc(f.id)+'" aria-pressed="'+(on?"true":"false")+'">'+
-        '<span class="tick">'+(on?"✓":"")+'</span>'+
-        '<b>'+esc(f.name)+(f.portion?'<span class="por">'+esc(f.portion)+'</span>':'')+'</b>'+
-        '<span class="k num">'+kcal(f.kcal)+'</span>'+
-      '</button>'+
-      '<button class="food-del" data-fav-edit="'+esc(f.id)+'" aria-label="編輯 '+esc(f.name)+'">✎</button>'+
-    '</div>';
-  }).join("");
+  var star=list.filter(function(f){ return f.star; }).slice(0,40);
+  var rest=list.filter(function(f){ return !f.star; }).slice(0,60);
+  var h="";
+  if(star.length){
+    h+='<div class="fav-grp">★ 常吃</div>'+star.map(favRowHtml).join("");
+    if(rest.length) h+='<div class="fav-grp">吃過的</div>';
+  }
+  h+=rest.map(favRowHtml).join("");
+  return h;
 }
 function favGoHtml(){
   var picked=db.foods.filter(function(f){ return favPick[f.id]; });
@@ -1648,22 +1667,57 @@ function openFoodSheet(id){
   var f = id ? db.foods.filter(function(x){ return x.id===id; })[0] : null;
   if(id && !f) return;
   var d = f || { name:"", portion:"", kcal:0, p:0, c:0, f:0 };
+  var star=!!(f && f.star);
   var body='<form id="f-food">'+
     '<div class="field" style="margin-top:0"><label>名稱</label>'+
       '<input type="text" id="fd-name" value="'+esc(d.name)+'" placeholder="例如：滷雞腿便當" autocomplete="off" required></div>'+
     '<div class="field"><label>份量（選填）</label>'+
       '<input type="text" id="fd-por" value="'+esc(d.portion||"")+'" placeholder="例如：一個便當盒" autocomplete="off"></div>'+
-    '<div class="ai-nums">'+
+    /* 不用自己記碳水蛋白質：打完名稱按這顆，AI 幫你填 */
+    (hasAiKey()?'<button class="btn ghost" type="button" id="fd-ai">🤖 讓 AI 幫我填數字</button>':'')+
+    '<div class="ai-nums" id="fd-nums">'+
       '<label><span>大卡</span><input type="number" inputmode="numeric" id="fd-kcal" value="'+round(d.kcal)+'"></label>'+
       '<label><span>蛋白 g</span><input type="number" inputmode="numeric" id="fd-p" value="'+round(d.p)+'"></label>'+
       '<label><span>碳水 g</span><input type="number" inputmode="numeric" id="fd-c" value="'+round(d.c)+'"></label>'+
       '<label><span>脂肪 g</span><input type="number" inputmode="numeric" id="fd-f" value="'+round(d.f)+'"></label>'+
     '</div>'+
+    '<button class="btn ghost star-btn'+(star?" on":"")+'" type="button" id="fd-star" aria-pressed="'+(star?"true":"false")+'">'+
+      (star?"★ 已釘選為常吃（排最上面）":"☆ 釘選為常吃（排到最上面）")+'</button>'+
     '<button class="btn" type="submit">'+(f?"儲存":"加進常吃清單")+'</button>'+
     (f?'<button class="btn danger" type="button" data-fd-del="1">從常吃清單刪除</button>':'')+
   '</form>';
 
   openSheet(f?"編輯常吃項目":"新增常吃項目", body, { onDraw:function(root){
+    var sb=root.querySelector("#fd-star");
+    if(sb) sb.onclick=function(){
+      star=!star;
+      sb.classList.toggle("on", star);
+      sb.setAttribute("aria-pressed", star?"true":"false");
+      sb.textContent = star?"★ 已釘選為常吃（排最上面）":"☆ 釘選為常吃（排到最上面）";
+    };
+    var ab=root.querySelector("#fd-ai");
+    if(ab) ab.onclick=function(){
+      var name=(root.querySelector("#fd-name").value||"").trim();
+      if(!name){ toast("先寫名稱，AI 才知道要估什麼", true); return; }
+      var por=(root.querySelector("#fd-por").value||"").trim();
+      ab.disabled=true; ab.textContent="估算中…";
+      aiAnalyzeOne(db.profile.model, null, "", por ? name+"（"+por+"）" : name)
+        .then(function(res){
+          var it=(res&&res.items&&res.items[0]);
+          if(!it) throw aiErrorLike("AI 沒有回傳結果，再試一次。");
+          root.querySelector("#fd-kcal").value=round(it.kcal);
+          root.querySelector("#fd-p").value=round(it.p);
+          root.querySelector("#fd-c").value=round(it.c);
+          root.querySelector("#fd-f").value=round(it.f);
+          if(it.portion && !por) root.querySelector("#fd-por").value=it.portion;
+          ab.disabled=false; ab.textContent="🤖 重新讓 AI 估";
+          toast("填好了，數字不對可以自己改");
+        })
+        .catch(function(e){
+          ab.disabled=false; ab.textContent="🤖 讓 AI 幫我填數字";
+          toast(e.userMessage||e.message||"估算失敗", true);
+        });
+    };
     root.querySelector("#f-food").onsubmit=function(ev){
       ev.preventDefault();
       if(!requireWrite()) return;
@@ -1677,8 +1731,10 @@ function openFoodSheet(id){
         c:Math.max(0, Number(root.querySelector("#fd-c").value)||0),
         f:Math.max(0, Number(root.querySelector("#fd-f").value)||0)
       };
+      o.star=star;
       if(f){ Object.keys(o).forEach(function(k){ f[k]=o[k]; }); }
-      else { o.id=uid(); o.n=1; db.foods.unshift(o); }
+      else { o.id=uid(); o.n=1; db.foods.push(o); }
+      db.foods.sort(sortFoods);
       persistFoods();
       closeSheet();
       drawAddSheet(false);
@@ -2084,6 +2140,33 @@ function addEntries(items){
   toast("已記錄 "+items.length+" 筆");
 }
 
+/* 把今天記的某一筆存成常吃項目。營養素直接沿用那一筆，
+ * 不用自己記碳水蛋白質——這是「新增常吃很麻煩」最直接的解法。
+ * 同名的就更新並釘選（不要長出第二筆一樣的）。 */
+function starEntry(e){
+  if(!requireWrite()) return;
+  var key=String(e.name||"").trim();
+  if(!key) return;
+  var hit=null;
+  for(var i=0;i<db.foods.length;i++){ if(db.foods[i].name===key){ hit=db.foods[i]; break; } }
+  if(hit){
+    hit.star=true;
+    hit.kcal=round(e.kcal); hit.p=round(e.p); hit.c=round(e.c); hit.f=round(e.f);
+    if(e.portion) hit.portion=e.portion;
+  }else{
+    db.foods.push({ id:uid(), name:key, kcal:round(e.kcal), p:round(e.p), c:round(e.c),
+                    f:round(e.f), portion:e.portion||"", star:true, n:1 });
+  }
+  db.foods.sort(sortFoods);
+  persistFoods();
+  toast("已加入常吃：「"+key+"」");
+}
+function isStarred(name){
+  var key=String(name||"").trim();
+  for(var i=0;i<db.foods.length;i++){ if(db.foods[i].name===key && db.foods[i].star) return true; }
+  return false;
+}
+
 /* ============ 編輯／刪除單筆飲食 ============ */
 function openEntrySheet(id){
   var d=dayOf(curDate);
@@ -2105,12 +2188,29 @@ function openEntrySheet(id){
       '<label><span>脂肪 g</span><input type="number" inputmode="numeric" id="e-f" value="'+(e.f||0)+'"></label>'+
     '</div>'+
     '<div class="field"><label>時間</label><input type="time" id="e-time" value="'+esc(e.time||"")+'"></div>'+
+    /* 一鍵存成常吃：營養素直接沿用這一筆，不用自己記碳水蛋白質 */
+    '<button class="btn ghost star-btn'+(isStarred(e.name)?" on":"")+'" type="button" id="e-star">'+
+      (isStarred(e.name)?"★ 已在常吃清單":"☆ 加入常吃清單")+'</button>'+
     '<button class="btn" type="submit">儲存</button>'+
     '<button class="btn danger" type="button" data-del="1">刪除這筆</button>'+
   '</form>';
 
   var pickedMeal=e.meal;
   openSheet("編輯", body, { onDraw:function(root){
+    var st=root.querySelector("#e-star");
+    if(st) st.onclick=function(){
+      /* 用畫面上當下的數字（他可能剛改過），不是原本存的那份 */
+      starEntry({
+        name:(root.querySelector("#e-name").value||e.name),
+        kcal:Number(root.querySelector("#e-kcal").value)||0,
+        p:Number(root.querySelector("#e-p").value)||0,
+        c:Number(root.querySelector("#e-c").value)||0,
+        f:Number(root.querySelector("#e-f").value)||0,
+        portion:e.portion||""
+      });
+      st.classList.add("on");
+      st.textContent="★ 已在常吃清單";
+    };
     root.querySelectorAll("[data-emeal]").forEach(function(b){
       b.onclick=function(){
         pickedMeal=b.getAttribute("data-emeal");

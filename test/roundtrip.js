@@ -233,6 +233,22 @@ t('常吃清單原樣回來、次數保留', () => {
   assert.strictEqual(back[1].kcal, 130);
 });
 
+t('常吃清單：釘選（star）存得住，沒釘的不寫這個欄位', () => {
+  const md = S.serializeFoods([
+    { id: 'a', name: '無糖豆漿', kcal: 30, p: 3, c: 1, f: 2, portion: '半杯', star: true, n: 3 },
+    { id: 'b', name: '芒果', kcal: 90, p: 1, c: 23, n: 1 },
+  ]);
+  const back = S.parseFoods(md);
+  assert.strictEqual(back[0].star, true, '釘選的要存回來');
+  assert.strictEqual(back[1].star, undefined, '沒釘選的不要多寫一個欄位出來');
+  assert.strictEqual(back[0].kcal, 30);
+  assert.strictEqual(back[1].name, '芒果');
+  // 舊的 foods.md 沒有 star 這個 key，照樣讀得動
+  const legacy = ['## 食物', '', '- {"id":"x","name":"燒餅","kcal":280,"n":2}', ''].join('\n');
+  assert.strictEqual(S.parseFoods(legacy)[0].star, undefined);
+  assert.strictEqual(S.parseFoods(legacy)[0].name, '燒餅');
+});
+
 console.log('安全性');
 
 t('safeDate 擋掉 path traversal 與亂格式', () => {

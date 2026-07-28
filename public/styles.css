@@ -312,6 +312,11 @@ input,textarea,select{font-family:inherit; font-size:16px; color:inherit;}
 .pbtn:active{background:var(--acc-deep);}
 .photo-btns.after .pbtn{background:#eef1ea; color:var(--muted);}
 .photo-prev{width:100%; border-radius:16px; display:block; margin-bottom:10px;}
+/* 常吃清單的分區標題（★ 常吃 / 吃過的） */
+.fav-grp{font-size:11.5px; font-weight:800; color:var(--muted); letter-spacing:.06em;
+  padding:12px 4px 6px;}
+.fav-grp:first-child{padding-top:6px;}
+.star-btn.on{background:var(--warn-soft); color:#a86d12;}
 .food-item{display:flex; align-items:stretch; gap:8px; margin-bottom:8px;}
 .food-row{flex:1; min-width:0; display:flex; align-items:center; gap:10px; padding:12px 13px; background:var(--card);
   border-radius:14px; box-shadow:var(--shadow); text-align:left; min-height:56px;}
