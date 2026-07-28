@@ -135,6 +135,23 @@ t('AI 講評：舊的 day 檔（沒有 ## 講評 這段）照樣讀得動', () =
   assert.strictEqual(back.notes, '今天外食');
 });
 
+t('三大營養素可以有小數（食品標示常常是 2.5 g，全部進位會累積誤差）', () => {
+  const day = { date: '2026-07-28', entries: [
+    { id: 'a', name: '低脂起司片', kcal: 50, p: 4.5, c: 1.2, f: 2.8, meal: 'snack' },
+  ], moves: [], notes: '' };
+  const back = S.parseDay('2026-07-28', S.serializeDay(day));
+  assert.strictEqual(back.entries[0].p, 4.5, '小數要留住，不能變成 5');
+  assert.strictEqual(back.entries[0].c, 1.2);
+  assert.strictEqual(back.entries[0].f, 2.8);
+  assert.strictEqual(back.entries[0].kcal, 50, '熱量還是整數');
+  // 只留一位：AI 有時會回 12.3456
+  assert.strictEqual(S.cleanEntry({ id: 'x', p: 12.3456 }).p, 12.3);
+  // 常吃清單同一套
+  const f = S.parseFoods(S.serializeFoods([{ id: 'a', name: '起司片', kcal: 50, p: 4.5, c: 1.2, f: 2.8 }]));
+  assert.strictEqual(f[0].p, 4.5);
+  assert.strictEqual(f[0].f, 2.8);
+});
+
 console.log('profile round-trip');
 
 t('profile 欄位原樣回來', () => {

@@ -206,7 +206,43 @@ const getFoods = (u) => fetch(BASE + '/api/core?u=' + encodeURIComponent(u)).the
   const nb = fs2.filter((x) => x.name === '滷排骨便當')[0];
   check('存進去了，而且是釘選的', nb && nb.star === true && nb.kcal === 700, nb);
 
+  console.log('\n[A4e] 營養素可以輸入小數（食品標示常常是 2.5 g）');
+  await p.click('[data-sheet="close"]');
+  await p.waitForTimeout(500);
+  await p.click('.fab');
+  await p.waitForTimeout(400);
+  await p.click('[data-tab="manual"]');
+  await p.waitForTimeout(400);
+  const modes = await p.$$eval('#m-p, #m-c, #m-f',
+    (e) => e.map((x) => ({ im: x.getAttribute('inputmode'), st: x.getAttribute('step') })));
+  check('三個營養素欄位都是小數鍵盤 ← iOS 的 numeric 鍵盤沒有小數點',
+    modes.every((m) => m.im === 'decimal' && m.st === '0.1'), modes);
+  await p.fill('#m-name', '低脂起司片');
+  await p.fill('#m-kcal', '50');
+  await p.fill('#m-p', '4.5');
+  await p.fill('#m-c', '1.2');
+  await p.fill('#m-f', '2.8');
+  await p.click('#f-manual button[type="submit"]');
+  await p.waitForTimeout(1800);
+  const dayNow = await fetch(BASE + '/api/days?u=' + u + '&dates=' + D()).then((r) => r.json());
+  const che = (dayNow.days[0].entries || []).filter((x) => x.name === '低脂起司片')[0];
+  check('小數真的存進去了，沒有被進位', che && che.p === 4.5 && che.c === 1.2 && che.f === 2.8, che);
+
+  await p.click('.row[data-act="edit-entry"] >> nth=-1');
+  await p.waitForTimeout(700);
+  check('編輯時帶回來還是 4.5', (await p.inputValue('#e-p')) === '4.5', await p.inputValue('#e-p'));
+  const emodes = await p.$$eval('#e-p, #e-c, #e-f', (e) => e.map((x) => x.getAttribute('inputmode')));
+  check('編輯欄位也是小數鍵盤', emodes.every((m) => m === 'decimal'), emodes);
+  await p.click('[data-sheet="close"]');
+  await p.waitForTimeout(500);
+  check('整數不會多印成 4.0', !/\d+\.0(?!\d)/.test((await p.textContent('.macros')) || ''),
+    await p.textContent('.macros'));
+
   console.log('\n[A5] 搜尋時不會把已勾選的狀態弄丟');
+  await p.click('.fab');
+  await p.waitForTimeout(400);
+  await p.click('[data-tab="fav"]');
+  await p.waitForTimeout(400);
   await p.click('[data-fav="f1"]');
   await p.waitForTimeout(400);
   await p.fill('#i-fav-q', '燒');

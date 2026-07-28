@@ -213,6 +213,10 @@ function fmString(v) { return JSON.stringify(String(v == null ? '' : v)); }
 function fmNumber(v) { const n = Number(v); return String(isFinite(n) ? n : 0); }
 function num(v) { const n = Number(v); return isFinite(n) ? n : 0; }
 function round(v) { return Math.round(num(v)); }
+// 三大營養素保留一位小數：食品標示常常是「蛋白質 2.5 g」，全部進位成整數，
+// 一天記十筆就會累積出可觀的誤差。熱量維持整數（0.5 大卡沒有意義）。
+// ⚠️ 與 public/store.js 的 round1 是鏡像。
+function round1(v) { return Math.round(num(v) * 10) / 10; }
 
 const MEALS = ['breakfast', 'lunch', 'dinner', 'snack'];
 
@@ -272,9 +276,9 @@ function cleanEntry(e) {
   o.meal = MEALS.indexOf(e && e.meal) >= 0 ? e.meal : 'snack';
   o.name = String((e && e.name) || '');
   o.kcal = round(e && e.kcal);
-  if (num(e && e.p)) o.p = round(e.p);
-  if (num(e && e.c)) o.c = round(e.c);
-  if (num(e && e.f)) o.f = round(e.f);
+  if (num(e && e.p)) o.p = round1(e.p);
+  if (num(e && e.c)) o.c = round1(e.c);
+  if (num(e && e.f)) o.f = round1(e.f);
   if (e && e.portion) o.portion = String(e.portion);
   if (e && e.note) o.note = String(e.note);
   if (e && e.src) o.src = String(e.src); // ai | manual | preset（來源，供之後檢討估算準度）
@@ -290,9 +294,9 @@ function cleanMove(m) {
 function cleanFood(f) {
   const o = { id: String((f && f.id) || ''), name: String((f && f.name) || '') };
   o.kcal = round(f && f.kcal);
-  if (num(f && f.p)) o.p = round(f.p);
-  if (num(f && f.c)) o.c = round(f.c);
-  if (num(f && f.f)) o.f = round(f.f);
+  if (num(f && f.p)) o.p = round1(f.p);
+  if (num(f && f.c)) o.c = round1(f.c);
+  if (num(f && f.f)) o.f = round1(f.f);
   if (f && f.portion) o.portion = String(f.portion);
   // star＝使用者主動釘選的「真的常吃」，排最上面（記過的東西都會進這份清單，
   // 很快就幾十筆、大半只吃過一次，不釘選就找不到常吃的那幾樣）。

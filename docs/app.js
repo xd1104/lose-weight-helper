@@ -20,6 +20,11 @@ function fmtLong(key){
   return (d.getMonth()+1)+" 月 "+d.getDate()+" 日（"+WD[d.getDay()]+"）";
 }
 function kcal(n){ return Math.round(num(n)).toLocaleString("zh-TW"); }
+/* 營養素的顯示：2.5 要看得到，25 不要變成 25.0 */
+function gram(n){
+  var v=Math.round(num(n)*10)/10;
+  return (Math.abs(v-Math.round(v))<0.05 ? String(Math.round(v)) : v.toFixed(1));
+}
 
 var $app=document.getElementById("app");
 var $sheetLayer=document.getElementById("sheet-layer");
@@ -184,11 +189,11 @@ function rememberFood(item){
   }
   if(hit){
     hit.n=(num(hit.n)||1)+1;
-    hit.kcal=round(item.kcal); hit.p=round(item.p); hit.c=round(item.c); hit.f=round(item.f);
+    hit.kcal=round(item.kcal); hit.p=round1(item.p); hit.c=round1(item.c); hit.f=round1(item.f);
     if(item.portion) hit.portion=item.portion;
   }else{
-    db.foods.push({ id:uid(), name:key, kcal:round(item.kcal), p:round(item.p), c:round(item.c),
-                    f:round(item.f), portion:item.portion||"", n:1 });
+    db.foods.push({ id:uid(), name:key, kcal:round(item.kcal), p:round1(item.p), c:round1(item.c),
+                    f:round1(item.f), portion:item.portion||"", n:1 });
   }
   db.foods.sort(sortFoods);
   if(db.foods.length>200) db.foods.length=200; /* 清單無限長對手機沒好處 */
@@ -527,7 +532,7 @@ function macroBox(label,color,v,target,overAt){
   return '<div class="macro'+(over?" over":"")+'">'+
          '<div class="lb"><span class="dot" style="background:'+(over?"var(--warn)":color)+'"></span>'+label+
            (over?'<em>超標</em>':'')+'</div>'+
-         '<b class="num">'+kcal(v)+'<i>/'+kcal(target)+'g</i></b>'+
+         '<b class="num">'+gram(v)+'<i>/'+kcal(target)+'g</i></b>'+
          '<div class="mbar"><i style="width:'+(Math.min(1,pct)*100).toFixed(0)+'%;'+
            'background:'+(over?"var(--warn)":color)+'"></i></div></div>';
 }
@@ -665,7 +670,7 @@ function macroRow(o){
   return '<div class="mrow '+state+'">'+
       '<div class="mrow-top">'+
         '<b>'+esc(o.label)+'</b>'+
-        '<span class="mrow-num num">'+v+'<i>/'+target+' g</i></span>'+
+        '<span class="mrow-num num">'+gram(o.v)+'<i>/'+target+' g</i></span>'+
       '</div>'+
       '<div class="mbar big"><i style="width:'+Math.min(100,pct*100).toFixed(0)+'%;background:'+o.color+'"></i>'+
         (o.mode==="atleast"?'':'<u style="left:100%"></u>')+
@@ -973,7 +978,7 @@ function viewSettings(){
   });
   if(grp) h+='</div>';
 
-  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v3.6</p>';
+  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v3.7</p>';
   return h;
 }
 
@@ -1591,9 +1596,9 @@ function addTabBody(){
     '<div class="field"><label>名稱</label><input type="text" id="m-name" placeholder="例如：滷肉飯" autocomplete="off" required></div>'+
     '<div class="field"><label>熱量 (大卡)</label><input type="number" inputmode="numeric" id="m-kcal" placeholder="0" required></div>'+
     '<div class="ai-nums c3" style="margin-top:12px">'+
-      '<label><span>蛋白 g</span><input type="number" inputmode="numeric" id="m-p" placeholder="0"></label>'+
-      '<label><span>碳水 g</span><input type="number" inputmode="numeric" id="m-c" placeholder="0"></label>'+
-      '<label><span>脂肪 g</span><input type="number" inputmode="numeric" id="m-f" placeholder="0"></label>'+
+      '<label><span>蛋白 g</span><input type="number" inputmode="decimal" step="0.1" id="m-p" placeholder="0"></label>'+
+      '<label><span>碳水 g</span><input type="number" inputmode="decimal" step="0.1" id="m-c" placeholder="0"></label>'+
+      '<label><span>脂肪 g</span><input type="number" inputmode="decimal" step="0.1" id="m-f" placeholder="0"></label>'+
     '</div>'+
     '<button class="btn" type="submit">加入</button>'+
   '</form>';
@@ -1677,9 +1682,9 @@ function openFoodSheet(id){
     (hasAiKey()?'<button class="btn ghost" type="button" id="fd-ai">🤖 讓 AI 幫我填數字</button>':'')+
     '<div class="ai-nums" id="fd-nums">'+
       '<label><span>大卡</span><input type="number" inputmode="numeric" id="fd-kcal" value="'+round(d.kcal)+'"></label>'+
-      '<label><span>蛋白 g</span><input type="number" inputmode="numeric" id="fd-p" value="'+round(d.p)+'"></label>'+
-      '<label><span>碳水 g</span><input type="number" inputmode="numeric" id="fd-c" value="'+round(d.c)+'"></label>'+
-      '<label><span>脂肪 g</span><input type="number" inputmode="numeric" id="fd-f" value="'+round(d.f)+'"></label>'+
+      '<label><span>蛋白 g</span><input type="number" inputmode="decimal" step="0.1" id="fd-p" value="'+gram(d.p)+'"></label>'+
+      '<label><span>碳水 g</span><input type="number" inputmode="decimal" step="0.1" id="fd-c" value="'+gram(d.c)+'"></label>'+
+      '<label><span>脂肪 g</span><input type="number" inputmode="decimal" step="0.1" id="fd-f" value="'+gram(d.f)+'"></label>'+
     '</div>'+
     '<button class="btn ghost star-btn'+(star?" on":"")+'" type="button" id="fd-star" aria-pressed="'+(star?"true":"false")+'">'+
       (star?"★ 已釘選為常吃（排最上面）":"☆ 釘選為常吃（排到最上面）")+'</button>'+
@@ -1907,9 +1912,9 @@ function drawAiResult(){
       (it.portion?'<div class="por">'+esc(it.portion)+'</div>':'')+
       '<div class="ai-nums">'+
         '<label><span>大卡</span><input type="number" inputmode="numeric" data-f="kcal" data-i="'+idx+'" value="'+it.kcal+'"></label>'+
-        '<label><span>蛋白 g</span><input type="number" inputmode="numeric" data-f="p" data-i="'+idx+'" value="'+it.p+'"></label>'+
-        '<label><span>碳水 g</span><input type="number" inputmode="numeric" data-f="c" data-i="'+idx+'" value="'+it.c+'"></label>'+
-        '<label><span>脂肪 g</span><input type="number" inputmode="numeric" data-f="f" data-i="'+idx+'" value="'+it.f+'"></label>'+
+        '<label><span>蛋白 g</span><input type="number" inputmode="decimal" step="0.1" data-f="p" data-i="'+idx+'" value="'+gram(it.p)+'"></label>'+
+        '<label><span>碳水 g</span><input type="number" inputmode="decimal" step="0.1" data-f="c" data-i="'+idx+'" value="'+gram(it.c)+'"></label>'+
+        '<label><span>脂肪 g</span><input type="number" inputmode="decimal" step="0.1" data-f="f" data-i="'+idx+'" value="'+gram(it.f)+'"></label>'+
       '</div>'+
     '</div>';
   });
@@ -1926,7 +1931,10 @@ function drawAiResult(){
     root.querySelectorAll("[data-f]").forEach(function(inp){
       inp.oninput=function(){
         var i=+inp.getAttribute("data-i");
-        aiResult.items[i][inp.getAttribute("data-f")]=Math.max(0, Math.round(Number(inp.value)||0));
+        var fld=inp.getAttribute("data-f");
+        var v=Math.max(0, Number(inp.value)||0);
+        /* 熱量是整數，三大營養素留一位小數（食品標示常常是 2.5 g） */
+        aiResult.items[i][fld] = (fld==="kcal") ? Math.round(v) : Math.round(v*10)/10;
         var t=0; aiResult.items.forEach(function(x){ t+=num(x.kcal); });
         var sv=root.querySelector('[data-ai="save"]');
         if(sv) sv.textContent="加入 "+aiResult.items.length+" 筆 · 共 "+kcal(t)+" 大卡";
@@ -2151,11 +2159,11 @@ function starEntry(e){
   for(var i=0;i<db.foods.length;i++){ if(db.foods[i].name===key){ hit=db.foods[i]; break; } }
   if(hit){
     hit.star=true;
-    hit.kcal=round(e.kcal); hit.p=round(e.p); hit.c=round(e.c); hit.f=round(e.f);
+    hit.kcal=round(e.kcal); hit.p=round1(e.p); hit.c=round1(e.c); hit.f=round1(e.f);
     if(e.portion) hit.portion=e.portion;
   }else{
-    db.foods.push({ id:uid(), name:key, kcal:round(e.kcal), p:round(e.p), c:round(e.c),
-                    f:round(e.f), portion:e.portion||"", star:true, n:1 });
+    db.foods.push({ id:uid(), name:key, kcal:round(e.kcal), p:round1(e.p), c:round1(e.c),
+                    f:round1(e.f), portion:e.portion||"", star:true, n:1 });
   }
   db.foods.sort(sortFoods);
   persistFoods();
@@ -2183,9 +2191,9 @@ function openEntrySheet(id){
       }).join("")+'</div></div>'+
     '<div class="ai-nums" style="margin-top:12px">'+
       '<label><span>大卡</span><input type="number" inputmode="numeric" id="e-kcal" value="'+e.kcal+'"></label>'+
-      '<label><span>蛋白 g</span><input type="number" inputmode="numeric" id="e-p" value="'+(e.p||0)+'"></label>'+
-      '<label><span>碳水 g</span><input type="number" inputmode="numeric" id="e-c" value="'+(e.c||0)+'"></label>'+
-      '<label><span>脂肪 g</span><input type="number" inputmode="numeric" id="e-f" value="'+(e.f||0)+'"></label>'+
+      '<label><span>蛋白 g</span><input type="number" inputmode="decimal" step="0.1" id="e-p" value="'+gram(e.p)+'"></label>'+
+      '<label><span>碳水 g</span><input type="number" inputmode="decimal" step="0.1" id="e-c" value="'+gram(e.c)+'"></label>'+
+      '<label><span>脂肪 g</span><input type="number" inputmode="decimal" step="0.1" id="e-f" value="'+gram(e.f)+'"></label>'+
     '</div>'+
     '<div class="field"><label>時間</label><input type="time" id="e-time" value="'+esc(e.time||"")+'"></div>'+
     /* 一鍵存成常吃：營養素直接沿用這一筆，不用自己記碳水蛋白質 */
