@@ -1,5 +1,6 @@
 ## 食物
 
+- {"id":"xms3xe4epmt8o","name":"水煮蛋","kcal":140,"p":13,"c":1,"f":10,"portion":"2顆，約50克/顆","star":true,"n":1}
 - {"id":"xms2o2x82w45j","name":"全麥吐司","kcal":80,"p":3,"c":15,"f":1,"portion":"1片，約30克","star":true,"n":1}
 - {"id":"xms2o2x84vwps","name":"低脂起司片","kcal":50,"p":5,"c":1,"f":3,"portion":"1片，約20克","star":true,"n":1}
 - {"id":"xmrzxrybqo6vq","name":"無糖豆漿","kcal":30,"p":3,"c":1,"f":2,"portion":"半杯，約120ml","n":3}
@@ -12,7 +13,6 @@
 - {"id":"xms08qs8egfxf","name":"燙秋葵佐芝麻醬","kcal":90,"p":3,"c":8,"f":5,"portion":"約一小盤，含少量芝麻醬淋醬","n":2}
 - {"id":"xms08qs8bajwi","name":"糙米飯","kcal":130,"p":3,"c":28,"f":1,"portion":"約半拳頭，約100克","n":2}
 - {"id":"xms1qj1uc1fk1","name":"木耳炒蛋","kcal":150,"p":7,"c":6,"f":11,"portion":"約一人份，含一顆蛋","n":1}
-- {"id":"xms3xe4epmt8o","name":"水煮蛋","kcal":140,"p":13,"c":1,"f":10,"portion":"2顆，約50克/顆","n":1}
 - {"id":"xms1k9j18ck6q","name":"火鍋料(如魚餃、貢丸等)","kcal":100,"p":5,"c":8,"f":6,"portion":"少許，約2-3顆綜合火鍋料","n":1}
 - {"id":"xms04sq500kft","name":"白木耳蓮子甜湯","kcal":150,"p":2,"c":35,"portion":"馬克杯一杯，約250ml，含白木耳、蓮子、糖水","n":1}
 - {"id":"xms1k9j196fuo","name":"白飯","kcal":280,"p":5,"c":62,"portion":"一般碗白飯約1碗(210克)","n":1}
