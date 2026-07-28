@@ -1,11 +1,12 @@
 ## 食物
 
-- {"id":"xms08zonowf7c","name":"白飯","kcal":210,"p":4,"c":45,"f":2,"portion":"小碗份量，約0.7碗（約150克飯量含滷汁）","n":5}
+- {"id":"xms08zonowf7c","name":"白飯","kcal":130,"p":2,"c":29,"portion":"小碗約0.7碗（約100克飯量，被鴨肉覆蓋）","n":6}
 - {"id":"xms1i7sgy4bi2","name":"叉燒肉","kcal":180,"p":15,"c":8,"f":10,"portion":"約70克","n":2}
 - {"id":"xms474i6245tc","name":"水煮蛋","kcal":78,"p":6,"c":1,"f":5,"portion":"一顆(約50克)","n":2}
 - {"id":"xms1ijk5o2lb5","name":"無糖豆漿","kcal":40,"p":4,"c":2,"f":2,"portion":"半杯，約200ml","n":2}
 - {"id":"xms4767ksclx9","name":"蒸蛋湯","kcal":163,"p":17.9,"c":4.5,"f":8.3,"n":2}
 - {"id":"xms08zonpy23i","name":"燙青菜（高麗菜、地瓜葉等）","kcal":60,"p":2,"c":8,"f":2,"portion":"約1份，附醬油蔥花","n":2}
+- {"id":"xms4ronzyu63g","name":"鴨肉","kcal":180,"p":18,"c":2,"f":11,"portion":"約80克，鋪滿飯面","n":2}
 - {"id":"xms1ii7ebg7jh","name":"上肩牛肉片","kcal":220,"p":17,"f":16,"portion":"一份火鍋肉片，約100克","n":1}
 - {"id":"xms08zonodsk7","name":"叉燒肉（去皮）","kcal":150,"p":18,"c":6,"f":6,"portion":"約3-4片，共80克","n":1}
 - {"id":"xms1iqck4o6ni","name":"水餃","kcal":315,"p":12,"c":38,"f":12,"portion":"7顆，豬肉高麗菜餡","n":1}
@@ -28,6 +29,7 @@
 - {"id":"xms1ii7eck6tj","name":"魚肉","kcal":60,"p":11,"f":2,"portion":"三小塊，約60克","n":1}
 - {"id":"xms1ii7ecuf5d","name":"無糖麥茶","kcal":0,"portion":"半杯約200ml","n":1}
 - {"id":"xms1iqck69uzj","name":"滷牛腱片","kcal":140,"p":18,"c":2,"f":7,"portion":"約半盤，總重估80克","n":1}
+- {"id":"xms4rpirrq33u","name":"滷汁與油蔥酥調味","kcal":50,"p":1,"c":3,"f":4,"portion":"淋在飯上的滷汁與油蔥，約1湯匙","n":1}
 - {"id":"xms1iqck53t0f","name":"滷味拼盤（豆干、海帶、豬耳朵、蛋）","kcal":180,"p":14,"c":6,"f":11,"portion":"約半盤，總重估120克","n":1}
 - {"id":"xms1iqck4djw1","name":"酸辣湯","kcal":80,"p":5,"c":8,"f":3,"portion":"半碗（約200ml）","n":1}
 - {"id":"xms1i7sgyuct9","name":"蔥花蒜蓉醬料","kcal":40,"c":2,"f":3,"portion":"淋在飯上約2大匙","n":1}
@@ -35,7 +37,6 @@
 - {"id":"xms1ii7ectyd6","name":"蔬菜盤","kcal":40,"p":2,"c":7,"portion":"綜合蔬菜約150克，未加醬料","n":1}
 - {"id":"xms08zonp4ily","name":"燒鴨肉（去皮）","kcal":110,"p":15,"c":2,"f":5,"portion":"約60克","n":1}
 - {"id":"xms1i7sgyxjon","name":"燙青菜（高麗菜、空心菜等）","kcal":60,"p":2,"c":8,"f":2,"portion":"約1份配菜，含少許油蔥","n":1}
-- {"id":"xms4ronzyu63g","name":"鴨肉","kcal":150,"p":15,"c":2,"f":9,"portion":"小碗鴨肉飯的鴨肉配料，約60克","n":1}
 - {"id":"xms3ccpsakgpv","name":"雞肉飯（白飯）","kcal":320,"p":6,"c":60,"f":6,"portion":"便當盒約1碗白飯，淋雞汁","n":1}
 - {"id":"xms1ii7ebpzf5","name":"雞柳","kcal":90,"p":18,"f":2,"portion":"一些，估80克","n":1}
 - {"id":"xms3ccpsc5uj0","name":"雞絲","kcal":90,"p":14,"f":4,"portion":"約50克手撕雞肉","n":1}
