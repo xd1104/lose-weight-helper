@@ -31,6 +31,7 @@
 - {"id":"xms33p56znhje","name":"香菇雞湯（含雞肉、香菇）","kcal":220,"p":22,"c":6,"f":11,"portion":"燉盅約550ml，含雞肉塊約100克、香菇約3朵","n":1}
 - {"id":"xms05mh8p4qi0","name":"香蕉","kcal":70,"p":1,"c":18,"portion":"小根一根，約80克","n":1}
 - {"id":"xms33i0zvs3yi","name":"烤地瓜","kcal":190,"p":3,"c":44,"portion":"中型一條，約200克","n":1}
+- {"id":"xms4ih9vaosfz","name":"迷你銅鑼燒","kcal":114,"p":2.1,"c":19.8,"f":3,"n":1}
 - {"id":"xms05gf4qcob3","name":"清蒸魚","kcal":320,"p":48,"c":2,"f":13,"portion":"整條約600克(含骨頭)，可食用魚肉約250克","n":1}
 - {"id":"xmrzvy2cso7iq","name":"甜椒配料","kcal":3,"c":1,"portion":"少量點綴，約10g","n":1}
 - {"id":"xms14aifk0m9t","name":"甜燒餅","kcal":350,"p":7,"c":45,"f":16,"portion":"傳統早餐店燒餅一份，約120克","n":1}
