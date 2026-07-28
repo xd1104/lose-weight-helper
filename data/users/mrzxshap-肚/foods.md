@@ -1,6 +1,6 @@
 ## 食物
 
-- {"id":"xms08zonowf7c","name":"白飯","kcal":80,"p":1,"c":18,"portion":"約三口，估60克","n":4}
+- {"id":"xms08zonowf7c","name":"白飯","kcal":210,"p":4,"c":45,"f":2,"portion":"小碗份量，約0.7碗（約150克飯量含滷汁）","n":5}
 - {"id":"xms1i7sgy4bi2","name":"叉燒肉","kcal":180,"p":15,"c":8,"f":10,"portion":"約70克","n":2}
 - {"id":"xms474i6245tc","name":"水煮蛋","kcal":78,"p":6,"c":1,"f":5,"portion":"一顆(約50克)","n":2}
 - {"id":"xms1ijk5o2lb5","name":"無糖豆漿","kcal":40,"p":4,"c":2,"f":2,"portion":"半杯，約200ml","n":2}
@@ -35,6 +35,7 @@
 - {"id":"xms1ii7ectyd6","name":"蔬菜盤","kcal":40,"p":2,"c":7,"portion":"綜合蔬菜約150克，未加醬料","n":1}
 - {"id":"xms08zonp4ily","name":"燒鴨肉（去皮）","kcal":110,"p":15,"c":2,"f":5,"portion":"約60克","n":1}
 - {"id":"xms1i7sgyxjon","name":"燙青菜（高麗菜、空心菜等）","kcal":60,"p":2,"c":8,"f":2,"portion":"約1份配菜，含少許油蔥","n":1}
+- {"id":"xms4ronzyu63g","name":"鴨肉","kcal":150,"p":15,"c":2,"f":9,"portion":"小碗鴨肉飯的鴨肉配料，約60克","n":1}
 - {"id":"xms3ccpsakgpv","name":"雞肉飯（白飯）","kcal":320,"p":6,"c":60,"f":6,"portion":"便當盒約1碗白飯，淋雞汁","n":1}
 - {"id":"xms1ii7ebpzf5","name":"雞柳","kcal":90,"p":18,"f":2,"portion":"一些，估80克","n":1}
 - {"id":"xms3ccpsc5uj0","name":"雞絲","kcal":90,"p":14,"f":4,"portion":"約50克手撕雞肉","n":1}
