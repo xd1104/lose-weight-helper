@@ -9,6 +9,8 @@
 - {"id":"xms08qs8ecwxz","name":"炒空心菜","kcal":60,"p":2,"c":5,"f":4,"portion":"約一碗，清炒","n":3}
 - {"id":"xms08qs8bajwi","name":"糙米飯","kcal":130,"p":3,"c":28,"f":1,"portion":"約半碗（100g）","n":3}
 - {"id":"xms08qs8es0ij","name":"洋蔥炒魷魚","kcal":180,"p":15,"c":10,"f":8,"portion":"約一小盤，魷魚約80克、洋蔥約50克","n":2}
+- {"id":"xms33mrorijgv","name":"滷豆乾","kcal":140,"p":15,"c":5,"f":9,"portion":"約100克","n":2}
+- {"id":"xms33mroqfzbt","name":"滷海帶","kcal":15,"p":1,"c":2,"portion":"約50克","n":2}
 - {"id":"xms14b5m418gv","name":"蔥蛋","kcal":120,"p":7,"c":2,"f":9,"portion":"約1顆蛋量的蔥蛋","n":2}
 - {"id":"xms149v34zqbe","name":"豬肉餡餅","kcal":320,"p":11,"c":32,"f":17,"portion":"單顆，約7-8公分直徑，早餐店常見尺寸","n":2}
 - {"id":"xms14b5m31ttj","name":"燒餅","kcal":280,"p":6,"c":40,"f":10,"portion":"一份約1個，普通厚燒餅","n":2}
@@ -45,11 +47,16 @@
 - {"id":"xms4rmubedrey","name":"黑輪串","kcal":70,"p":4,"c":9,"f":2,"portion":"1串，約60g","n":1}
 - {"id":"xms46nxj321rg","name":"煎荷包蛋","kcal":110,"p":6,"c":1,"f":9,"portion":"一顆全蛋煎至焦邊","n":1}
 - {"id":"xmrzvwpid4f6t","name":"碗粿","kcal":320,"p":8,"c":50,"f":10,"portion":"一碗，約350g，含花生粉與醬汁","n":1}
-- {"id":"xms33mrorijgv","name":"滷豆乾","kcal":120,"p":10,"c":4,"f":7,"portion":"約4-5小塊","n":1}
-- {"id":"xms33mroqfzbt","name":"滷海帶","kcal":30,"p":1,"c":4,"f":1,"portion":"約1/2碗","n":1}
+- {"id":"xms603xh17bu7","name":"滷小白菜","kcal":20,"p":2,"c":3,"f":1,"portion":"約80克","n":1}
+- {"id":"xms603xheyu2q","name":"滷玉米筍","kcal":15,"p":1,"c":3,"portion":"約40克","n":1}
+- {"id":"xms603xh7nt1v","name":"滷豆芽菜","kcal":20,"p":2,"c":3,"f":1,"portion":"約80克","n":1}
+- {"id":"xms603xhd6zvk","name":"滷花椰菜","kcal":15,"p":1,"c":2,"portion":"約50克","n":1}
+- {"id":"xms603xh68h7t","name":"滷高麗菜","kcal":25,"p":1,"c":4,"f":1,"portion":"約80克","n":1}
 - {"id":"xms33mronx8de","name":"滷菜頭","kcal":40,"p":1,"c":8,"portion":"約1/2碗，切塊","n":1}
+- {"id":"xms603xhao3bu","name":"滷菜頭（白蘿蔔）","kcal":15,"c":3,"portion":"約70克","n":1}
 - {"id":"xms46nxj11eh3","name":"滷腿庫","kcal":280,"p":18,"c":3,"f":22,"portion":"約一塊，掌心大小含皮","n":1}
 - {"id":"xms33mroscx1r","name":"滷豬皮","kcal":90,"p":8,"c":2,"f":6,"portion":"約1/2碗","n":1}
+- {"id":"xms603xh4c6mu","name":"滷蕃薯葉","kcal":25,"p":2,"c":3,"f":1,"portion":"約80克","n":1}
 - {"id":"xms4rmubagdxq","name":"熱狗串","kcal":90,"p":3,"c":2,"f":8,"portion":"半串，約30g","n":1}
 - {"id":"xms4rkngg8k0n","name":"燙地瓜葉佐蒜末醬油","kcal":110,"p":3,"c":9,"f":7,"portion":"自助餐一般盤裝，估全盤約250克，實際食用2/3份約170克","n":1}
 - {"id":"xmrzvy2cobh9k","name":"蕈菇燉飯","kcal":520,"p":14,"c":72,"f":18,"portion":"約一碗份量(含飯約200g熟重、綜合菇類、起司醬汁)","n":1}
