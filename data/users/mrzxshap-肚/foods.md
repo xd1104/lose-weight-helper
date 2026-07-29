@@ -23,6 +23,7 @@
 - {"id":"xms4rsmihmftj","name":"豆包（一口）","kcal":40,"p":3,"c":1,"f":3,"portion":"約20克","n":1}
 - {"id":"xms08zonpdvn9","name":"油雞腿肉（去皮）","kcal":140,"p":20,"c":3,"f":6,"portion":"約1隻腿肉份量，80克","n":1}
 - {"id":"xms1izpsc744j","name":"炸麻糬","kcal":420,"p":6,"c":66,"f":16,"portion":"手掌大小2片，約每片60克含裹粉油炸","n":1}
+- {"id":"xms607zkjaqwy","name":"為力炸醬麵","kcal":418,"p":9.6,"c":49.1,"f":20.4,"n":1}
 - {"id":"xms1ii7eboqes","name":"烏龍麵","kcal":110,"p":3,"c":24,"portion":"一小包，約100克熟重","n":1}
 - {"id":"xms1i7sgyd0g1","name":"烤鴨肉","kcal":180,"p":20,"c":2,"f":10,"portion":"約3-4塊，去皮估算","n":1}
 - {"id":"xms1id61yisy3","name":"烤鴨肉（去皮）","kcal":110,"p":16,"c":2,"f":5,"portion":"約60克","n":1}
