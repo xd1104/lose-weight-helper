@@ -469,9 +469,12 @@ function prevWeight(){
 }
 function weighHtml(d){
   var w=num(d.weight);
+  var isToday=curDate===dateKey();
+  var todo=false;
   var sub;
   if(!w){
-    sub='<span>還沒量 · 早上起床空腹最準</span>';
+    todo=isToday;
+    sub='<span>'+esc(weighHint(isToday))+'</span>';
   }else{
     var pv=prevWeight();
     if(pv){
@@ -483,7 +486,7 @@ function weighHtml(d){
       sub='<span>第一筆紀錄</span>';
     }
   }
-  return '<section class="sec"><button class="weigh" data-act="edit-weight">'+
+  return '<section class="sec"><button class="weigh'+(todo?" todo":"")+'" data-act="edit-weight">'+
       '<span class="weigh-ico">⚖️</span>'+
       '<div class="weigh-mid">'+
         (w?'<b class="num">'+w.toFixed(1)+'<i>kg</i></b>':'<b class="none">記錄今天的體重</b>')+
@@ -491,6 +494,19 @@ function weighHtml(d){
       '</div>'+
       '<span class="chev">›</span>'+
      '</button></section>';
+}
+/* 今天還沒量時要說的話。
+ * 體重是 app 裡唯一能驗證「熱量估得準不準」的資料，但也是最容易忘記的一件事。
+ * 快湊滿校準門檻時直接把「還差幾次」講出來——比「早上量最準」有動力得多。
+ * 只在歷史載入過之後才敢講次數，不然手上只有 7 天資料會算出一個嚇人的數字。 */
+function weighHint(isToday){
+  if(!isToday) return "這天沒量";
+  if(histLoaded){
+    var c=calibrate();
+    if(!c.ok && c.needPts>0 && c.needPts<=3)
+      return "今天還沒量 · 再量 "+c.needPts+" 次就能校準你的 TDEE";
+  }
+  return "今天還沒量 · 早上起床空腹量最準";
 }
 
 /* 三大營養素：一格一個，直接寫「目前／目標」。
@@ -750,6 +766,8 @@ function viewHistory(){
     return h;
   }
 
+  h+=calibHtml();
+
   h+='<div class="sec"><div class="list">';
   keys.forEach(function(k){
     var d=db.days[k];
@@ -813,6 +831,134 @@ function avgOf(list){
   if(!list.length) return 0;
   var s=0; list.forEach(function(v){ s+=v; });
   return Math.round(s/list.length);
+}
+
+/* ============ TDEE 校準 ============
+ * Mifflin-St Jeor × 活動係數算的是「族群平均」，套到個人身上誤差常有 ±200 大卡，
+ * 而 app 裡每一個數字（每日上限、一週幾公斤）都建在這個 TDEE 上。
+ * 體重不會說謊：把「這段期間平均吃了多少」跟「體重實際掉了多少」放在一起，
+ * 就能反推出真正的消耗：
+ *     真實 TDEE = 平均淨攝取 + 每天實際掉的體重 × 7700
+ * 兩個門檻都是必要的：十天以內的體重變化會被水分跟肝醣蓋過去；
+ * 漏記的日子會把平均攝取拉低，把 TDEE 算得比實際小。 */
+var CALIB_WINDOW   = 28;   /* 往回看幾天 */
+var CALIB_MIN_PTS  = 6;    /* 至少幾筆體重 */
+var CALIB_MIN_SPAN = 13;   /* 頭尾至少隔幾天（13 ＝跨滿兩週） */
+var CALIB_MIN_LOG  = 10;   /* 頭尾之間至少幾天有記飲食 */
+
+function calibrate(){
+  var start=shiftDate(dateKey(), -(CALIB_WINDOW-1));
+  var pts=[], i, k, d;
+  for(i=0;i<CALIB_WINDOW;i++){
+    k=shiftDate(start,i);
+    d=db.days[k];
+    if(d && num(d.weight)>0) pts.push({ k:k, x:i, w:num(d.weight) });
+  }
+  var out={ ok:false, pts:pts.length, needPts:Math.max(0, CALIB_MIN_PTS-pts.length),
+            needSpan:0, needLog:0 };
+  if(out.needPts>0) return out;
+
+  var first=pts[0], last=pts[pts.length-1];
+  out.from=first.k; out.to=last.k;
+  out.span=last.x-first.x;
+  out.days=out.span+1;
+  out.needSpan=Math.max(0, CALIB_MIN_SPAN-out.span);
+  if(out.needSpan>0) return out;
+
+  /* 只算「有記飲食」的日子：漏記的那天不是 0 大卡，是沒有資料 */
+  var nets=[];
+  for(i=first.x;i<=last.x;i++){
+    d=db.days[shiftDate(start,i)];
+    if(d && (d.entries||[]).length) nets.push(netOf(d));
+  }
+  out.logged=nets.length;
+  out.needLog=Math.max(0, CALIB_MIN_LOG-nets.length);
+  if(out.needLog>0) return out;
+
+  /* 體重取最小平方法的斜率，不是頭尾相減——頭尾兩筆各自被那天的水分決定 */
+  var n=pts.length, sx=0, sy=0, sxx=0, sxy=0;
+  pts.forEach(function(p){ sx+=p.x; sy+=p.w; sxx+=p.x*p.x; sxy+=p.x*p.w; });
+  var den=n*sxx-sx*sx;
+  if(!den) return out;
+
+  var bmr=bmrOf(db.profile);
+  out.slope=(n*sxy-sx*sy)/den;            /* kg／天，負的＝在瘦 */
+  out.kgWeek=out.slope*7;
+  out.avgNet=avgOf(nets);
+  out.real=Math.round(out.avgNet - out.slope*7700);
+  out.cur=tdeeOf(db.profile);             /* app 現在實際在用的 */
+  out.formula=Math.round(bmr*num(db.profile.activity));
+  out.applied=num(db.profile.tdee)>0;
+  out.diff=out.real-out.cur;
+  /* 推算值低於基礎代謝：人不可能消耗比 BMR 還少，幾乎一定是有漏記的餐 */
+  out.suspect=out.real<bmr;
+  out.thin=out.logged<out.days*0.7;
+  /* 體重跳得太誇張（量錯、打錯、中間斷很久）時推算值會完全不能看，寧可不講 */
+  if(out.real<900 || out.real>6000){ out.wild=true; return out; }
+  out.ok=true;
+  return out;
+}
+
+function calibRow(k, v, strong){
+  return '<div class="r'+(strong?" strong":"")+'"><span>'+esc(k)+'</span><b>'+esc(v)+'</b></div>';
+}
+
+function calibHtml(){
+  var c=calibrate();
+
+  if(!c.ok){
+    var need;
+    if(c.wild) need="這段期間的體重變化太劇烈（可能是量錯或中間斷太久），先累積穩定一點的紀錄";
+    else if(c.needPts>0) need="還差 "+c.needPts+" 筆體重紀錄";
+    else if(c.needSpan>0) need="體重紀錄要跨滿兩週，再過 "+c.needSpan+" 天就能算";
+    else need="這段期間還要再有 "+c.needLog+" 天的飲食紀錄";
+    return '<div class="sec"><div class="calib todo">'+
+        '<b>🎯 校準你的真實 TDEE</b>'+
+        '<span>公式算的 TDEE 是族群平均，套到個人身上常差 ±200 大卡。'+
+        '累積兩週的體重紀錄，app 就能用「實際掉了多少」反推你真正的消耗，'+
+        '每日上限才會是你的。</span>'+
+        '<div class="calib-need">'+esc(need)+'</div>'+
+        '<button class="btn" data-act="weigh-today">記今天的體重</button>'+
+       '</div></div>';
+  }
+
+  var same=Math.abs(c.diff)<50;
+  var newTarget=Math.max(800, c.real+round(db.profile.goal));
+  var h='<div class="sec"><div class="calib'+(same?" ok":"")+'">'+
+      '<b>🎯 你的真實 TDEE 約 '+kcal(c.real)+' 大卡</b>'+
+      '<div class="calib-rows">'+
+        calibRow("期間", fmtMD(c.from)+"–"+fmtMD(c.to)+"（"+c.days+" 天，"+
+                 c.logged+" 天有記飲食）")+
+        calibRow("平均每天淨攝取", kcal(c.avgNet)+" 大卡")+
+        calibRow("體重趨勢", (c.kgWeek<0?"−":"+")+Math.abs(c.kgWeek).toFixed(2)+" kg／週")+
+        calibRow("推算真實 TDEE", kcal(c.real)+" 大卡", true)+
+        calibRow("app 目前用的", kcal(c.cur)+" 大卡"+
+                 (c.applied?"（已校準）":"（公式）"))+
+      '</div>';
+
+  if(same){
+    h+='<div class="calib-need">公式估得很準（相差 '+kcal(Math.abs(c.diff))+
+       ' 大卡以內），不用改。</div>';
+  }else{
+    h+='<div class="calib-need">你的實際消耗比 app 現在用的'+(c.diff<0?"少":"多")+' '+
+       kcal(Math.abs(c.diff))+' 大卡。套用之後，每日'+
+       (num(db.profile.goal)<0?"上限":"目標")+'會變成 '+kcal(newTarget)+' 大卡。</div>'+
+       '<button class="btn" data-act="apply-calib" data-v="'+c.real+'">套用 '+kcal(c.real)+' 大卡</button>';
+  }
+  if(c.applied){
+    h+='<button class="btn ghost" data-act="clear-calib">改回公式估算（'+
+       kcal(c.formula)+' 大卡）</button>';
+  }
+  if(c.suspect){
+    h+='<div class="calib-warn">⚠️ 推算值低於你的基礎代謝 '+kcal(bmrOf(db.profile))+
+       ' 大卡，通常代表這段期間有漏記的餐。套用前先確認飲食紀錄有沒有缺。</div>';
+  }else if(c.thin){
+    h+='<div class="calib-warn">⚠️ 這 '+c.days+' 天裡只有 '+c.logged+
+       ' 天有記飲食，沒記的日子沒被算進平均，結果會偏低。</div>';
+  }
+  h+='<div class="calib-foot">真實 TDEE ＝平均吃進去的 ＋ 每天實際掉的體重 × 7700 大卡。'+
+     '體重有新紀錄就會重新算一次。</div>';
+  return h+'</div></div>';
 }
 
 /* ---------- 設定 ---------- */
@@ -978,7 +1124,7 @@ function viewSettings(){
   });
   if(grp) h+='</div>';
 
-  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v3.7</p>';
+  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v3.8</p>';
   return h;
 }
 
@@ -1314,6 +1460,29 @@ function doAct(act, el){
   if(act==="edit-move"){ if(requireWrite()) openMoveSheet(el.getAttribute("data-id")); return; }
   if(act==="edit-notes"){ if(requireWrite()) openNotesSheet(); return; }
   if(act==="edit-weight"){ if(requireWrite()) openWeightSheet(); return; }
+  if(act==="weigh-today"){
+    if(!requireWrite()) return;
+    curDate=dateKey(); view="today"; ensureDays([curDate]);
+    render(); window.scrollTo(0,0); openWeightSheet(); return;
+  }
+  /* 校準結果寫進「手動覆寫 TDEE」——就是設定裡本來就有的那個欄位，
+   * 不另外開一個平行的欄位，不然兩個 TDEE 打架時沒人知道哪個在生效。 */
+  if(act==="apply-calib"){
+    if(!requireWrite()) return;
+    var tv=Math.round(Number(el.getAttribute("data-v"))||0);
+    if(!(tv>0)) return;
+    db.profile.tdee=tv;
+    db.profile=cleanProfile(db.profile);
+    persistProfile(); render();
+    toast("TDEE 已改成 "+kcal(tv)+" 大卡"); return;
+  }
+  if(act==="clear-calib"){
+    if(!requireWrite()) return;
+    db.profile.tdee=0;
+    db.profile=cleanProfile(db.profile);
+    persistProfile(); render();
+    toast("已改回公式估算"); return;
+  }
   if(act==="setup-profile"){ openSetupSheet(); return; }
   if(act==="save-key"){
     var v=(document.getElementById("ai-key")||{}).value||"";

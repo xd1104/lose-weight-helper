@@ -400,6 +400,11 @@ body.has-sync #app{padding-top:58px;}
 .weigh{width:100%; display:flex; align-items:center; gap:12px; background:var(--card); border-radius:18px;
   box-shadow:var(--shadow); padding:14px 15px; text-align:left; min-height:66px;}
 .weigh:active{background:#f7faf6;}
+/* 今天還沒量：體重卡本身就是提醒，不再多一張卡佔版面 */
+.weigh.todo{box-shadow:none; background:var(--acc-soft); border:1.5px dashed var(--acc);}
+.weigh.todo .weigh-mid b.none{color:var(--acc-deep); font-weight:800;}
+.weigh.todo .weigh-mid span{color:var(--acc-deep); font-weight:700; opacity:.85;}
+.weigh.todo .chev{color:var(--acc);}
 .weigh-ico{font-size:24px; line-height:1; flex:0 0 auto;}
 .weigh-mid{flex:1; min-width:0;}
 .weigh-mid b{display:block; font-size:20px; font-weight:800;}
@@ -420,6 +425,26 @@ body.has-sync #app{padding-top:58px;}
 .wdiff.down b{color:var(--acc-deep);}
 .wdiff.up b{color:var(--warn);}
 .wchart{width:100%; height:56px; display:block; margin-top:8px; overflow:visible;}
+
+/* ---------- TDEE 校準 ---------- */
+.calib{background:var(--card); border-radius:18px; box-shadow:var(--shadow); padding:15px 16px 16px;}
+.calib>b{display:block; font-size:15px; font-weight:800; line-height:1.5;}
+.calib.ok>b{color:var(--acc-deep);}
+.calib>span{display:block; font-size:12px; color:var(--muted); font-weight:600;
+  line-height:1.75; margin-top:6px;}
+.calib-rows{margin-top:12px; background:var(--acc-soft); border-radius:14px; padding:11px 13px;}
+.calib-rows .r{display:flex; align-items:baseline; justify-content:space-between; gap:10px;
+  font-size:12.5px; font-weight:700; color:var(--acc-deep); margin-top:7px;}
+.calib-rows .r:first-child{margin-top:0;}
+.calib-rows .r span{opacity:.78; flex:0 0 auto;}
+.calib-rows .r b{font-weight:800; text-align:right;}
+.calib-rows .r.strong{border-top:1px solid rgba(31,138,85,.2); padding-top:8px; margin-top:8px;}
+.calib-rows .r.strong b{font-size:17px;}
+.calib-need{margin-top:12px; font-size:12.5px; font-weight:700; line-height:1.75;}
+.calib-warn{margin-top:10px; background:var(--warn-soft); color:#a86d12; border-radius:12px;
+  padding:9px 12px; font-size:11.5px; font-weight:700; line-height:1.65;}
+.calib-foot{margin-top:10px; font-size:11px; color:var(--muted); font-weight:600; line-height:1.65;}
+.calib .btn{margin-top:12px;}
 
 /* 選人畫面的唯讀提示 */
 .picker-note{margin-top:30px; max-width:330px; background:var(--warn-soft); border-radius:16px; padding:15px;
