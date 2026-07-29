@@ -1,10 +1,10 @@
 ## 食物
 
-- {"id":"xmrzxrybqo6vq","name":"無糖豆漿","kcal":30,"p":3,"c":1,"f":2,"portion":"半杯，約120ml","star":true,"n":4}
-- {"id":"xms2o2x82w45j","name":"全麥吐司","kcal":80,"p":3,"c":15,"f":1,"portion":"1片，約30克","star":true,"n":2}
-- {"id":"xms2o2x84vwps","name":"低脂起司片","kcal":50,"p":5,"c":1,"f":3,"portion":"1片，約20克","star":true,"n":2}
-- {"id":"xms3c39qv0iud","name":"芒果","kcal":90,"p":1,"c":23,"portion":"約一個拳頭大小，去皮去籽淨重約150克","star":true,"n":2}
-- {"id":"xms3xe4epmt8o","name":"水煮蛋","kcal":140,"p":13,"c":1,"f":10,"portion":"2顆，約50克/顆","star":true,"n":1}
+- {"id":"xmrzxrybqo6vq","name":"無糖豆漿","kcal":30,"p":3,"c":1,"f":2,"portion":"半杯，約120ml","star":true,"n":5}
+- {"id":"xms2o2x82w45j","name":"全麥吐司","kcal":80,"p":3,"c":15,"f":1,"portion":"1片，約30克","star":true,"n":3}
+- {"id":"xms2o2x84vwps","name":"低脂起司片","kcal":50,"p":5,"c":1,"f":3,"portion":"1片，約20克","star":true,"n":3}
+- {"id":"xms3c39qv0iud","name":"芒果","kcal":90,"p":1,"c":23,"portion":"約一個拳頭大小，去皮去籽淨重約150克","star":true,"n":3}
+- {"id":"xms3xe4epmt8o","name":"水煮蛋","kcal":140,"p":13,"c":1,"f":10,"portion":"2顆，約50克/顆","star":true,"n":2}
 - {"id":"xms08qs8ecwxz","name":"炒空心菜","kcal":60,"p":2,"c":5,"f":4,"portion":"約一碗，清炒","n":3}
 - {"id":"xms08qs8bajwi","name":"糙米飯","kcal":130,"p":3,"c":28,"f":1,"portion":"約半碗（100g）","n":3}
 - {"id":"xms2pgsffun8t","name":"冷凍毛豆(茶豆)","kcal":180,"p":15,"c":13,"f":8,"portion":"150克，去殼後淨重約估算，含殼帶皮秤重","n":2}
