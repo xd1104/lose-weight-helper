@@ -35,7 +35,9 @@
 - {"id":"xms1ii7ecuf5d","name":"無糖麥茶","kcal":0,"portion":"半杯約200ml","n":1}
 - {"id":"xms1iqck69uzj","name":"滷牛腱片","kcal":140,"p":18,"c":2,"f":7,"portion":"約半盤，總重估80克","n":1}
 - {"id":"xms4rpirrq33u","name":"滷汁與油蔥酥調味","kcal":50,"p":1,"c":3,"f":4,"portion":"淋在飯上的滷汁與油蔥，約1湯匙","n":1}
+- {"id":"xms605lnb4sce","name":"滷豆乾","kcal":70,"p":6,"c":3,"f":4,"portion":"約40克","n":1}
 - {"id":"xms1iqck53t0f","name":"滷味拼盤（豆干、海帶、豬耳朵、蛋）","kcal":180,"p":14,"c":6,"f":11,"portion":"約半盤，總重估120克","n":1}
+- {"id":"xms605ln837y3","name":"綜合滷味（小白菜、蕃薯葉、高麗菜、豆芽菜、海帶、花椰菜、玉米筍）","kcal":60,"p":3,"c":9,"f":1,"portion":"蔬菜類約120克，瀝乾不含湯汁","n":1}
 - {"id":"xms1iqck4djw1","name":"酸辣湯","kcal":80,"p":5,"c":8,"f":3,"portion":"半碗（約200ml）","n":1}
 - {"id":"xms4rsmiai2w7","name":"熱狗串（半串）","kcal":80,"p":3,"c":2,"f":7,"portion":"約半根熱狗","n":1}
 - {"id":"xms1i7sgyuct9","name":"蔥花蒜蓉醬料","kcal":40,"c":2,"f":3,"portion":"淋在飯上約2大匙","n":1}
