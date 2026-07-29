@@ -8,7 +8,7 @@ activity: 1.2
 tdee: 0
 goal: -300
 proteinPerKg: 1.6
-fatPct: 30
+fatPct: 25
 model: "claude-sonnet-5"
-updatedAt: "2026-07-29T02:33:49.005Z"
+updatedAt: "2026-07-29T02:33:49.987Z"
 ---
