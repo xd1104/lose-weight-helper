@@ -1,8 +1,8 @@
 ## 食物
 
 - {"id":"xms08zonowf7c","name":"白飯","kcal":130,"p":2,"c":29,"portion":"小碗約0.7碗（約100克飯量，被鴨肉覆蓋）","n":6}
+- {"id":"xms474i6245tc","name":"水煮蛋","kcal":140,"p":13,"c":1,"f":10,"portion":"兩顆，約每顆50克","n":3}
 - {"id":"xms1i7sgy4bi2","name":"叉燒肉","kcal":180,"p":15,"c":8,"f":10,"portion":"約70克","n":2}
-- {"id":"xms474i6245tc","name":"水煮蛋","kcal":78,"p":6,"c":1,"f":5,"portion":"一顆(約50克)","n":2}
 - {"id":"xms1iqck4o6ni","name":"水餃","kcal":320,"p":12,"c":40,"f":12,"portion":"8顆（豬肉高麗菜餡）","n":2}
 - {"id":"xms1ijk5o2lb5","name":"無糖豆漿","kcal":40,"p":4,"c":2,"f":2,"portion":"半杯，約200ml","n":2}
 - {"id":"xms4767ksclx9","name":"蒸蛋湯","kcal":163,"p":17.9,"c":4.5,"f":8.3,"n":2}
