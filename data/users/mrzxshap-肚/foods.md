@@ -37,6 +37,7 @@
 - {"id":"xms3ccpsd746t","name":"荷包蛋（一顆）","kcal":90,"p":6,"c":1,"f":7,"portion":"一顆蛋，油煎","n":1}
 - {"id":"xms1ii7eck6tj","name":"魚肉","kcal":60,"p":11,"f":2,"portion":"三小塊，約60克","n":1}
 - {"id":"xms1ii7ecuf5d","name":"無糖麥茶","kcal":0,"portion":"半杯約200ml","n":1}
+- {"id":"xms7flaa517xo","name":"蜂蜜麵包","kcal":100,"p":2,"c":15,"f":2,"n":1}
 - {"id":"xms1iqck69uzj","name":"滷牛腱片","kcal":140,"p":18,"c":2,"f":7,"portion":"約半盤，總重估80克","n":1}
 - {"id":"xms4rpirrq33u","name":"滷汁與油蔥酥調味","kcal":50,"p":1,"c":3,"f":4,"portion":"淋在飯上的滷汁與油蔥，約1湯匙","n":1}
 - {"id":"xms605lnb4sce","name":"滷豆乾","kcal":70,"p":6,"c":3,"f":4,"portion":"約40克","n":1}
