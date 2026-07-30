@@ -50,6 +50,7 @@
 - {"id":"xms7fe4fxf0da","name":"滑蛋瘦肉粥","kcal":380,"p":18,"c":50,"f":11,"portion":"一般碗，約450ml，含粥底、蛋、瘦肉","n":1}
 - {"id":"xms46nxj321rg","name":"煎荷包蛋","kcal":110,"p":6,"c":1,"f":9,"portion":"一顆全蛋煎至焦邊","n":1}
 - {"id":"xmrzvwpid4f6t","name":"碗粿","kcal":320,"p":8,"c":50,"f":10,"portion":"一碗，約350g，含花生粉與醬汁","n":1}
+- {"id":"xms7fhlbw0nzv","name":"蜂蜜麵包","kcal":180,"p":4,"c":30,"f":4,"n":1}
 - {"id":"xms603xh17bu7","name":"滷小白菜","kcal":20,"p":2,"c":3,"f":1,"portion":"約80克","n":1}
 - {"id":"xms603xheyu2q","name":"滷玉米筍","kcal":15,"p":1,"c":3,"portion":"約40克","n":1}
 - {"id":"xms603xh7nt1v","name":"滷豆芽菜","kcal":20,"p":2,"c":3,"f":1,"portion":"約80克","n":1}
