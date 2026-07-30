@@ -46,6 +46,7 @@
 - {"id":"xms2qc9zy3w0h","name":"紫米素粽","kcal":460,"p":9,"c":85,"f":9,"portion":"1顆約290克（含糯米、香菇、花生、素料餡）","n":1}
 - {"id":"xms1qj1udn9j7","name":"蛤蜊魚湯","kcal":100,"p":10,"c":4,"f":4,"portion":"約一碗，含少量魚肉與蛤蜊","n":1}
 - {"id":"xms4rmubedrey","name":"黑輪串","kcal":70,"p":4,"c":9,"f":2,"portion":"1串，約60g","n":1}
+- {"id":"xms7fe4fxf0da","name":"滑蛋瘦肉粥","kcal":380,"p":18,"c":50,"f":11,"portion":"一般碗，約450ml，含粥底、蛋、瘦肉","n":1}
 - {"id":"xms46nxj321rg","name":"煎荷包蛋","kcal":110,"p":6,"c":1,"f":9,"portion":"一顆全蛋煎至焦邊","n":1}
 - {"id":"xmrzvwpid4f6t","name":"碗粿","kcal":320,"p":8,"c":50,"f":10,"portion":"一碗，約350g，含花生粉與醬汁","n":1}
 - {"id":"xms603xh17bu7","name":"滷小白菜","kcal":20,"p":2,"c":3,"f":1,"portion":"約80克","n":1}
