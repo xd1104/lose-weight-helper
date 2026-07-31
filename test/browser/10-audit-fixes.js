@@ -216,7 +216,10 @@ async function addManual(p, name, kcal) {
     await p.click('#f-text button[type="submit"]');
     await p.waitForTimeout(1500);
     const s = sent[1] || {};
-    check('Sonnet 仍然帶 effort:low', s.output_config && s.output_config.effort === 'low', s.output_config);
+      /* 食物估算刻意用 medium：low 太容易「隨手抓一個看起來合理的數字」，
+       同一張照片兩次就落在不同的地方（Benson 反映的問題）。 */
+    check('Sonnet 仍然帶 effort（食物估算是 medium）',
+      s.output_config && s.output_config.effort === 'medium', s.output_config);
     check('沒有 pageerror', p.__errs.length === 0, p.__errs);
     await p.context().close();
   }

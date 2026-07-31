@@ -67,10 +67,29 @@ var AI_SYSTEM = [
   "2. 口語份量要照著調整：「加飯」白飯多算一份、「大碗」約 1.3 倍、「小碗」約 0.7 倍、「半糖」糖量減半、「去冰」不影響熱量。",
   "3. 照片裡每一樣可分辨的食物各給一個 item（例如排骨便當要拆成排骨、白飯、配菜）。純文字描述若包含多樣食物也要拆開。",
   "4. portion 欄寫出你採用的份量假設，要具體，例如「便當盒大小、白飯約 1.5 碗」「700ml 中杯」。使用者要能一眼看出你是不是估錯份量。",
+  "4b. **固定的推算順序**：先判斷份量（幾碗／幾片／幾支／幾 ml），寫進 portion，再照下面的基準表換算成熱量。",
+  "    不要憑印象直接寫一個總熱量。同一張照片、同一段描述，份量判斷應該要一致，換算出來的數字也就會一致。",
+  "    份量落在兩個值之間時取中間值，不要每次挑不同的一邊。",
   "5. 一定要給數字。資訊不足時取合理中位數，用 confidence 表達不確定，不要拒答也不要回 0。",
   "6. kcal 是大卡、protein/carbs/fat 是公克，全部給整數。",
   "7. note 用一句繁體中文說明最關鍵的假設或提醒（例如「醬汁與炒油抓得較保守，實際可能再高 100 大卡」）。",
-  "8. 全部用繁體中文，食物名稱用台灣慣用說法。"
+  "8. 全部用繁體中文，食物名稱用台灣慣用說法。",
+  "",
+  /* 為什麼要給基準表：不給的話，模型每次都得重新想像「一碗飯有多少」，
+   * 同一張照片兩次估出來就會差一兩百大卡。給定錨點之後，變成「判斷份量 → 查表換算」，
+   * 前後兩次只要份量判斷一樣，數字就一樣。這也順便把台灣食物估準一點。 */
+  "份量基準（台灣常見值，照片份量明顯不同時再等比例調整）：",
+  "· 白飯：一般碗約 280 大卡（碳水 60g）；便當盒的飯約 1.5 碗＝420 大卡；「加飯」再加一份",
+  "· 麵：陽春麵一碗約 400；牛肉麵（含湯與肉）約 650；義大利麵一份約 600",
+  "· 便當整份：排骨便當約 900、雞腿便當約 950、控肉便當約 1000、素食便當約 700",
+  "· 自助餐一餐（飯＋一主菜＋兩配菜）約 800",
+  "· 主菜單品：炸排骨一片約 350、炸雞腿一支約 320、滷雞腿約 250、煎魚一片約 200、荷包蛋一顆約 90",
+  "· 配菜：自助餐炒青菜一份約 120（用油多）、燙青菜約 50、滷蛋一顆約 75、豆腐一塊約 90",
+  "· 早餐店：蛋餅約 250、鮪魚蛋吐司約 350、蘿蔔糕兩塊約 250、大冰奶約 250",
+  "· 手搖 700ml：全糖珍奶約 550、半糖珍奶約 450、微糖綠茶約 60、無糖茶約 0",
+  "· 超商：御飯糰約 200、舒肥雞胸約 110、茶葉蛋約 70、關東煮一支約 40",
+  "· 水餃一顆約 40、小籠包一顆約 45、鹹酥雞一份約 500、滷肉飯一碗約 500",
+  "· 油與醬汁容易被漏算：自助餐與快炒的菜每份再加約 50 大卡的烹調用油。"
 ].join("\n");
 
 /* 結構化輸出 schema：強制回傳可直接落檔的形狀，不用解析自由文字 */
@@ -225,10 +244,17 @@ function aiMsgForStatus(status, body){
 }
 
 /* output_config 的 effort 目前只有推理型模型吃得下，Haiku 4.5 會直接回 400。
- * 不先擋掉的話，選 Haiku 的人每次都會白打一次請求才降級（慢、又多算一次 usage）。 */
-function outputConfigFor(model, schema){
+ * 不先擋掉的話，選 Haiku 的人每次都會白打一次請求才降級（慢、又多算一次 usage）。
+ *
+ * effort 的選法（Benson 反映「同一張照片兩次估差很多」之後調的）：
+ *   食物估算 = medium。這件事要先判斷份量再換算，low 太容易「隨手抓一個看起來合理的數字」，
+ *   同一張照片兩次就會落在不同的地方。medium 貴一點點，但前後比較穩。
+ *   運動與講評 = low。前者是一條公式，後者是講評，都不吃深度推理。
+ * ⚠️ temperature 不是選項：claude-sonnet-5／opus-5 這一代把 temperature/top_p/top_k 移除了，
+ *    帶進去 API 會直接回 400。沒辦法用「溫度 0」把輸出鎖成固定值，只能靠 prompt 與 effort 收斂。 */
+function outputConfigFor(model, schema, effort){
   var cfg={ format:{ type:"json_schema", schema:schema } };
-  if(!/^claude-haiku/.test(String(model||""))) cfg.effort="low"; /* 簡單估算，不需要深度推理；省時間也省錢 */
+  if(!/^claude-haiku/.test(String(model||""))) cfg.effort=effort||"low";
   return cfg;
 }
 
@@ -246,7 +272,7 @@ function aiRequest(model, contentBlocks, plain){
     system: AI_SYSTEM + (plain ? "\n\n" + AI_JSON_FALLBACK : ""),
     messages: [{ role:"user", content: contentBlocks }]
   };
-  if(!plain) body.output_config = outputConfigFor(model, AI_SCHEMA);
+  if(!plain) body.output_config = outputConfigFor(model, AI_SCHEMA, "medium");
 
   return fetch("https://api.anthropic.com/v1/messages", {
     method:"POST",

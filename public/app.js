@@ -1124,7 +1124,7 @@ function viewSettings(){
   });
   if(grp) h+='</div>';
 
-  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v3.8</p>';
+  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v3.9</p>';
   return h;
 }
 
@@ -2070,6 +2070,10 @@ var aiResult=null;
 function drawAiResult(){
   var body='';
   if(aiResult.note) body+='<div class="ai-note">💡 '+esc(aiResult.note)+'</div>';
+  /* 「652 大卡」看起來像量過的，其實是估的。不講清楚，使用者會把兩次估算的差
+   * 當成 app 壞掉；講清楚之後，同一個誤差就只是正常範圍。 */
+  body+='<div class="ai-acc">估算誤差大約 ±20%，照片看不出油量與飯量，這是上限。'+
+        '份量寫錯就直接改數字，一週的平均比單餐的數字可靠得多。</div>';
   body+=mealPicker();
   aiResult.items.forEach(function(it,idx){
     var cf = it.confidence==="high" ? "" :
