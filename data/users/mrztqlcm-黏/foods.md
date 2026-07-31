@@ -45,6 +45,7 @@
 - {"id":"xms05mh8p4qi0","name":"香蕉","kcal":70,"p":1,"c":18,"portion":"小根一根，約80克","n":1}
 - {"id":"xms33i0zvs3yi","name":"烤地瓜","kcal":190,"p":3,"c":44,"portion":"中型一條，約200克","n":1}
 - {"id":"xms4rmubd4hhv","name":"脆腸串","kcal":90,"p":4,"c":1,"f":8,"portion":"半串，約30g","n":1}
+- {"id":"xms96uf39553m","name":"草莓優格飲","kcal":250,"p":5,"c":45,"f":6,"portion":"小杯約350ml，全糖","n":1}
 - {"id":"xms4ih9vaosfz","name":"迷你銅鑼燒","kcal":114,"p":2.1,"c":19.8,"f":3,"n":1}
 - {"id":"xms96rl6kansw","name":"培根","kcal":180,"p":10,"c":1,"f":15,"portion":"約4-5片培根，3/4份量","n":1}
 - {"id":"xms05gf4qcob3","name":"清蒸魚","kcal":320,"p":48,"c":2,"f":13,"portion":"整條約600克(含骨頭)，可食用魚肉約250克","n":1}
