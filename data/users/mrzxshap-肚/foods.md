@@ -34,6 +34,7 @@
 - {"id":"xms1id61ysrqt","name":"烤雞肉（去皮）","kcal":130,"p":24,"f":4,"portion":"約80克","n":1}
 - {"id":"xms4iibycaaeq","name":"迷你銅鑼燒","kcal":114,"p":2.1,"c":19.8,"f":3,"n":1}
 - {"id":"xms3ccpsecber","name":"配菜（醃蘿蔔/高麗菜）","kcal":30,"p":1,"c":5,"f":1,"portion":"少量配菜","n":1}
+- {"id":"xms96vj675jl6","name":"培根總匯三明治(全份的1/4)","kcal":180,"p":9,"c":16,"f":9,"portion":"約2片三角形吐司，取自全份8片中的2片，含培根、火腿、蛋、生菜、番茄","n":1}
 - {"id":"xms1iqck6mwnk","name":"涼拌小黃瓜","kcal":60,"p":1,"c":8,"f":3,"portion":"約半盤，含醬汁","n":1}
 - {"id":"xms3ccpsd746t","name":"荷包蛋（一顆）","kcal":90,"p":6,"c":1,"f":7,"portion":"一顆蛋，油煎","n":1}
 - {"id":"xms1ii7eck6tj","name":"魚肉","kcal":60,"p":11,"f":2,"portion":"三小塊，約60克","n":1}
