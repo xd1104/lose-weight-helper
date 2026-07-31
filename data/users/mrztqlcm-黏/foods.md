@@ -51,9 +51,11 @@
 - {"id":"xmrzvy2cso7iq","name":"甜椒配料","kcal":3,"c":1,"portion":"少量點綴，約10g","n":1}
 - {"id":"xms14aifk0m9t","name":"甜燒餅","kcal":350,"p":7,"c":45,"f":16,"portion":"傳統早餐店燒餅一份，約120克","n":1}
 - {"id":"xms96rl6n1yqt","name":"荷包蛋/水煮蛋","kcal":120,"p":9,"c":1,"f":9,"portion":"約1.5顆蛋量","n":1}
+- {"id":"xms96u0t5m6yq","name":"番茄鍋燒湯底","kcal":120,"p":2,"c":10,"f":7,"portion":"約500ml湯，含番茄與油脂調味","n":1}
 - {"id":"xms2qc9zy3w0h","name":"紫米素粽","kcal":460,"p":9,"c":85,"f":9,"portion":"1顆約290克（含糯米、香菇、花生、素料餡）","n":1}
 - {"id":"xms1qj1udn9j7","name":"蛤蜊魚湯","kcal":100,"p":10,"c":4,"f":4,"portion":"約一碗，含少量魚肉與蛤蜊","n":1}
 - {"id":"xms4rmubedrey","name":"黑輪串","kcal":70,"p":4,"c":9,"f":2,"portion":"1串，約60g","n":1}
+- {"id":"xms96u0t29qas","name":"意麵","kcal":280,"p":7,"c":55,"f":3,"portion":"約1份乾麵量，煮熟後泡於湯中","n":1}
 - {"id":"xms7fe4fxf0da","name":"滑蛋瘦肉粥","kcal":380,"p":18,"c":50,"f":11,"portion":"一般碗，約450ml，含粥底、蛋、瘦肉","n":1}
 - {"id":"xms46nxj321rg","name":"煎荷包蛋","kcal":110,"p":6,"c":1,"f":9,"portion":"一顆全蛋煎至焦邊","n":1}
 - {"id":"xmrzvwpid4f6t","name":"碗粿","kcal":320,"p":8,"c":50,"f":10,"portion":"一碗，約350g，含花生粉與醬汁","n":1}
@@ -68,8 +70,11 @@
 - {"id":"xms46nxj11eh3","name":"滷腿庫","kcal":280,"p":18,"c":3,"f":22,"portion":"約一塊，掌心大小含皮","n":1}
 - {"id":"xms33mroscx1r","name":"滷豬皮","kcal":90,"p":8,"c":2,"f":6,"portion":"約1/2碗","n":1}
 - {"id":"xms603xh4c6mu","name":"滷蕃薯葉","kcal":25,"p":2,"c":3,"f":1,"portion":"約80克","n":1}
+- {"id":"xms96u0tb746w","name":"綜合蔬菜（青江菜、玉米筍、番茄、黑木耳）","kcal":60,"p":2,"c":10,"f":1,"portion":"約1碗份量蔬菜","n":1}
 - {"id":"xms4rmubagdxq","name":"熱狗串","kcal":90,"p":3,"c":2,"f":8,"portion":"半串，約30g","n":1}
 - {"id":"xms96sz95l79f","name":"蔥抓餅加蛋","kcal":150,"p":6,"c":15,"f":8,"portion":"整份約市售一片蔥抓餅加一顆蛋，取其1/3份量","n":1}
+- {"id":"xms96u0t6jdps","name":"蝦仁","kcal":60,"p":12,"c":1,"f":1,"portion":"約3尾中蝦","n":1}
+- {"id":"xms96u0t9xhyt","name":"豬肉片","kcal":100,"p":10,"f":6,"portion":"約50克","n":1}
 - {"id":"xms4rkngg8k0n","name":"燙地瓜葉佐蒜末醬油","kcal":110,"p":3,"c":9,"f":7,"portion":"自助餐一般盤裝，估全盤約250克，實際食用2/3份約170克","n":1}
 - {"id":"xmrzvy2cobh9k","name":"蕈菇燉飯","kcal":520,"p":14,"c":72,"f":18,"portion":"約一碗份量(含飯約200g熟重、綜合菇類、起司醬汁)","n":1}
 - {"id":"xms4rjrmxq2ve","name":"鴨心湯麵（麵條與鴨心料，小碗）","kcal":320,"p":18,"c":40,"f":8,"portion":"小碗約0.7份，油麵約1碗，鴨心5-6片","n":1}
