@@ -28,6 +28,7 @@
 - {"id":"xms4rmub7sfn0","name":"米血串","kcal":90,"p":2,"c":19,"f":1,"portion":"1串，約60g","n":1}
 - {"id":"xms1k9j1735nj","name":"羊肉片","kcal":220,"p":18,"f":16,"portion":"約100克涮煮羊肉片","n":1}
 - {"id":"xms2pb1x7w36i","name":"肉鬆蛋捲","kcal":103,"p":2,"c":11,"f":5,"n":1}
+- {"id":"xmsam01aplz46","name":"冷凍地瓜","kcal":130,"p":2,"c":30,"portion":"一條，約150克（中等大小）","n":1}
 - {"id":"xms5q6vl6011q","name":"冷凍豬肉水餃","kcal":760,"p":24,"c":95,"f":28,"portion":"19顆，一般市售冷凍水餃(約每顆20-25g)","n":1}
 - {"id":"xms4rmubba57p","name":"豆皮串","kcal":60,"p":5,"c":1,"f":4,"portion":"半串，約25g","n":1}
 - {"id":"xms4rmub9kxt5","name":"豆乾串","kcal":100,"p":9,"c":3,"f":6,"portion":"1串，約50g","n":1}
