@@ -57,6 +57,7 @@
 - {"id":"xms1qj1udn9j7","name":"蛤蜊魚湯","kcal":100,"p":10,"c":4,"f":4,"portion":"約一碗，含少量魚肉與蛤蜊","n":1}
 - {"id":"xms4rmubedrey","name":"黑輪串","kcal":70,"p":4,"c":9,"f":2,"portion":"1串，約60g","n":1}
 - {"id":"xms96u0t29qas","name":"意麵","kcal":280,"p":7,"c":55,"f":3,"portion":"約1份乾麵量，煮熟後泡於湯中","n":1}
+- {"id":"xmsajxu2f8uo3","name":"新台鐵草莓夾心麵包","kcal":185,"p":5,"c":35,"f":3,"portion":"整包1份，78公克","n":1}
 - {"id":"xms7fe4fxf0da","name":"滑蛋瘦肉粥","kcal":380,"p":18,"c":50,"f":11,"portion":"一般碗，約450ml，含粥底、蛋、瘦肉","n":1}
 - {"id":"xms46nxj321rg","name":"煎荷包蛋","kcal":110,"p":6,"c":1,"f":9,"portion":"一顆全蛋煎至焦邊","n":1}
 - {"id":"xmrzvwpid4f6t","name":"碗粿","kcal":320,"p":8,"c":50,"f":10,"portion":"一碗，約350g，含花生粉與醬汁","n":1}
@@ -82,3 +83,4 @@
 - {"id":"xms96rl6fhia9","name":"總匯三明治吐司","kcal":330,"p":10,"c":54,"f":7,"portion":"3片吐司(6角)，約3/4份總匯份量","n":1}
 - {"id":"xms96s169x9jq","name":"鮮奶茶","kcal":250,"p":6,"c":38,"f":9,"portion":"700ml小杯，全糖假設(未特別說明糖量)","n":1}
 - {"id":"xms4rmubcxhrn","name":"雞心串","kcal":80,"p":9,"f":5,"portion":"1串，約50g","n":1}
+- {"id":"xmsajyeot493f","name":"雞肉蛋沙拉三明治","kcal":240,"p":12,"c":23,"f":11,"portion":"1份，100公克，包裝標示","n":1}
