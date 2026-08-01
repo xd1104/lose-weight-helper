@@ -180,17 +180,41 @@ function sortFoods(a,b){
          String(a.name).localeCompare(String(b.name),"zh-Hant");
 }
 
+/* 食物名稱的比對用 key。
+ * AI 每次寫的名字會有小差異（「白飯」／「白飯（便當盒）」／「白飯 1.5 碗」），
+ * 用原字串比對就會在常吃清單裡長出一堆近似重複，而且「上次記多少」永遠對不上。
+ * 括號註解與標點空白一律拿掉；刻意「不」做同義詞對應（珍奶≠珍珠奶茶），
+ * 猜太多會把不同的東西合在一起，那比多一筆更糟。 */
+function foodKey(name){
+  return String(name||"").trim().toLowerCase()
+    .replace(/[（(][^)）]*[)）]/g, "")
+    .replace(/[\s·・、,，.。!！?？~～\-—_]/g, "");
+}
+/* 找出常吃清單裡對應的那一筆（先原字串、再正規化）。找不到回 null。 */
+function findFood(name){
+  var raw=String(name||"").trim();
+  if(!raw) return null;
+  var i;
+  for(i=0;i<db.foods.length;i++) if(db.foods[i].name===raw) return db.foods[i];
+  var k=foodKey(raw);
+  if(!k) return null;
+  for(i=0;i<db.foods.length;i++) if(foodKey(db.foods[i].name)===k) return db.foods[i];
+  return null;
+}
+
 function rememberFood(item){
   var key=String(item.name||"").trim();
   if(!key) return;
-  var hit=null;
-  for(var i=0;i<db.foods.length;i++){
-    if(db.foods[i].name===key){ hit=db.foods[i]; break; }
-  }
+  var hit=findFood(key);
   if(hit){
     hit.n=(num(hit.n)||1)+1;
-    hit.kcal=round(item.kcal); hit.p=round1(item.p); hit.c=round1(item.c); hit.f=round1(item.f);
-    if(item.portion) hit.portion=item.portion;
+    /* 加了星的是「他自己認定的固定值」（可能還手動改過數字），AI 不准蓋掉——
+     * 不然每吃一次就被新的估算覆寫，常吃清單永遠不會變成穩定的常數。
+     * 沒加星的只是「最近吃過」的快照，照舊更新。 */
+    if(!hit.star){
+      hit.kcal=round(item.kcal); hit.p=round1(item.p); hit.c=round1(item.c); hit.f=round1(item.f);
+      if(item.portion) hit.portion=item.portion;
+    }
   }else{
     db.foods.push({ id:uid(), name:key, kcal:round(item.kcal), p:round1(item.p), c:round1(item.c),
                     f:round1(item.f), portion:item.portion||"", n:1 });
@@ -1124,7 +1148,7 @@ function viewSettings(){
   });
   if(grp) h+='</div>';
 
-  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v3.9</p>';
+  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v4.0</p>';
   return h;
 }
 
@@ -2075,14 +2099,41 @@ function drawAiResult(){
   body+='<div class="ai-acc">估算誤差大約 ±20%，照片看不出油量與飯量，這是上限。'+
         '份量寫錯就直接改數字，一週的平均比單餐的數字可靠得多。</div>';
   body+=mealPicker();
+
+  /* 吃過的東西沿用上次的數字。
+   * 這是唯一能把「同一張照片兩次差很多」降到零的做法——同樣的東西根本不重估。
+   * 只在差 5% 以上時才提示：差幾大卡還跳出來問，只是版面雜訊。 */
+  var reusable=[];
+  aiResult.items.forEach(function(it,idx){
+    if(it.reused) return;
+    var f=findFood(it.name);
+    if(!f || !num(f.kcal)) return;
+    if(Math.abs(num(f.kcal)-num(it.kcal)) < Math.max(20, num(f.kcal)*0.05)) return;
+    reusable.push(idx);
+  });
+  if(reusable.length){
+    body+='<div class="ai-reuse"><b>🔁 有 '+reusable.length+' 樣你記過</b>'+
+      '<span>沿用上次記的數字，同一份餐點每次記都會一樣，不用管 AI 這次估多少。</span>'+
+      '<button data-use="all">全部沿用上次的數字</button></div>';
+  }
+
   aiResult.items.forEach(function(it,idx){
     var cf = it.confidence==="high" ? "" :
       '<span class="conf '+it.confidence+'">'+(it.confidence==="low"?"不太確定":"約略")+'</span>';
+    var f=findFood(it.name), last='';
+    if(it.reused){
+      last='<div class="ai-last done">已沿用上次記的數字</div>';
+    }else if(f && num(f.kcal) && reusable.indexOf(idx)>=0){
+      var gap=num(it.kcal)-num(f.kcal);
+      last='<button class="ai-last" data-use="'+idx+'">上次記 '+kcal(f.kcal)+' 大卡'+
+           '（這次'+(gap>0?"多":"少")+' '+kcal(Math.abs(gap))+'）· 沿用</button>';
+    }
     body+='<div class="ai-item">'+
       '<div class="t"><button class="ai-name" data-fix="'+idx+'">'+esc(it.name)+cf+
           '<i class="pen">✎</i></button>'+
         '<button data-drop="'+idx+'" aria-label="移除">✕</button></div>'+
       (it.portion?'<div class="por">'+esc(it.portion)+'</div>':'')+
+      last+
       '<div class="ai-nums">'+
         '<label><span>大卡</span><input type="number" inputmode="numeric" data-f="kcal" data-i="'+idx+'" value="'+it.kcal+'"></label>'+
         '<label><span>蛋白 g</span><input type="number" inputmode="decimal" step="0.1" data-f="p" data-i="'+idx+'" value="'+gram(it.p)+'"></label>'+
@@ -2123,6 +2174,14 @@ function drawAiResult(){
     root.querySelectorAll("[data-fix]").forEach(function(b){
       b.onclick=function(){ openAiItemSheet(+b.getAttribute("data-fix")); };
     });
+    root.querySelectorAll("[data-use]").forEach(function(b){
+      b.onclick=function(){
+        var v=b.getAttribute("data-use");
+        if(v==="all"){ aiResult.items.forEach(function(x,i){ useLastFood(i); }); }
+        else useLastFood(+v);
+        drawAiResult();
+      };
+    });
     var save=root.querySelector('[data-ai="save"]');
     if(save) save.onclick=function(){ addEntries(aiResult.items); };
     var retry=root.querySelector('[data-ai="retry"]');
@@ -2131,6 +2190,21 @@ function drawAiResult(){
       drawAddSheet(false);
     };
   }});
+}
+
+/* 把某一項換成常吃清單裡記過的數字。
+ * 順便把名稱也對齊成清單裡的寫法：之後的比對就會是完全命中，
+ * 常吃清單也不會因為 AI 每次換個寫法而長出近似重複。 */
+function useLastFood(idx){
+  var it=aiResult.items[idx];
+  if(!it || it.reused) return;
+  var f=findFood(it.name);
+  if(!f || !num(f.kcal)) return;
+  it.name=f.name;
+  it.kcal=round(f.kcal); it.p=round1(f.p); it.c=round1(f.c); it.f=round1(f.f);
+  if(f.portion) it.portion=f.portion;
+  it.confidence="high";   /* 這已經不是估的了，是上次記下來的 */
+  it.reused=true;
 }
 
 /* ============ 今天吃得怎樣（營養師講評） ============
@@ -2328,8 +2402,7 @@ function starEntry(e){
   if(!requireWrite()) return;
   var key=String(e.name||"").trim();
   if(!key) return;
-  var hit=null;
-  for(var i=0;i<db.foods.length;i++){ if(db.foods[i].name===key){ hit=db.foods[i]; break; } }
+  var hit=findFood(key);
   if(hit){
     hit.star=true;
     hit.kcal=round(e.kcal); hit.p=round1(e.p); hit.c=round1(e.c); hit.f=round1(e.f);
@@ -2343,9 +2416,8 @@ function starEntry(e){
   toast("已加入常吃：「"+key+"」");
 }
 function isStarred(name){
-  var key=String(name||"").trim();
-  for(var i=0;i<db.foods.length;i++){ if(db.foods[i].name===key && db.foods[i].star) return true; }
-  return false;
+  var hit=findFood(name);
+  return !!(hit && hit.star);
 }
 
 /* ============ 編輯／刪除單筆飲食 ============ */

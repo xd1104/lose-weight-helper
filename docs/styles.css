@@ -275,6 +275,20 @@ input,textarea,select{font-family:inherit; font-size:16px; color:inherit;}
 
 /* AI 結果預覽 */
 .ai-acc{margin-top:10px; font-size:11.5px; font-weight:600; color:var(--muted); line-height:1.65;}
+/* 「吃過的東西沿用上次」：把 AI 的變異換成一顆按鈕 */
+.ai-reuse{margin-top:12px; background:var(--acc-soft); border-radius:14px; padding:12px 13px;}
+.ai-reuse b{display:block; font-size:13.5px; font-weight:800; color:var(--acc-deep);}
+.ai-reuse span{display:block; font-size:11.5px; font-weight:600; color:var(--acc-deep);
+  opacity:.85; line-height:1.65; margin-top:4px;}
+.ai-reuse button{width:100%; min-height:44px; margin-top:10px; border-radius:12px;
+  background:var(--acc); color:#fff; font-size:14px; font-weight:800;}
+.ai-reuse button:active{background:var(--acc-deep);}
+.ai-last{display:block; width:100%; text-align:left; min-height:38px; margin-top:8px;
+  border-radius:11px; padding:9px 11px; background:var(--acc-soft); color:var(--acc-deep);
+  font-size:12px; font-weight:700; line-height:1.4;}
+.ai-last:active{background:#d8ecdf;}
+.ai-last.done{background:transparent; color:var(--muted); font-weight:600; padding:6px 0 0;
+  min-height:0;}
 .ai-note{background:var(--acc-soft); color:var(--acc-deep); border-radius:12px; padding:10px 12px;
   font-size:12.5px; line-height:1.6; font-weight:600; margin-bottom:12px;}
 .ai-item{background:var(--card); border-radius:14px; box-shadow:var(--shadow); padding:12px 13px; margin-bottom:10px;}
