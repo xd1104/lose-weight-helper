@@ -4,6 +4,8 @@
 - {"id":"xms474i6245tc","name":"水煮蛋","kcal":140,"p":13,"c":1,"f":10,"portion":"兩顆，約每顆50克","n":3}
 - {"id":"xms1i7sgy4bi2","name":"叉燒肉","kcal":180,"p":15,"c":8,"f":10,"portion":"約70克","n":2}
 - {"id":"xms1iqck4o6ni","name":"水餃","kcal":320,"p":12,"c":40,"f":12,"portion":"8顆（豬肉高麗菜餡）","n":2}
+- {"id":"xms1ijk5nrvux","name":"巧克力厚片吐司","kcal":280,"p":6,"c":38,"f":12,"portion":"整份約1片厚片吐司抹巧克力醬，此次吃3/4份","n":2}
+- {"id":"xms96vj675jl6","name":"培根總匯三明治(全份的1/4)","kcal":210,"p":10,"c":20,"f":10,"portion":"整份約3份三明治吐司（培根、火腿、蛋、生菜、番茄），此次吃1/4份","n":2}
 - {"id":"xms1ijk5o2lb5","name":"無糖豆漿","kcal":40,"p":4,"c":2,"f":2,"portion":"半杯，約200ml","n":2}
 - {"id":"xms4767ksclx9","name":"蒸蛋湯","kcal":163,"p":17.9,"c":4.5,"f":8.3,"n":2}
 - {"id":"xms08zonpy23i","name":"燙青菜（高麗菜、地瓜葉等）","kcal":60,"p":2,"c":8,"f":2,"portion":"約1份，附醬油蔥花","n":2}
@@ -13,7 +15,6 @@
 - {"id":"xms4rsmicfv11","name":"大腸（肥腸）","kcal":150,"p":4,"c":1,"f":14,"portion":"兩小塊，約40克","n":1}
 - {"id":"xms1ii7edhh0y","name":"冬瓜檸檬冰沙","kcal":130,"c":33,"portion":"半杯約300ml（原份量700ml的一半）","n":1}
 - {"id":"xms4rsmigol3g","name":"四季豆串（半串）","kcal":30,"p":1,"c":4,"f":1,"portion":"約半串，含烤油","n":1}
-- {"id":"xms1ijk5nrvux","name":"巧克力厚片吐司","kcal":180,"p":4,"c":24,"f":8,"portion":"半片，約半份塗抹巧克力醬的厚片吐司","n":1}
 - {"id":"xms6072n2f1uk","name":"巧克力鬆餅","kcal":480,"p":8,"c":68,"f":18,"portion":"170克，無奶油，僅淋巧克力醬","n":1}
 - {"id":"xms7fmghn0tvh","name":"巧克力麵包","kcal":140,"p":4,"c":20,"f":3.5,"n":1}
 - {"id":"xmsam76qcqxe4","name":"生鮭魚丁","kcal":90,"p":10,"f":5,"portion":"約一貫壽司份量的生鮭魚丁，約50g","n":1}
@@ -40,7 +41,6 @@
 - {"id":"xmsam4irj8cc4","name":"真鯛生魚片握壽司（2貫）","kcal":130,"p":8,"c":22,"f":1,"portion":"2貫，真鯛生魚片約30g+醋飯約80g","n":1}
 - {"id":"xms4iibycaaeq","name":"迷你銅鑼燒","kcal":114,"p":2.1,"c":19.8,"f":3,"n":1}
 - {"id":"xms3ccpsecber","name":"配菜（醃蘿蔔/高麗菜）","kcal":30,"p":1,"c":5,"f":1,"portion":"少量配菜","n":1}
-- {"id":"xms96vj675jl6","name":"培根總匯三明治(全份的1/4)","kcal":180,"p":9,"c":16,"f":9,"portion":"約2片三角形吐司，取自全份8片中的2片，含培根、火腿、蛋、生菜、番茄","n":1}
 - {"id":"xms1iqck6mwnk","name":"涼拌小黃瓜","kcal":60,"p":1,"c":8,"f":3,"portion":"約半盤，含醬汁","n":1}
 - {"id":"xmsam4irgyc28","name":"甜蝦美乃滋軍艦（2貫）","kcal":180,"p":6,"c":22,"f":7,"portion":"2貫，蝦肉約20g+美乃滋一球+醋飯約80g","n":1}
 - {"id":"xms96wuclgvzi","name":"荷包蛋","kcal":90,"p":6,"c":1,"f":7,"portion":"1顆，煎於蔥油餅上","n":1}
@@ -57,6 +57,7 @@
 - {"id":"xmsam76qizaj0","name":"蒔蘿與檸檬調味","kcal":5,"c":1,"portion":"少許蒔蘿碎與一片檸檬點綴","n":1}
 - {"id":"xms1iqck4djw1","name":"酸辣湯","kcal":80,"p":5,"c":8,"f":3,"portion":"半碗（約200ml）","n":1}
 - {"id":"xms4rsmiai2w7","name":"熱狗串（半串）","kcal":80,"p":3,"c":2,"f":7,"portion":"約半根熱狗","n":1}
+- {"id":"xmsambuj1alh1","name":"蔥抓餅加蛋","kcal":230,"p":9,"c":26,"f":11,"portion":"整份約1.5張蛋餅份量，此次吃2/3份，約1張蛋餅份量","n":1}
 - {"id":"xms96wucjovrl","name":"蔥油餅","kcal":280,"p":5,"c":33,"f":15,"portion":"約2/3份（一般全份約直徑20公分）","n":1}
 - {"id":"xms1i7sgyuct9","name":"蔥花蒜蓉醬料","kcal":40,"c":2,"f":3,"portion":"淋在飯上約2大匙","n":1}
 - {"id":"xms08zonqv4zd","name":"蔥薑醬料","kcal":40,"c":1,"f":4,"portion":"約2湯匙淋醬","n":1}
