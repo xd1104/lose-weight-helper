@@ -22,6 +22,7 @@
 - {"id":"xms3cawqebeag","name":"全麥吐司","kcal":80,"p":3,"c":15,"f":1,"portion":"1片（約30克）","n":1}
 - {"id":"xms33q6zy2764","name":"地瓜、茶豆、滷菜、香菇雞湯","kcal":800,"n":1}
 - {"id":"xms4rsmid4fiz","name":"米血糕","kcal":70,"p":2,"c":15,"portion":"一塊，約50克","n":1}
+- {"id":"xmsam9c2snp89","name":"肉粽","kcal":350,"p":9,"c":45,"f":14,"portion":"小顆肉粽一顆，約150g","n":1}
 - {"id":"xms3cawqff79y","name":"低脂起司片","kcal":50,"p":5,"c":1,"f":3,"portion":"1片（約20克）","n":1}
 - {"id":"xmsam86tbb4hl","name":"冷凍地瓜","kcal":100,"p":1,"c":24,"portion":"約半條，重量約100公克","n":1}
 - {"id":"xms5q5x68zxgt","name":"芒果","kcal":150,"p":2,"c":38,"f":1,"portion":"約兩拳頭大小，切塊約250克","n":1}
