@@ -62,6 +62,7 @@
 - {"id":"xms08zonp4ily","name":"燒鴨肉（去皮）","kcal":110,"p":15,"c":2,"f":5,"portion":"約60克","n":1}
 - {"id":"xms1i7sgyxjon","name":"燙青菜（高麗菜、空心菜等）","kcal":60,"p":2,"c":8,"f":2,"portion":"約1份配菜，含少許油蔥","n":1}
 - {"id":"xms4rq5ugh0c7","name":"燙蕃薯葉佐蒜末醬油(1/3盤)","kcal":70,"p":2,"c":6,"f":4,"portion":"整盤約一般自助餐大份，實際食用約1/3盤，帶少許油蔥醬汁","n":1}
+- {"id":"xmsam7qdmr4de","name":"龍蝦濃湯","kcal":350,"p":10,"c":20,"f":25,"portion":"約1碗（350ml），濃稠奶油底湯","n":1}
 - {"id":"xmsam4irkfy7x","name":"鮮蝦番茄生菜沙拉包","kcal":90,"p":8,"c":6,"f":4,"portion":"一份，蝦仁約3尾+番茄洋蔥生菜+沙拉醬少許","n":1}
 - {"id":"xms4rsmieixuj","name":"雞皮串（半串）","kcal":110,"p":4,"f":10,"portion":"約半串，30克","n":1}
 - {"id":"xms3ccpsakgpv","name":"雞肉飯（白飯）","kcal":320,"p":6,"c":60,"f":6,"portion":"便當盒約1碗白飯，淋雞汁","n":1}
