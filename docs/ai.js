@@ -411,15 +411,31 @@ function aiMoveRequest(model, userText, plain){
 }
 
 /* ---- 對外：照片 ---- */
-/* 圖片放在文字前面（官方建議的順序，照片題型準度較好） */
-function aiAnalyzePhoto(model, dataUrl, hint){
-  var m=/^data:(image\/[a-z+]+);base64,(.*)$/i.exec(String(dataUrl||""));
-  if(!m) return Promise.reject(aiError("照片讀取失敗，請重選一張。","bad-image"));
-  var blocks=[{ type:"image", source:{ type:"base64", media_type:m[1], data:m[2] } }];
+/* 多張照片 -> 多個 image block。壞掉的直接略過，不要讓一張壞圖擋掉整批。 */
+function photoBlocks(photos){
+  var list=Array.isArray(photos) ? photos : (photos ? [photos] : []);
+  var out=[];
+  list.forEach(function(u){
+    var m=/^data:(image\/[a-z+]+);base64,(.*)$/i.exec(String(u||""));
+    if(m) out.push({ type:"image", source:{ type:"base64", media_type:m[1], data:m[2] } });
+  });
+  return out;
+}
+
+/* 圖片放在文字前面（官方建議的順序，照片題型準度較好）。
+ * 多張時最重要的一句話是「同一樣東西只能算一次」：一餐分好幾盤要各自列出來，
+ * 但同一盤換個角度拍的兩張如果被當成兩份，熱量就會直接翻倍——寧可講死。 */
+function aiAnalyzePhoto(model, photos, hint){
+  var blocks=photoBlocks(photos);
+  if(!blocks.length) return Promise.reject(aiError("照片讀取失敗，請重選一張。","bad-image"));
   var t=String(hint||"").trim();
-  blocks.push({ type:"text", text: t
-    ? "這是我剛吃的東西。補充資訊：" + t
-    : "這是我剛吃的東西，幫我估熱量。" });
+  var L=[];
+  L.push(blocks.length>1
+    ? "這 "+blocks.length+" 張是我同一餐的照片。可能是不同的盤子，也可能是同一樣東西換個角度拍的——"+
+      "**同一樣東西只能算一次**，不要因為它出現在兩張照片裡就列成兩筆。"
+    : "這是我剛吃的東西，幫我估熱量。");
+  if(t) L.push("補充資訊：" + t);
+  blocks.push({ type:"text", text:L.join("\n") });
   return aiRequest(model, blocks);
 }
 
@@ -427,14 +443,11 @@ function aiAnalyzePhoto(model, dataUrl, hint){
  * 照片一起送是關鍵——使用者最常遇到的是「東西認錯了」（叉燒被當成燒鴨），
  * 光靠文字 AI 看不到真正的份量，帶著原圖它才有辦法一邊看圖一邊修正。
  * 刻意告訴它「其他項目不用列」，回來才只換掉那一項。 */
-function aiAnalyzeOne(model, dataUrl, wrongName, said){
-  var blocks=[];
-  if(dataUrl){
-    var m=/^data:(image\/[a-z+]+);base64,(.*)$/i.exec(String(dataUrl));
-    if(m) blocks.push({ type:"image", source:{ type:"base64", media_type:m[1], data:m[2] } });
-  }
+function aiAnalyzeOne(model, photos, wrongName, said){
+  var blocks=photoBlocks(photos);
   var t=blocks.length
-    ? "這張照片你剛才幫我拆成好幾項，其中一項判斷錯了。只要重新估那一項，其他項目不用列出來。\n"
+    ? "這"+(blocks.length>1 ? " "+blocks.length+" 張" : "張")+
+      "照片你剛才幫我拆成好幾項，其中一項判斷錯了。只要重新估那一項，其他項目不用列出來。\n"
     : "幫我估一項東西的熱量。\n";
   if(wrongName) t+="你原本判斷成：「"+String(wrongName)+"」\n";
   t+="正確的是：「"+String(said)+"」\n"+

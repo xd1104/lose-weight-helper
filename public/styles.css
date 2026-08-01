@@ -326,7 +326,16 @@ input,textarea,select{font-family:inherit; font-size:16px; color:inherit;}
   cursor:pointer;}
 .pbtn:active{background:var(--acc-deep);}
 .photo-btns.after .pbtn{background:#eef1ea; color:var(--muted);}
-.photo-prev{width:100%; border-radius:16px; display:block; margin-bottom:10px;}
+.photo-prev{width:100%; border-radius:16px; display:block;}
+/* 多張照片：一張時滿版，兩張以上排成兩欄縮圖 */
+.photo-strip{display:grid; grid-template-columns:1fr; gap:8px; margin-bottom:10px;}
+.photo-strip.multi{grid-template-columns:1fr 1fr;}
+.photo-cell{position:relative;}
+.photo-strip.multi .photo-prev{aspect-ratio:1; object-fit:cover;}
+.photo-cell button{position:absolute; top:6px; right:6px; min-width:32px; min-height:32px;
+  border-radius:99px; background:rgba(0,0,0,.55); color:#fff; font-size:14px; font-weight:800;
+  display:flex; align-items:center; justify-content:center; line-height:1;}
+.photo-cell button:active{background:rgba(0,0,0,.75);}
 /* 常吃清單的分區標題（★ 常吃 / 吃過的） */
 .fav-grp{font-size:11.5px; font-weight:800; color:var(--muted); letter-spacing:.06em;
   padding:12px 4px 6px;}

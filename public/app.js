@@ -1148,7 +1148,7 @@ function viewSettings(){
   });
   if(grp) h+='</div>';
 
-  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v4.0</p>';
+  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v4.1</p>';
   return h;
 }
 
@@ -1764,10 +1764,10 @@ function addTabBody(){
     return '<form id="f-photo">'+
       '<div id="photo-slot">'+photoPickHtml()+'</div>'+
       '<input type="file" id="i-cam" accept="image/*" capture="environment" hidden>'+
-      '<input type="file" id="i-lib" accept="image/*" hidden>'+
+      '<input type="file" id="i-lib" accept="image/*" multiple hidden>'+
       '<div class="field"><label>補充說明（選填）</label>'+
         '<input type="text" id="i-hint" value="'+esc(lastHint)+'" placeholder="例如：這碗是大碗、白飯只吃一半" autocomplete="off"></div>'+
-      '<button class="btn" type="submit" id="b-photo"'+(pendingPhoto?"":" disabled")+'>交給 AI 估算</button>'+
+      '<button class="btn" type="submit" id="b-photo"'+(pendingPhotos.length?"":" disabled")+'>交給 AI 估算</button>'+
     '</form>';
   }
   if(addTab==="fav"){
@@ -1799,20 +1799,32 @@ function addTabBody(){
 
 /* 已經選過照片就要把預覽畫回來（別讓人以為要重拍）。
  * 這一頁會因為切換分頁、AI 估完退回來等原因重畫好幾次，
- * 而 pendingPhoto 一直都還在記憶體裡——以前這裡固定畫「加一張照片」的空狀態，
+ * 而 pendingPhotos 一直都還在記憶體裡——以前這裡固定畫「加一張照片」的空狀態，
  * 送出鈕又是 disabled，看起來就像照片不見了，所以只好重拍一次（Benson 踩過）。 */
 function photoPickHtml(){
-  if(pendingPhoto){
-    return '<img class="photo-prev" src="'+pendingPhoto+'" alt="餐點照片">'+
-      '<div class="photo-btns after">'+
-        '<label class="pbtn" for="i-cam">📷 重拍</label>'+
-        '<label class="pbtn" for="i-lib">🖼️ 換一張</label>'+
-      '</div>';
+  var n=pendingPhotos.length;
+  if(n){
+    var h='<div class="photo-strip'+(n>1?" multi":"")+'">';
+    pendingPhotos.forEach(function(src,i){
+      h+='<div class="photo-cell"><img class="photo-prev" src="'+src+'" alt="餐點照片 '+(i+1)+'">'+
+         '<button type="button" data-rm="'+i+'" aria-label="移除第 '+(i+1)+' 張">✕</button></div>';
+    });
+    h+='</div>';
+    h+= n<MAX_PHOTOS
+      ? '<div class="photo-btns after">'+
+          '<label class="pbtn" for="i-cam">📷 再拍一張</label>'+
+          '<label class="pbtn" for="i-lib">🖼️ 再選幾張</label>'+
+        '</div>'
+      : '<p class="hint" style="padding:8px 4px 0">已經 '+MAX_PHOTOS+' 張了（上限）。要換的話先移除一張。</p>';
+    if(n>1) h+='<p class="hint" style="padding:8px 4px 0">這 '+n+' 張會一起送給 AI、當成同一餐。'+
+      '同一樣東西出現在兩張裡不會被算兩次。</p>';
+    return h;
   }
   return '<div class="photo-pick">'+
       '<i>🍱</i>'+
-      '<b>加一張餐點照片</b>'+
-      '<span>整桌、便當盒都可以，會自動拆成多筆</span>'+
+      '<b>加餐點照片</b>'+
+      '<span>整桌、便當盒都可以，會自動拆成多筆<br>'+
+        '一餐分好幾盤就多拍幾張，最多 '+MAX_PHOTOS+' 張</span>'+
       '<div class="photo-btns">'+
         '<label class="pbtn" for="i-cam">📷 拍照</label>'+
         '<label class="pbtn" for="i-lib">🖼️ 從相簿選</label>'+
@@ -1975,27 +1987,39 @@ function wireAddSheet(root){
   if(fPhoto){
     var btn=root.querySelector("#b-photo");
     var slot=root.querySelector("#photo-slot");
+    /* 縮圖列會反覆重畫（加一張、移除一張），畫完要重新接移除鈕 */
+    var paint=function(){
+      slot.innerHTML=photoPickHtml();
+      slot.querySelectorAll("[data-rm]").forEach(function(x){
+        x.onclick=function(){
+          pendingPhotos.splice(+x.getAttribute("data-rm"),1);
+          paint();
+        };
+      });
+      btn.disabled=!pendingPhotos.length;
+      btn.textContent="交給 AI 估算";
+    };
+    paint();
     var onPick=function(input){
       return function(){
-        var file=input.files&&input.files[0];
+        var files=Array.prototype.slice.call(input.files||[]);
         /* 同一張照片連選兩次時 change 不會再觸發，所以每次處理完把 value 清掉 */
         input.value="";
-        if(!file) return;
+        files=files.slice(0, Math.max(0, MAX_PHOTOS-pendingPhotos.length));
+        if(!files.length){
+          if(pendingPhotos.length>=MAX_PHOTOS) toast("最多 "+MAX_PHOTOS+" 張", true);
+          return;
+        }
         btn.disabled=true;
         btn.textContent="處理照片中…";
-        compressImage(file).then(function(dataUrl){
-          pendingPhoto=dataUrl;
-          slot.innerHTML='<img class="photo-prev" src="'+dataUrl+'" alt="餐點照片">'+
-            '<div class="photo-btns after">'+
-              '<label class="pbtn" for="i-cam">📷 重拍</label>'+
-              '<label class="pbtn" for="i-lib">🖼️ 換一張</label>'+
-            '</div>';
-          btn.disabled=false;
-          btn.textContent="交給 AI 估算";
-        }).catch(function(e){
+        /* 一張一張接著處理：同時解好幾張大圖在手機上很容易把記憶體吃爆 */
+        files.reduce(function(chain, f){
+          return chain.then(function(){
+            return compressImage(f).then(function(dataUrl){ pendingPhotos.push(dataUrl); });
+          });
+        }, Promise.resolve()).then(paint).catch(function(e){
           toast(e.userMessage||"照片處理失敗", true);
-          btn.disabled=!pendingPhoto;
-          btn.textContent="交給 AI 估算";
+          paint();
         });
       };
     };
@@ -2005,11 +2029,11 @@ function wireAddSheet(root){
     });
     fPhoto.onsubmit=function(ev){
       ev.preventDefault();
-      if(!pendingPhoto){ toast("請先選一張照片", true); return; }
+      if(!pendingPhotos.length){ toast("請先選一張照片", true); return; }
       var hint=(root.querySelector("#i-hint")||{}).value||"";
       lastHint=hint;
-      var photo=pendingPhoto;
-      runAi(function(){ return aiAnalyzePhoto(db.profile.model, photo, hint); }, photo);
+      var photos=pendingPhotos.slice();
+      runAi(function(){ return aiAnalyzePhoto(db.profile.model, photos, hint); }, photos);
     };
   }
 
@@ -2040,7 +2064,10 @@ function wireAddSheet(root){
     addEntries([item]);
   };
 }
-var pendingPhoto=null;
+/* 一餐可以給好幾張（不同的盤子、或飲料另外拍）。
+ * 上限 4 張：壓縮後每張約 1000 個 token，四張還在零頭；再多只是讓 AI 更容易重複計算。 */
+var MAX_PHOTOS=4;
+var pendingPhotos=[];
 var lastHint="";                /* 上次照片的補充說明：回來「再估一次」時不用重打 */
 
 function wireFav(root){
@@ -2075,13 +2102,13 @@ function wireFav(root){
 }
 
 /* ---- 呼叫 AI 並顯示可編輯的預覽 ---- */
-function runAi(fn, photo){
+function runAi(fn, photos){
   replaceSheet("AI 估算中",
     '<div class="spin"><div class="dots"><i></i><i></i><i></i></div>Claude 正在看你吃了什麼…</div>', {});
   fn().then(function(res){
     aiResult=res;
     /* 記住是哪張照片估出來的：之後「重估某一項」要把同一張圖再送一次 */
-    aiResult.photo=photo||null;
+    aiResult.photos=(photos||[]).slice();
     drawAiResult();
   }).catch(function(e){
     toast(e.userMessage||"AI 估算失敗", true);
@@ -2146,7 +2173,7 @@ function drawAiResult(){
   var total=0; aiResult.items.forEach(function(i){ total+=num(i.kcal); });
   body+='<button class="btn" data-ai="save">加入 '+aiResult.items.length+' 筆 · 共 '+kcal(total)+' 大卡</button>'+
         '<button class="btn ghost" data-ai="retry">'+
-          (aiResult.photo?"補充說明，整批再估一次":"重新描述")+'</button>';
+          (aiResult.photos.length?"補充說明，整批再估一次":"重新描述")+'</button>';
 
   replaceSheet("AI 估算結果 · "+me.name, body, { onDraw:function(root){
     root.querySelectorAll("[data-meal-pick]").forEach(function(b){
@@ -2186,7 +2213,7 @@ function drawAiResult(){
     if(save) save.onclick=function(){ addEntries(aiResult.items); };
     var retry=root.querySelector('[data-ai="retry"]');
     if(retry) retry.onclick=function(){
-      if(aiResult.photo) addTab="photo";   /* 照片還在，直接回到照片那一頁 */
+      if(aiResult.photos.length) addTab="photo";   /* 照片還在，直接回到照片那一頁 */
       drawAddSheet(false);
     };
   }});
@@ -2320,8 +2347,9 @@ function openAiItemSheet(idx){
       '<input type="text" id="fix-por" value="'+esc(it.portion||"")+'" '+
         'placeholder="例如：約 80 克、半碗" autocomplete="off"></div>'+
     '<p class="hint" style="padding:0 4px">'+
-      (aiResult.photo
-        ? '會帶著原本那張照片一起問，其他項目不會動到。'
+      (aiResult.photos.length
+        ? '會帶著原本'+(aiResult.photos.length>1?"那 "+aiResult.photos.length+" 張":"那張")+
+          '照片一起問，其他項目不會動到。'
         : '只重估這一項，其他項目不會動到。')+'</p>'+
     '<button class="btn" type="submit" id="fix-go">'+(isNew?"讓 AI 估這一項":"重新估這一項")+'</button>'+
     (isNew
@@ -2339,7 +2367,7 @@ function openAiItemSheet(idx){
       if(!said){ toast("先寫這一項是什麼", true); return; }
       var por=(porEl.value||"").trim();
       go.disabled=true; go.textContent="估算中…";
-      aiAnalyzeOne(db.profile.model, aiResult.photo, isNew?"":orig,
+      aiAnalyzeOne(db.profile.model, aiResult.photos, isNew?"":orig,
                    por ? said+"（"+por+"）" : said)
         .then(function(res){
           var got=(res&&res.items)||[];
@@ -2389,7 +2417,7 @@ function addEntries(items){
   });
   persistFoods();      /* 整批只寫一次（rememberFood 不自己寫檔） */
   persistDay(curDate);
-  pendingPhoto=null; aiResult=null; lastHint="";
+  pendingPhotos=[]; aiResult=null; lastHint="";
   closeAllSheets();
   render();
   toast("已記錄 "+items.length+" 筆");

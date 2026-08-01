@@ -60,8 +60,9 @@ function check(n, c, g) {
   await p.setInputFiles('#i-lib', img);
   await p.waitForTimeout(1200);
   check('出現預覽圖', !!(await p.$('.photo-prev')));
-  check('預覽後有「重拍」', !!(await p.$('label[for="i-cam"]')));
-  check('預覽後有「換一張」', !!(await p.$('label[for="i-lib"]')));
+  check('預覽後還能再加一張（相機）', !!(await p.$('label[for="i-cam"]')));
+  check('預覽後還能再加一張（相簿）', !!(await p.$('label[for="i-lib"]')));
+  check('只有一張時不排成兩欄', !(await p.$('.photo-strip.multi')));
   const disabled = await p.getAttribute('#b-photo', 'disabled');
   check('送出鈕解鎖', disabled === null, disabled);
   await p.screenshot({ path: '/tmp/photo-2.png' });
@@ -85,6 +86,16 @@ function check(n, c, g) {
   await p.setInputFiles('#i-lib', img);   // 第二次選同一張
   await p.waitForTimeout(1000);
   check('重選同一張仍有預覽', !!(await p.$('.photo-prev')));
+  /* 一餐分好幾盤：第二張是「再加一張」，不是取代掉第一張 */
+  check('變成兩張（不是取代）', (await p.$$('.photo-cell')).length === 2,
+    (await p.$$('.photo-cell')).length);
+  check('兩張以上排成兩欄', !!(await p.$('.photo-strip.multi')));
+  check('說明會一起送給 AI',
+    /這 2 張會一起送給 AI/.test(await p.textContent('#photo-slot')));
+  await p.click('.photo-cell [data-rm="0"]');
+  await p.waitForTimeout(400);
+  check('移除一張後剩一張', (await p.$$('.photo-cell')).length === 1,
+    (await p.$$('.photo-cell')).length);
 
   console.log('\n[5] 選到非圖片檔要有明確錯誤，不能默默沒反應');
   await p.setInputFiles('#i-lib', path.join(__dirname, 'notimage.txt'));
