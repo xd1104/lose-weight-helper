@@ -240,6 +240,14 @@
   - 每一項一顆 `.ai-last`「上次記 X 大卡（這次多 Y）· 沿用」。沿用後變成 `.ai-last.done`「已沿用」。
 - `useLastFood(idx)` 會**把名稱也對齊成清單裡的寫法**，之後的比對就是完全命中，常吃清單也不會愈長愈亂。`confidence` 設 `high`（這已經不是估的了）。`it.reused` 是畫面用的暫時旗標，`cleanEntry` 不會寫進檔案。
 - **刻意不自動套用**：他今天可能真的加飯，AI 這次的估算才對。自動蓋掉會靜靜地記錯，一顆按鈕的成本低得多。
+## 版本與更新（v4.2）
+- **`APP_VER` 是唯一的版本來源**（`public/app.js` 最上面），設定索引、版本 sheet、頁尾那行字都讀它。**改前端時跟 `sw.js` 的 cache 版本號一起 +1。**
+- 為什麼需要這個：PWA 的殼是 cache-first，新的 SW 裝好、activate 之後，畫面上跑的仍然是舊的 JS，**要重新載入才會換過去**。使用者完全看不到這件事，只會覺得「怎麼沒有新功能」。
+- 偵測有兩條路，兩條都要留：`registration.updatefound` → `installing.statechange === "installed"` 且**已經有 controller**（第一次安裝不算更新），以及 `controllerchange`（同樣用進站時記下的 `hadController` 擋掉首次安裝）。`markUpdate()` 只會觸發一次。
+- **設定 → 其他 → 版本**：顯示現在跑的版本、一顆「檢查有沒有新版本」（`checkUpdate()` ＝ `reg.update()` 再等 1.2 秒讓 handler 跑完）。偵測到之後索引那列改口成「有新版本 · 點一下更新」並掛黃點，sheet 換成「立即更新」（`location.reload()`）。
+- **刻意不自動 reload**：記到一半被彈掉很惱人。文案有明講「記到一半的東西已經存好了」（寫入是即時的，這句是真的）。
+- 測試：`test/browser/19-version.js`——**[C] 段是真的端對端**：跑到一半把 `public/sw.js` 的 cache 版本號 +1，再叫 `update()`，驗證真的偵測得到。**結束時一定會用 `finally` 把 `sw.js` 還原**，最後一條斷言就是在確認這件事。
+
 ## 一餐給多張照片（v4.1）
 - **`pendingPhotos` 是陣列，上限 `MAX_PHOTOS=4`**（壓縮後每張約 1000 個 token，四張還在零頭；再多只是讓 AI 更容易重複計算）。相簿的 input 帶 `multiple`，相機的不帶。
 - **多張時 prompt 一定要有「同一樣東西只能算一次」**：一餐分好幾盤要各自列出來，但同一盤換角度拍的兩張若被當成兩份，熱量會直接翻倍。**這句話不能為了精簡刪掉**，`18-multiphoto.js` 有釘住。單張時刻意不講（沒有重複的問題，講了只是雜訊）。

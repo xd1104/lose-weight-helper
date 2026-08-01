@@ -1,4 +1,7 @@
 "use strict";
+
+/* 版本號。改前端時跟 sw.js 的 cache 版本號一起 +1。 */
+var APP_VER="4.2";
 /*
  * 減重助手 — 前端主程式
  * 資料層在 store.js（LocalStore / GitHubStore 自動切）、AI 在 ai.js。
@@ -1109,6 +1112,9 @@ function setSections(){
     sum:users.length+" 人 · 資料各自獨立" });
   list.push({ g:"其他", id:"data", icon:"\uD83D\uDDC2\uFE0F", label:"資料與常吃清單",
     sum:"常吃 "+db.foods.length+" 筆" });
+  list.push({ g:"其他", id:"ver", icon:"\u2139\uFE0F", label:"版本",
+    sum: updateReady ? "有新版本 · 點一下更新" : "v"+APP_VER,
+    warn: updateReady ? "amber" : "" });
   return list;
 }
 
@@ -1148,13 +1154,14 @@ function viewSettings(){
   });
   if(grp) h+='</div>';
 
-  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v4.1</p>';
+  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v'+APP_VER+'</p>';
   return h;
 }
 
 /* ---- 設定的分頁 sheet ---- */
 var SET_TITLES={ body:"身體資料", activity:"活動量與 TDEE", goal:"每日目標", macros:"營養目標",
-                 ai:"AI 熱量判讀", gh:"GitHub 同步", users:"使用者", data:"資料與常吃清單" };
+                 ai:"AI 熱量判讀", gh:"GitHub 同步", users:"使用者", data:"資料與常吃清單",
+                 ver:"版本" };
 
 /* 會被數字欄位影響的計算結果單獨包一塊：改數字時只換這一塊，
  * 不整份重畫——重畫會把正在編輯的 input 換掉，手機上鍵盤會跳掉。 */
@@ -1299,7 +1306,27 @@ function setBody(sec){
         esc(me.name)+' 的常吃清單目前 '+db.foods.length+' 筆。單筆要刪，到「記一筆 → 常吃」點右邊的 ✕。</p>'+
       (db.foods.length?'<button class="btn ghost" data-act="clear-foods">清空常吃清單</button>':'');
   }
+  if(sec==="ver"){
+    return '<div class="tdee-box" style="margin-top:0">'+
+        '<div class="r"><span>現在跑的版本</span><b class="num">v'+APP_VER+'</b></div>'+
+      '</div>'+
+      '<div id="ver-state">'+verStateHtml()+'</div>'+
+      '<p class="desc">這個號碼是<b>手機上實際跑起來的那一份</b>，不是雲端最新的那一份。'+
+      'PWA 的殼會存在手機裡，新版下載好之後要重新載入才會換過去——'+
+      '平常關掉重開就會是新的，想馬上換就按上面那顆。</p>';
+  }
   return "";
+}
+
+/* 版本區塊的狀態：有新版就給「立即更新」，沒有就給「檢查一下」 */
+function verStateHtml(){
+  if(updateReady){
+    return '<div class="set-alert amber"><b>🎉 新版本已經下載好了</b>'+
+        '<span>重新載入就會換過去。記到一半的東西已經存好了，不會不見。</span></div>'+
+      '<button class="btn" type="button" data-ver="reload">立即更新</button>';
+  }
+  return (verMsg ? '<div class="set-alert amber"><b>'+esc(verMsg)+'</b></div>' : '')+
+    '<button class="btn ghost" type="button" data-ver="check">檢查有沒有新版本</button>';
 }
 
 /* 生日是選填，但填了就以它為準：年齡改成唯讀顯示，生日過了自己 +1。
@@ -1327,6 +1354,18 @@ function openSettingsSheet(sec){
 }
 
 function wireSetSheet(root, sec, redraw){
+  var vChk=root.querySelector('[data-ver="check"]');
+  if(vChk) vChk.onclick=function(){
+    vChk.disabled=true; vChk.textContent="檢查中…";
+    checkUpdate().then(function(found){
+      verMsg = found ? "" : "已經是最新版了。";
+      redraw(false);
+      verMsg="";
+    });
+  };
+  var vGo=root.querySelector('[data-ver="reload"]');
+  if(vGo) vGo.onclick=function(){ location.reload(); };
+
   /* 重畫前先把已經敲進去、還沒 change 的數字收起來，不然會被吃掉 */
   function readNums(){
     root.querySelectorAll("[data-num]").forEach(function(inp){
@@ -2873,8 +2912,54 @@ document.addEventListener("visibilitychange", function(){
 boot();
 
 /* Service worker（相對路徑：Pages 子路徑也要對） */
+/* ============ 版本與更新 ============
+ * PWA 的殼是 cache-first，所以「已經裝在手機上的那份」不會自己變新——
+ * 新的 service worker 裝好、activate 之後，畫面上跑的仍然是舊的 JS，
+ * 要重新載入才會換過去。使用者完全看不到這件事，只會覺得「怎麼沒有新功能」。
+ * 所以：偵測到新版就記起來（updateReady），設定裡給一個「立即更新」。
+ * ⚠️ 版本號跟 sw.js 的 cache 版本號要一起 +1。 */
+var swReg=null;
+var updateReady=false;
+var verMsg="";                 /* 「檢查更新」的結果訊息，畫完就清掉 */
+
+function markUpdate(){
+  if(updateReady) return;
+  updateReady=true;
+  toast("有新版本了，到「設定 → 版本」可以立即更新");
+  if(booted && !picking) render();
+}
+
 if("serviceWorker" in navigator){
-  window.addEventListener("load", function(){
-    navigator.serviceWorker.register("sw.js").catch(function(){ /* 沒 SW 也能用 */ });
+  /* 第一次安裝時本來就沒有 controller，那不算「更新」，不要嚇人 */
+  var hadController=!!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener("controllerchange", function(){
+    if(!hadController){ hadController=true; return; }
+    markUpdate();
   });
+  window.addEventListener("load", function(){
+    navigator.serviceWorker.register("sw.js").then(function(reg){
+      swReg=reg;
+      /* 標準的偵測點：新的 worker 裝好、而且原本就有一個在跑 ＝ 有新版 */
+      reg.addEventListener("updatefound", function(){
+        var w=reg.installing;
+        if(!w) return;
+        w.addEventListener("statechange", function(){
+          if(w.state==="installed" && navigator.serviceWorker.controller) markUpdate();
+        });
+      });
+    }).catch(function(){ /* 沒 SW 也能用 */ });
+  });
+}
+
+/* 主動問一次有沒有新版。瀏覽器自己也會檢查，但頻率不保證，
+ * 使用者想「現在就確認」的時候要有東西可以按。 */
+function checkUpdate(){
+  if(!swReg || !swReg.update) return Promise.resolve(false);
+  return swReg.update().then(function(){
+    /* sw.js 有 skipWaiting，新的通常直接 activate，訊號會由上面那兩個 handler 送達；
+     * 這裡等一下下讓它跑完再回報結果。 */
+    return new Promise(function(res){
+      setTimeout(function(){ res(updateReady); }, 1200);
+    });
+  }).catch(function(){ return false; });
 }
