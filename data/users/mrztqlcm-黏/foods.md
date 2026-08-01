@@ -9,9 +9,12 @@
 - {"id":"xms08qs8ecwxz","name":"炒空心菜","kcal":60,"p":2,"c":5,"f":4,"portion":"約一碗，清炒","n":3}
 - {"id":"xms08qs8bajwi","name":"糙米飯","kcal":130,"p":3,"c":28,"f":1,"portion":"約半碗（100g）","n":3}
 - {"id":"xms08qs8es0ij","name":"洋蔥炒魷魚","kcal":180,"p":15,"c":10,"f":8,"portion":"約一小盤，魷魚約80克、洋蔥約50克","n":2}
+- {"id":"xms96u0t29qas","name":"意麵","kcal":300,"p":8,"c":55,"f":5,"portion":"一份燴煮意麵，約1份乾麵量","n":2}
 - {"id":"xms33mrorijgv","name":"滷豆乾","kcal":140,"p":15,"c":5,"f":9,"portion":"約100克","n":2}
 - {"id":"xms33mroqfzbt","name":"滷海帶","kcal":15,"p":1,"c":2,"portion":"約50克","n":2}
 - {"id":"xms14b5m418gv","name":"蔥蛋","kcal":120,"p":7,"c":2,"f":9,"portion":"約1顆蛋量的蔥蛋","n":2}
+- {"id":"xms96u0t6jdps","name":"蝦仁","kcal":50,"p":10,"f":1,"portion":"2尾中蝦","n":2}
+- {"id":"xms96u0t9xhyt","name":"豬肉片","kcal":150,"p":15,"f":10,"portion":"約5-6片，約80克","n":2}
 - {"id":"xms149v34zqbe","name":"豬肉餡餅","kcal":320,"p":11,"c":32,"f":17,"portion":"單顆，約7-8公分直徑，早餐店常見尺寸","n":2}
 - {"id":"xms14b5m31ttj","name":"燒餅","kcal":280,"p":6,"c":40,"f":10,"portion":"一份約1個，普通厚燒餅","n":2}
 - {"id":"xms08qs8egfxf","name":"燙秋葵佐芝麻醬","kcal":90,"p":3,"c":8,"f":5,"portion":"約一小盤，含少量芝麻醬淋醬","n":2}
@@ -63,7 +66,6 @@
 - {"id":"xms2qc9zy3w0h","name":"紫米素粽","kcal":460,"p":9,"c":85,"f":9,"portion":"1顆約290克（含糯米、香菇、花生、素料餡）","n":1}
 - {"id":"xms1qj1udn9j7","name":"蛤蜊魚湯","kcal":100,"p":10,"c":4,"f":4,"portion":"約一碗，含少量魚肉與蛤蜊","n":1}
 - {"id":"xms4rmubedrey","name":"黑輪串","kcal":70,"p":4,"c":9,"f":2,"portion":"1串，約60g","n":1}
-- {"id":"xms96u0t29qas","name":"意麵","kcal":280,"p":7,"c":55,"f":3,"portion":"約1份乾麵量，煮熟後泡於湯中","n":1}
 - {"id":"xmsajxu2f8uo3","name":"新台鐵草莓夾心麵包","kcal":185,"p":5,"c":35,"f":3,"portion":"整包1份，78公克","n":1}
 - {"id":"xms7fe4fxf0da","name":"滑蛋瘦肉粥","kcal":380,"p":18,"c":50,"f":11,"portion":"一般碗，約450ml，含粥底、蛋、瘦肉","n":1}
 - {"id":"xms46nxj321rg","name":"煎荷包蛋","kcal":110,"p":6,"c":1,"f":9,"portion":"一顆全蛋煎至焦邊","n":1}
@@ -83,8 +85,7 @@
 - {"id":"xms4rmubagdxq","name":"熱狗串","kcal":90,"p":3,"c":2,"f":8,"portion":"半串，約30g","n":1}
 - {"id":"xms96sz95l79f","name":"蔥抓餅加蛋","kcal":150,"p":6,"c":15,"f":8,"portion":"整份約市售一片蔥抓餅加一顆蛋，取其1/3份量","n":1}
 - {"id":"xmsameoweqsln","name":"蔥油餅加蛋","kcal":133,"p":4,"c":15,"f":7,"portion":"約1/3份蔥油餅加蛋（整份約400大卡，含蛋與煎油）","n":1}
-- {"id":"xms96u0t6jdps","name":"蝦仁","kcal":60,"p":12,"c":1,"f":1,"portion":"約3尾中蝦","n":1}
-- {"id":"xms96u0t9xhyt","name":"豬肉片","kcal":100,"p":10,"f":6,"portion":"約50克","n":1}
+- {"id":"xmsamfmt24xq0","name":"蔬菜（青江菜、玉米筍、番茄等）","kcal":80,"p":3,"c":15,"f":1,"portion":"綜合蔬菜約1.5碗份量","n":1}
 - {"id":"xms4rkngg8k0n","name":"燙地瓜葉佐蒜末醬油","kcal":110,"p":3,"c":9,"f":7,"portion":"自助餐一般盤裝，估全盤約250克，實際食用2/3份約170克","n":1}
 - {"id":"xmrzvy2cobh9k","name":"蕈菇燉飯","kcal":520,"p":14,"c":72,"f":18,"portion":"約一碗份量(含飯約200g熟重、綜合菇類、起司醬汁)","n":1}
 - {"id":"xms4rjrmxq2ve","name":"鴨心湯麵（麵條與鴨心料，小碗）","kcal":320,"p":18,"c":40,"f":8,"portion":"小碗約0.7份，油麵約1碗，鴨心5-6片","n":1}
