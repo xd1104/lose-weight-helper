@@ -37,6 +37,7 @@
 - {"id":"xms5q5x68zxgt","name":"芒果","kcal":150,"p":2,"c":38,"f":1,"portion":"約兩拳頭大小，切塊約250克","n":1}
 - {"id":"xms4rsmihmftj","name":"豆包（一口）","kcal":40,"p":3,"c":1,"f":3,"portion":"約20克","n":1}
 - {"id":"xms08zonpdvn9","name":"油雞腿肉（去皮）","kcal":140,"p":20,"c":3,"f":6,"portion":"約1隻腿肉份量，80克","n":1}
+- {"id":"xmsbxyox2kfs9","name":"芭樂","kcal":68,"p":1,"c":16,"portion":"拳頭大小約150g","n":1}
 - {"id":"xmsbxvrp22ycn","name":"花枝漿","kcal":80,"p":8,"c":4,"f":3,"portion":"2顆，約60g","n":1}
 - {"id":"xms7ff8j73ml2","name":"花菇燉雞粥","kcal":420,"p":22,"c":58,"f":9,"portion":"一般碗，約450-500ml","n":1}
 - {"id":"xms1izpsc744j","name":"炸麻糬","kcal":420,"p":6,"c":66,"f":16,"portion":"手掌大小2片，約每片60克含裹粉油炸","n":1}
@@ -80,6 +81,7 @@
 - {"id":"xms4rq5ugh0c7","name":"燙蕃薯葉佐蒜末醬油(1/3盤)","kcal":70,"p":2,"c":6,"f":4,"portion":"整盤約一般自助餐大份，實際食用約1/3盤，帶少許油蔥醬汁","n":1}
 - {"id":"xmsbxvrp6bddb","name":"鴨血","kcal":60,"p":6,"c":2,"f":2,"portion":"2塊，約80g","n":1}
 - {"id":"xmsam7qdmr4de","name":"龍蝦濃湯","kcal":350,"p":10,"c":20,"f":25,"portion":"約1碗（350ml），濃稠奶油底湯","n":1}
+- {"id":"xmsbxyox0y9ez","name":"薯條(半份)","kcal":180,"p":2,"c":24,"f":9,"portion":"約中份薯條的一半，約60g","n":1}
 - {"id":"xmsam4irkfy7x","name":"鮮蝦番茄生菜沙拉包","kcal":90,"p":8,"c":6,"f":4,"portion":"一份，蝦仁約3尾+番茄洋蔥生菜+沙拉醬少許","n":1}
 - {"id":"xms4rsmieixuj","name":"雞皮串（半串）","kcal":110,"p":4,"f":10,"portion":"約半串，30克","n":1}
 - {"id":"xms3ccpsakgpv","name":"雞肉飯（白飯）","kcal":320,"p":6,"c":60,"f":6,"portion":"便當盒約1碗白飯，淋雞汁","n":1}
