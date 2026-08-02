@@ -41,6 +41,7 @@
 - {"id":"xmsam01aplz46","name":"冷凍地瓜","kcal":130,"p":2,"c":30,"portion":"一條，約150克（中等大小）","n":1}
 - {"id":"xms5q6vl6011q","name":"冷凍豬肉水餃","kcal":760,"p":24,"c":95,"f":28,"portion":"19顆，一般市售冷凍水餃(約每顆20-25g)","n":1}
 - {"id":"xmsbra5ab5aa3","name":"秀珍菇","kcal":10,"p":1,"c":2,"portion":"一小把，約30g","n":1}
+- {"id":"xmsby00lobxv1","name":"芒果冰沙","kcal":90,"p":1,"c":22,"portion":"120ml，小杯份量","n":1}
 - {"id":"xms4rmubba57p","name":"豆皮串","kcal":60,"p":5,"c":1,"f":4,"portion":"半串，約25g","n":1}
 - {"id":"xms4rmub9kxt5","name":"豆乾串","kcal":100,"p":9,"c":3,"f":6,"portion":"1串，約50g","n":1}
 - {"id":"xms1k9j181x2h","name":"昆布鍋底食材(高麗菜、豆腐、菇類等)","kcal":120,"p":8,"c":12,"f":5,"portion":"什錦火鍋料一份，約200克蔬菜豆腐類","n":1}
