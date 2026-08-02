@@ -89,6 +89,16 @@ const textOf = (b) => ((b.messages[0].content || []).filter((x) => x.type === 't
   check('補充說明照樣帶進去', /補充資訊：飯是大碗的/.test(t2), t2);
   await p.screenshot({ path: '/tmp/multiphoto.png', clip: { x: 0, y: 300, width: 390, height: 544 } });
 
+  console.log('\n[D2] system prompt 要逼它寫出「一顆幾公克」');
+  /* 真實案例：同一鍋的麻糬燒，一邊 60 大卡一顆、另一邊 120 大卡一顆。
+     熱量密度只差 12%，2 倍的差距全部來自「一顆 28g」還是「一顆 50g」。
+     份量欄只寫「3 顆」的話，估錯了使用者也看不出來。 */
+  const sys = two.system || '';
+  check('要求寫出「幾顆 × 每顆幾公克 ＝ 共幾公克」', /每顆幾公克/.test(sys), sys.slice(0, 80));
+  check('講明只寫顆數不夠', /只寫「3 顆」是不夠的/.test(sys));
+  check('提醒小顆加工食品容易被高估成 50g', /容易被高估成 50g/.test(sys));
+  check('有火鍋料的單顆重量基準', /麻糬燒／爆漿丸類 一顆約 25-30g/.test(sys));
+
   console.log('\n[E] 重估其中一項時，所有照片一起帶著');
   await p.click('.ai-name');
   await p.waitForTimeout(600);
