@@ -10,6 +10,7 @@
 - {"id":"xms08qs8bajwi","name":"糙米飯","kcal":130,"p":3,"c":28,"f":1,"portion":"約半碗（100g）","n":3}
 - {"id":"xms1k9j1735nj","name":"羊肉片","kcal":420,"p":34,"f":30,"portion":"中份約200-250g生肉片，火鍋涮煮","n":2}
 - {"id":"xms08qs8es0ij","name":"洋蔥炒魷魚","kcal":180,"p":15,"c":10,"f":8,"portion":"約一小盤，魷魚約80克、洋蔥約50克","n":2}
+- {"id":"xms04tjkxap09","name":"紅心芭樂","kcal":120,"p":2,"c":28,"f":1,"portion":"約兩顆拳頭大小，共約300g","n":2}
 - {"id":"xms96u0t29qas","name":"意麵","kcal":300,"p":8,"c":55,"f":5,"portion":"一份燴煮意麵，約1份乾麵量","n":2}
 - {"id":"xms33mrorijgv","name":"滷豆乾","kcal":140,"p":15,"c":5,"f":9,"portion":"約100克","n":2}
 - {"id":"xms33mroqfzbt","name":"滷海帶","kcal":15,"p":1,"c":2,"portion":"約50克","n":2}
@@ -51,7 +52,6 @@
 - {"id":"xms1qj1ualy9d","name":"青椒炒肉絲","kcal":180,"p":13,"c":8,"f":11,"portion":"約一人份，肉絲約60克","n":1}
 - {"id":"xmrzy5yk1ytpk","name":"南瓜濃湯","kcal":90,"p":2,"c":12,"f":4,"portion":"半碗，約120ml","n":1}
 - {"id":"xmsalxqot8y64","name":"炸物握壽司(天婦羅風，附美乃滋醬汁)","kcal":260,"p":8,"c":30,"f":12,"portion":"迴轉壽司1盤，2貫","n":1}
-- {"id":"xms04tjkxap09","name":"紅心芭樂","kcal":100,"p":2,"c":22,"f":1,"portion":"一顆，約250公克","n":1}
 - {"id":"xmsbra5aha349","name":"紅蘿蔔片","kcal":8,"c":2,"portion":"2片，約20g","n":1}
 - {"id":"xms46nxj47kfe","name":"紅蘿蔔炒蛋","kcal":90,"p":4,"c":6,"f":6,"portion":"約半碗，含少許油","n":1}
 - {"id":"xms96rl6pedxp","name":"美乃滋與生菜番茄","kcal":80,"p":1,"c":4,"f":7,"portion":"少量生菜番茄夾層加美乃滋抹醬","n":1}
