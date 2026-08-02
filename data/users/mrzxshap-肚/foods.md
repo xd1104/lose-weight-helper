@@ -8,6 +8,7 @@
 - {"id":"xms1ii7eboqes","name":"烏龍麵","kcal":280,"p":7,"c":58,"f":1,"portion":"一份約1.5份量，濕麵約200g","n":2}
 - {"id":"xms96vj675jl6","name":"培根總匯三明治(全份的1/4)","kcal":210,"p":10,"c":20,"f":10,"portion":"整份約3份三明治吐司（培根、火腿、蛋、生菜、番茄），此次吃1/4份","n":2}
 - {"id":"xms1ijk5o2lb5","name":"無糖豆漿","kcal":40,"p":4,"c":2,"f":2,"portion":"半杯，約200ml","n":2}
+- {"id":"xmsbxvrpabtrq","name":"黑糖奶茶冰沙","kcal":140,"p":1,"c":28,"f":4,"portion":"約120ml小杯，全糖冰沙","n":2}
 - {"id":"xms4767ksclx9","name":"蒸蛋湯","kcal":163,"p":17.9,"c":4.5,"f":8.3,"n":2}
 - {"id":"xms1ii7ectyd6","name":"蔬菜盤","kcal":80,"p":4,"c":14,"f":1,"portion":"一大盤，約200g","n":2}
 - {"id":"xms08zonpy23i","name":"燙青菜（高麗菜、地瓜葉等）","kcal":60,"p":2,"c":8,"f":2,"portion":"約1份，附醬油蔥花","n":2}
@@ -59,7 +60,6 @@
 - {"id":"xms1ii7eck6tj","name":"魚肉","kcal":60,"p":11,"f":2,"portion":"三小塊，約60克","n":1}
 - {"id":"xmsbxvrp17zif","name":"麻吉燒（花生口味）","kcal":120,"p":2,"c":20,"f":4,"portion":"1顆，約50g","n":1}
 - {"id":"xms1ii7ecuf5d","name":"無糖麥茶","kcal":0,"portion":"半杯約200ml","n":1}
-- {"id":"xmsbxvrpabtrq","name":"黑糖奶茶冰沙","kcal":180,"p":1,"c":35,"f":4,"portion":"約1/3杯（約230ml）","n":1}
 - {"id":"xms7flaa517xo","name":"蜂蜜麵包","kcal":100,"p":2,"c":15,"f":2,"n":1}
 - {"id":"xmsam76qekzpi","name":"壽司醋飯","kcal":35,"p":1,"c":8,"portion":"藏於海苔下方，約半貫壽司飯量，約20g","n":1}
 - {"id":"xms1iqck69uzj","name":"滷牛腱片","kcal":140,"p":18,"c":2,"f":7,"portion":"約半盤，總重估80克","n":1}
