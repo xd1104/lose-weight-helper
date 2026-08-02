@@ -100,6 +100,7 @@
 - {"id":"xms4rjrmxq2ve","name":"鴨心湯麵（麵條與鴨心料，小碗）","kcal":320,"p":18,"c":40,"f":8,"portion":"小碗約0.7份，油麵約1碗，鴨心5-6片","n":1}
 - {"id":"xmsalzq4su96n","name":"龍蝦濃湯","kcal":320,"p":10,"c":18,"f":22,"portion":"約1碗（250ml），奶油濃湯基底","n":1}
 - {"id":"xms96rl6fhia9","name":"總匯三明治吐司","kcal":330,"p":10,"c":54,"f":7,"portion":"3片吐司(6角)，約3/4份總匯份量","n":1}
+- {"id":"xmsbrbfv3s4gz","name":"薯條","kcal":180,"p":2,"c":24,"f":9,"portion":"中份薯條的一半，約中薯半份","n":1}
 - {"id":"xms96s169x9jq","name":"鮮奶茶","kcal":250,"p":6,"c":38,"f":9,"portion":"700ml小杯，全糖假設(未特別說明糖量)","n":1}
 - {"id":"xmsalxqp1badn","name":"鮮蝦握壽司","kcal":100,"p":8,"c":16,"f":1,"portion":"迴轉壽司1盤，2貫","n":1}
 - {"id":"xms4rmubcxhrn","name":"雞心串","kcal":80,"p":9,"f":5,"portion":"1串，約50g","n":1}
