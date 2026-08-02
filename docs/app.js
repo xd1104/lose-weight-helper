@@ -1,7 +1,7 @@
 "use strict";
 
 /* 版本號。改前端時跟 sw.js 的 cache 版本號一起 +1。 */
-var APP_VER="4.4";
+var APP_VER="4.5";
 /*
  * 減重助手 — 前端主程式
  * 資料層在 store.js（LocalStore / GitHubStore 自動切）、AI 在 ai.js。
@@ -23,6 +23,34 @@ function fmtLong(key){
   return (d.getMonth()+1)+" 月 "+d.getDate()+" 日（"+WD[d.getDay()]+"）";
 }
 function kcal(n){ return Math.round(num(n)).toLocaleString("zh-TW"); }
+/* ============ 鍵盤不要蓋住正在打的東西 ============
+ * iOS 的鍵盤「不會」把版面推上去——layout viewport 不變，只有 visual viewport 變小。
+ * 所以 position:fixed 的 sheet 仍然是整個螢幕高，下半部就躲在鍵盤底下，
+ * 使用者看不到自己打了什麼（Benson：加了照片之後補充說明被擠到下面，打字看不見）。
+ * 兩件事一起做才有用：
+ *   (1) 用 visualViewport 把 sheet 那一層縮成「看得見的那一塊」，版面才會重排；
+ *   (2) 欄位取得焦點時把它捲到中間（鍵盤有動畫，要等一下再捲）。 */
+function fitViewport(){
+  var vv=window.visualViewport;
+  if(!vv) return;
+  var st=document.documentElement.style;
+  st.setProperty("--vvh", vv.height+"px");
+  st.setProperty("--vvtop", vv.offsetTop+"px");
+}
+if(window.visualViewport){
+  window.visualViewport.addEventListener("resize", fitViewport);
+  window.visualViewport.addEventListener("scroll", fitViewport);
+  fitViewport();
+}
+document.addEventListener("focusin", function(ev){
+  var el=ev.target;
+  if(!el || !/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName||"")) return;
+  if(el.type==="file") return;
+  setTimeout(function(){
+    try{ el.scrollIntoView({ block:"center", behavior:"smooth" }); }catch(e){}
+  }, 320);
+});
+
 /* 會自己長高的文字框。
  * 單行的 <input> 一旦打超過一行，前面打的就被推出視窗外看不到了（Benson 反映）。
  * 凡是「會寫成一句話」的欄位都改用這個：textarea + 依內容長高，一眼看得到全部。
@@ -474,7 +502,7 @@ function viewToday(){
     show.forEach(function(e){
       h+='<button class="row" data-act="edit-entry" data-id="'+esc(e.id)+'">'+
           '<div class="row-mid"><b>'+esc(e.name)+'</b>'+
-            (e.portion||e.time ? '<span>'+esc([e.time,e.portion].filter(Boolean).join(" · "))+'</span>' : '')+
+            (e.portion ? '<span>'+esc(e.portion)+'</span>' : '')+
           '</div>'+
           '<div class="row-kcal num">'+kcal(e.kcal)+'<i>大卡</i></div>'+
          '</button>';
@@ -633,18 +661,30 @@ function macroBox(label,color,v,target,overAt){
            'background:'+(over?"var(--warn)":color)+'"></i></div></div>';
 }
 
+/* 七天長條圖。
+ * ⚠️ 一定要畫目標線：高度是相對於「這七天的最大值」，沒有基準線的話，
+ * 不管吃多少，最高那天都貼頂——七根滿格配上「0 天達標」的文字，圖等於在騙人。
+ * 線的位置要跟 bar 用同一組數字算（BAR_H／底部 padding），改一個就要改另一個。 */
+var BAR_H=72;      /* bar 的最大高度，跟 .spark 的高度綁在一起 */
+var BAR_BOT=25;    /* bar 底部到 .spark 底部的距離（padding + 星期標籤） */
+function goalLineHtml(target, max, label){
+  if(!(target>0) || !(max>0)) return "";
+  var pct=Math.min(1, target/max);
+  return '<i class="goal-line" style="bottom:'+(BAR_BOT+pct*BAR_H).toFixed(1)+'px">'+
+         '<b>'+esc(label)+'</b></i>';
+}
 function sparkHtml(target){
   var keys=[], i;
   for(i=6;i>=0;i--) keys.push(shiftDate(curDate,-i));
   var vals=keys.map(function(k){ var d=db.days[k]; return d?netOf(d):0; });
   var max=Math.max(target, Math.max.apply(null, vals), 1);
-  var h='<div class="spark">';
+  var h='<div class="spark">'+goalLineHtml(target, max, "上限 "+kcal(target));
   keys.forEach(function(k,idx){
     var v=vals[idx];
     var pct=Math.max(0, Math.min(1, v/max));
     var cls=v<=0 ? "none" : (v>target ? "over" : "");
     h+='<div class="col'+(k===curDate?" today":"")+'">'+
-        '<div class="bar '+cls+'" style="height:'+(v<=0?3:Math.max(6, pct*72))+'px" title="'+kcal(v)+' 大卡"></div>'+
+        '<div class="bar '+cls+'" style="height:'+(v<=0?3:Math.max(6, pct*BAR_H))+'px" title="'+kcal(v)+' 大卡"></div>'+
         '<div class="lb">'+WD[parseDateKey(k).getDay()]+'</div>'+
        '</div>';
   });
@@ -791,13 +831,13 @@ function proteinWeekHtml(target){
    * 但平均 112 / 目標 128 才是真正該看的距離 */
   var h='<div class="sec"><div class="sec-head"><h2>最近 7 天的蛋白質</h2>'+
         '<span class="n">平均 '+avg+' g／目標 '+target+'</span></div>'+
-        '<div class="spark">';
+        '<div class="spark">'+goalLineHtml(target, max, "目標 "+target+" g");
   keys.forEach(function(k,idx){
     var v=vals[idx];
     var pct=Math.max(0, Math.min(1, v/max));
     var cls=v<=0 ? "none" : (v>=target ? "" : "under");
     h+='<div class="col'+(k===curDate?" today":"")+'">'+
-        '<div class="bar '+cls+'" style="height:'+(v<=0?3:Math.max(6, pct*72))+'px" title="'+v+' g"></div>'+
+        '<div class="bar '+cls+'" style="height:'+(v<=0?3:Math.max(6, pct*BAR_H))+'px" title="'+v+' g"></div>'+
         '<div class="lb">'+WD[parseDateKey(k).getDay()]+'</div>'+
        '</div>';
   });
@@ -1016,6 +1056,16 @@ function calibHtml(){
                  (c.applied?"（已校準）":"（公式）"))+
       '</div>';
 
+  /* 警告一定要印在按鈕「之前」：印在後面等於他先按了才看到。
+   * 而且推算值明顯不合理時，套用鈕要降級成次要樣式，不要長得像「照做就對了」。 */
+  if(c.suspect){
+    h+='<div class="calib-warn">⚠️ 推算值低於你的基礎代謝 '+kcal(bmrOf(db.profile))+
+       ' 大卡，人不可能消耗得比基礎代謝還少——這段期間幾乎一定有漏記的餐。'+
+       '建議先補齊飲食紀錄再回來看，不要直接套用。</div>';
+  }else if(c.thin){
+    h+='<div class="calib-warn">⚠️ 這 '+c.days+' 天裡只有 '+c.logged+
+       ' 天有記飲食，沒記的日子沒被算進平均，結果會偏低。</div>';
+  }
   if(same){
     h+='<div class="calib-need">公式估得很準（相差 '+kcal(Math.abs(c.diff))+
        ' 大卡以內），不用改。</div>';
@@ -1023,18 +1073,12 @@ function calibHtml(){
     h+='<div class="calib-need">你的實際消耗比 app 現在用的'+(c.diff<0?"少":"多")+' '+
        kcal(Math.abs(c.diff))+' 大卡。套用之後，每日'+
        (num(db.profile.goal)<0?"上限":"目標")+'會變成 '+kcal(newTarget)+' 大卡。</div>'+
-       '<button class="btn" data-act="apply-calib" data-v="'+c.real+'">套用 '+kcal(c.real)+' 大卡</button>';
+       '<button class="btn'+(c.suspect?" ghost":"")+'" data-act="apply-calib" data-v="'+c.real+'">'+
+       (c.suspect?"仍要套用 ":"套用 ")+kcal(c.real)+' 大卡</button>';
   }
   if(c.applied){
     h+='<button class="btn ghost" data-act="clear-calib">改回公式估算（'+
        kcal(c.formula)+' 大卡）</button>';
-  }
-  if(c.suspect){
-    h+='<div class="calib-warn">⚠️ 推算值低於你的基礎代謝 '+kcal(bmrOf(db.profile))+
-       ' 大卡，通常代表這段期間有漏記的餐。套用前先確認飲食紀錄有沒有缺。</div>';
-  }else if(c.thin){
-    h+='<div class="calib-warn">⚠️ 這 '+c.days+' 天裡只有 '+c.logged+
-       ' 天有記飲食，沒記的日子沒被算進平均，結果會偏低。</div>';
   }
   h+='<div class="calib-foot">真實 TDEE ＝平均吃進去的 ＋ 每天實際掉的體重 × 7700 大卡。'+
      '體重有新紀錄就會重新算一次。</div>';
@@ -1207,7 +1251,8 @@ function viewSettings(){
   });
   if(grp) h+='</div>';
 
-  h+='<p style="text-align:center;color:#b0b8ac;font-size:12px;padding:16px 16px 30px">減重助手 v'+APP_VER+'</p>';
+  /* 版本已經是「其他」那一組裡的一列了，頁尾不用再印一次（同一頁講兩遍） */
+  h+='<div style="height:24px"></div>';
   return h;
 }
 
@@ -1249,7 +1294,7 @@ function setBody(sec){
       '</div></div>'+
       '<div class="grid2">'+
         '<div class="field" id="age-field">'+ageFieldHtml(p)+'</div>'+
-        '<div class="field"><label>身高 (cm)</label><input type="number" inputmode="decimal" data-num="height" value="'+p.height+'"></div>'+
+        '<div class="field"><label>身高 (cm)</label><input type="number" inputmode="decimal" step="0.1" data-num="height" value="'+p.height+'"></div>'+
       '</div>'+
       '<div class="field"><label>生日（選填）</label>'+
         '<input type="date" id="s-birth" data-birth="1" value="'+esc(p.birth)+'" max="'+esc(dateKey())+'">'+
@@ -1270,7 +1315,7 @@ function setBody(sec){
         '兩邊都算會重複扣，目標會虛高。</div></div>'+
       '<div id="set-live">'+setLive(sec)+'</div>'+
       '<div class="field"><label>手動覆寫 TDEE（0 = 用上面算的）</label>'+
-        '<input type="number" inputmode="numeric" data-num="tdee" value="'+p.tdee+'">'+
+        '<input type="number" inputmode="numeric" step="1" data-num="tdee" value="'+p.tdee+'">'+
         '<div class="hint">有做過體檢代謝測量的話填進來，會蓋掉公式估算值。</div></div>';
   }
 
@@ -1282,7 +1327,7 @@ function setBody(sec){
         }).join("")+
       '</div>'+
       '<div class="field"><label>自訂調整 (大卡)</label>'+
-        '<input type="number" inputmode="numeric" data-num="goal" value="'+p.goal+'">'+
+        '<input type="number" inputmode="numeric" step="1" data-num="goal" value="'+p.goal+'">'+
         '<div class="hint">負數 = 減脂缺口，正數 = 增肌盈餘。</div></div>'+
       '<div id="set-live">'+setLive(sec)+'</div>';
   }
@@ -1388,7 +1433,7 @@ function verStateHtml(){
 function ageFieldHtml(p){
   return '<label>年齡</label>'+(p.birth
     ? '<div class="static-val">'+p.age+' 歲<span>生日到了會自動加</span></div>'
-    : '<input type="number" inputmode="numeric" data-num="age" value="'+p.age+'">');
+    : '<input type="number" inputmode="numeric" step="1" data-num="age" value="'+p.age+'">');
 }
 function birthHintText(p){
   return p.birth
@@ -1888,7 +1933,7 @@ function addTabBody(){
   return '<form id="f-manual">'+
     '<div class="field"><label>名稱</label>'+
       taHtml("m-name", "", "例如：滷肉飯", { enter:"submit", required:true })+'</div>'+
-    '<div class="field"><label>熱量 (大卡)</label><input type="number" inputmode="numeric" id="m-kcal" placeholder="0" required></div>'+
+    '<div class="field"><label>熱量 (大卡)</label><input type="number" inputmode="decimal" step="0.1" id="m-kcal" placeholder="0" required></div>'+
     '<div class="ai-nums c3" style="margin-top:12px">'+
       '<label><span>蛋白 g</span><input type="number" inputmode="decimal" step="0.1" id="m-p" placeholder="0"></label>'+
       '<label><span>碳水 g</span><input type="number" inputmode="decimal" step="0.1" id="m-c" placeholder="0"></label>'+
@@ -1987,7 +2032,7 @@ function openFoodSheet(id){
     /* 不用自己記碳水蛋白質：打完名稱按這顆，AI 幫你填 */
     (hasAiKey()?'<button class="btn ghost" type="button" id="fd-ai">🤖 讓 AI 幫我填數字</button>':'')+
     '<div class="ai-nums" id="fd-nums">'+
-      '<label><span>大卡</span><input type="number" inputmode="numeric" id="fd-kcal" value="'+round(d.kcal)+'"></label>'+
+      '<label><span>大卡</span><input type="number" inputmode="decimal" step="0.1" id="fd-kcal" value="'+round(d.kcal)+'"></label>'+
       '<label><span>蛋白 g</span><input type="number" inputmode="decimal" step="0.1" id="fd-p" value="'+gram(d.p)+'"></label>'+
       '<label><span>碳水 g</span><input type="number" inputmode="decimal" step="0.1" id="fd-c" value="'+gram(d.c)+'"></label>'+
       '<label><span>脂肪 g</span><input type="number" inputmode="decimal" step="0.1" id="fd-f" value="'+gram(d.f)+'"></label>'+
@@ -2266,7 +2311,7 @@ function drawAiResult(){
       (it.portion?'<div class="por">'+esc(it.portion)+'</div>':'')+
       last+
       '<div class="ai-nums">'+
-        '<label><span>大卡</span><input type="number" inputmode="numeric" data-f="kcal" data-i="'+idx+'" value="'+it.kcal+'"></label>'+
+        '<label><span>大卡</span><input type="number" inputmode="decimal" step="0.1" data-f="kcal" data-i="'+idx+'" value="'+it.kcal+'"></label>'+
         '<label><span>蛋白 g</span><input type="number" inputmode="decimal" step="0.1" data-f="p" data-i="'+idx+'" value="'+gram(it.p)+'"></label>'+
         '<label><span>碳水 g</span><input type="number" inputmode="decimal" step="0.1" data-f="c" data-i="'+idx+'" value="'+gram(it.c)+'"></label>'+
         '<label><span>脂肪 g</span><input type="number" inputmode="decimal" step="0.1" data-f="f" data-i="'+idx+'" value="'+gram(it.f)+'"></label>'+
@@ -2616,7 +2661,7 @@ function openEntrySheet(id){
                MEAL_INFO[mk].emoji+' '+MEAL_INFO[mk].label+'</button>';
       }).join("")+'</div></div>'+
     '<div class="ai-nums" style="margin-top:12px">'+
-      '<label><span>大卡</span><input type="number" inputmode="numeric" id="e-kcal" value="'+e.kcal+'"></label>'+
+      '<label><span>大卡</span><input type="number" inputmode="decimal" step="0.1" id="e-kcal" value="'+e.kcal+'"></label>'+
       '<label><span>蛋白 g</span><input type="number" inputmode="decimal" step="0.1" id="e-p" value="'+gram(e.p)+'"></label>'+
       '<label><span>碳水 g</span><input type="number" inputmode="decimal" step="0.1" id="e-c" value="'+gram(e.c)+'"></label>'+
       '<label><span>脂肪 g</span><input type="number" inputmode="decimal" step="0.1" id="e-f" value="'+gram(e.f)+'"></label>'+
@@ -2718,7 +2763,7 @@ function openMoveSheet(id){
       : '')+
     '<div id="mv-detail"></div>'+
     '<div class="field"><label>消耗熱量 (大卡)</label>'+
-      '<input type="number" inputmode="numeric" id="mv-kcal" value="'+(mv?mv.kcal:"")+'" placeholder="0" required>'+
+      '<input type="number" inputmode="decimal" step="0.1" id="mv-kcal" value="'+(mv?mv.kcal:"")+'" placeholder="0" required>'+
       '<div class="hint">只記「額外」運動。日常走路已經算在活動係數裡了，重複記會高估。</div></div>'+
     '<button class="btn" type="submit">'+(mv?"儲存":"加入")+'</button>'+
     (mv?'<button class="btn danger" type="button" data-del="1">刪除這筆</button>':'')+
@@ -2890,8 +2935,8 @@ function openSetupSheet(){
         '<button type="button" class="chip '+(p.sex==="female"?"on":"")+'" data-s="sex" data-v="female">女</button>'+
       '</div></div>'+
       '<div class="grid2">'+
-        '<div class="field"><label>年齡</label><input type="number" inputmode="numeric" id="s-age" value="'+p.age+'"></div>'+
-        '<div class="field"><label>身高 (cm)</label><input type="number" inputmode="decimal" id="s-height" value="'+p.height+'"></div>'+
+        '<div class="field"><label>年齡</label><input type="number" inputmode="numeric" step="1" id="s-age" value="'+p.age+'"></div>'+
+        '<div class="field"><label>身高 (cm)</label><input type="number" inputmode="decimal" step="0.1" id="s-height" value="'+p.height+'"></div>'+
       '</div>'+
       '<div class="field"><label>體重 (kg)</label><input type="number" inputmode="decimal" step="0.01" id="s-weight" value="'+p.weight+'"></div>'+
       '<div class="field"><label>活動量</label><div class="chips">'+

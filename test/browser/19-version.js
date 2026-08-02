@@ -48,8 +48,11 @@ const ORIGINAL = fs.readFileSync(SW, 'utf8');
     const row = await txt(p, '[data-sec="ver"]');
     check('有「版本」這一列', /版本/.test(row), row);
     check('列上就寫著版本號 v' + ver, row.indexOf('v' + ver) >= 0, row);
-    check('底下那行版本字跟常數同一個來源',
-      (await txt(p, '#app')).indexOf('減重助手 v' + ver) >= 0);
+    /* v4.5 起把頁尾那行「減重助手 vX」拿掉了：同一頁把同一件事講兩次。
+       版本只出現在這一列上（22-audit.js 有一條專門釘住「只出現一次」）。 */
+    check('版本號在這一頁只出現一次',
+      (await txt(p, '#app')).split('v' + ver).length - 1 === 1,
+      (await txt(p, '#app')).split('v' + ver).length - 1);
 
     console.log('\n[B] 沒有新版時要明講「已經是最新版」');
     await openSet(p, 'ver');

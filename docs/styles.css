@@ -35,7 +35,7 @@ input,textarea,select{font-family:inherit; font-size:16px; color:inherit;}
 .daynav .date{flex:1; text-align:center; font-size:16px; font-weight:800;}
 .daynav .date small{display:block; font-size:12px; color:var(--muted); font-weight:600; margin-top:1px;}
 .today-btn{font-size:12.5px; font-weight:800; color:var(--acc-deep); background:var(--acc-soft);
-  border-radius:99px; padding:0 12px; min-height:32px;}
+  border-radius:99px; padding:0 14px; min-height:44px;}
 
 /* ---------- 誰在用？（Netflix 式選人） ---------- */
 .picker{min-height:100dvh; display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -143,6 +143,12 @@ input,textarea,select{font-family:inherit; font-size:16px; color:inherit;}
 .conf.medium{background:var(--warn-soft); color:#a86d12;}
 
 /* 7 日長條 */
+/* 目標線：沒有它的話長條圖看不出「有沒有過線」（高度是相對於最大值，不是目標） */
+.spark{position:relative;}
+.goal-line{position:absolute; left:12px; right:12px; height:0; border-top:1.5px dashed #c3cbbe;
+  display:block; z-index:1;}
+.goal-line b{position:absolute; right:0; top:-8px; background:var(--card); padding:0 4px;
+  font-size:9.5px; font-weight:800; color:var(--muted); letter-spacing:.2px;}
 .spark{background:var(--card); border-radius:18px; box-shadow:var(--shadow); padding:14px 12px 10px;
   display:flex; align-items:flex-end; gap:6px; height:112px;}
 .spark .col{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:5px; height:100%;}
@@ -262,13 +268,16 @@ textarea.ta{resize:none; overflow:hidden; min-height:52px; line-height:1.5;}
 .fab:active{background:var(--acc-deep);}
 
 /* ---------- sheet ---------- */
-#sheet-layer{position:fixed; inset:0; z-index:60; display:flex; align-items:flex-end; justify-content:center;}
+/* top/height 綁在 visual viewport 上：鍵盤跳出來時 sheet 只佔「看得見的那一塊」，
+ * 底下的輸入框才不會躲在鍵盤後面（iOS 不會自己把 fixed 元素推上去）。 */
+#sheet-layer{position:fixed; left:0; right:0; top:var(--vvtop, 0px); height:var(--vvh, 100%);
+  z-index:60; display:flex; align-items:flex-end; justify-content:center;}
 /* 這行不能省：上面的 ID 選擇器優先度高於瀏覽器對 [hidden] 的 display:none，
  * 少了它 sheet 關閉後仍會是一層看不見的全螢幕遮罩，整個 app 都點不動 */
 #sheet-layer[hidden]{display:none;}
 #sheet-layer .mask{position:absolute; inset:0; background:rgba(25,35,28,.42);}
 .sheet{position:relative; width:100%; max-width:480px; background:var(--bg); border-radius:22px 22px 0 0;
-  max-height:92dvh; display:flex; flex-direction:column; animation:up .24s ease;}
+  max-height:100%; display:flex; flex-direction:column; animation:up .24s ease;}
 @keyframes up{from{transform:translateY(30px); opacity:.6;} to{transform:none; opacity:1;}}
 .sheet-head{display:flex; align-items:center; gap:8px; padding:14px 16px 10px; flex:0 0 auto;}
 .sheet-head h2{font-size:17px; font-weight:800; flex:1;}
@@ -289,7 +298,7 @@ textarea.ta{resize:none; overflow:hidden; min-height:52px; line-height:1.5;}
 .ai-reuse button{width:100%; min-height:44px; margin-top:10px; border-radius:12px;
   background:var(--acc); color:#fff; font-size:14px; font-weight:800;}
 .ai-reuse button:active{background:var(--acc-deep);}
-.ai-last{display:block; width:100%; text-align:left; min-height:38px; margin-top:8px;
+.ai-last{display:block; width:100%; text-align:left; min-height:44px; margin-top:8px;
   border-radius:11px; padding:9px 11px; background:var(--acc-soft); color:var(--acc-deep);
   font-size:12px; font-weight:700; line-height:1.4;}
 .ai-last:active{background:#d8ecdf;}
@@ -300,9 +309,9 @@ textarea.ta{resize:none; overflow:hidden; min-height:52px; line-height:1.5;}
 .ai-item{background:var(--card); border-radius:14px; box-shadow:var(--shadow); padding:12px 13px; margin-bottom:10px;}
 .ai-item .t{display:flex; align-items:center; gap:8px;}
 .ai-item .t b{flex:1; font-size:15px; font-weight:700; overflow-wrap:anywhere;}
-.ai-item .t button{min-width:36px; min-height:36px; color:var(--muted); font-size:16px;}
+.ai-item .t button{min-width:44px; min-height:44px; color:var(--muted); font-size:16px;}
 /* 名稱整條可點 -> 開「修正這一項」 */
-.ai-item .t .ai-name{flex:1; min-width:0; min-height:36px; display:flex; align-items:center; gap:6px;
+.ai-item .t .ai-name{flex:1; min-width:0; min-height:44px; display:flex; align-items:center; gap:6px;
   text-align:left; font-size:15px; font-weight:700; color:var(--ink);}
 .ai-item .t .ai-name .pen{font-style:normal; font-size:12px; color:#c9d2c4; flex:0 0 auto;}
 .ai-item .por{font-size:12px; color:var(--muted); margin-top:3px; line-height:1.5;}
@@ -310,7 +319,7 @@ textarea.ta{resize:none; overflow:hidden; min-height:52px; line-height:1.5;}
 .ai-nums.c3{grid-template-columns:repeat(3,1fr);}
 .ai-nums label{display:block;}
 .ai-nums span{display:block; font-size:10.5px; color:var(--muted); font-weight:700; margin-bottom:3px; text-align:center;}
-.ai-nums input{width:100%; min-height:42px; border:1px solid var(--line); border-radius:10px; text-align:center;
+.ai-nums input{width:100%; min-height:44px; border:1px solid var(--line); border-radius:10px; text-align:center;
   background:#fbfcfa; outline:none; padding:0 2px;}
 .ai-nums input:focus{border-color:var(--acc); background:#fff;}
 .spin{display:flex; flex-direction:column; align-items:center; gap:12px; padding:38px 0; color:var(--muted); font-size:13.5px;}
@@ -338,7 +347,7 @@ textarea.ta{resize:none; overflow:hidden; min-height:52px; line-height:1.5;}
 .photo-strip.multi{grid-template-columns:1fr 1fr;}
 .photo-cell{position:relative;}
 .photo-strip.multi .photo-prev{aspect-ratio:1; object-fit:cover;}
-.photo-cell button{position:absolute; top:6px; right:6px; min-width:32px; min-height:32px;
+.photo-cell button{position:absolute; top:6px; right:6px; min-width:44px; min-height:44px;
   border-radius:99px; background:rgba(0,0,0,.55); color:#fff; font-size:14px; font-weight:800;
   display:flex; align-items:center; justify-content:center; line-height:1;}
 .photo-cell button:active{background:rgba(0,0,0,.75);}

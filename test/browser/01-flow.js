@@ -144,8 +144,19 @@ function check(name, cond, got) {
   const chips2 = await p.$$eval('.addchips .chip', (e) => e.map((x) => x.textContent.trim()));
   check('記了午餐之後，午餐從「還沒記」消失', chips2.length === 4 && !chips2.some((t) => /午餐/.test(t)), chips2);
   check('出現午餐的區塊', /午餐/.test(await p.textContent('.sec-head h2')));
+  /* v4.5 起列上不再印時間（那是「按下記錄」的時間、不是吃的時間，中午補記早餐會顯示 12:30
+     在早餐底下，看起來像錯的），所以沒有份量的那一筆就只有一行。 */
+  check('沒有份量的那一筆只有一行，不再印記錄時間', (await p.$$('.row-mid span')).length === 0,
+    await p.$$eval('.row-mid span', (e) => e.map((x) => x.textContent)));
+  /* 有份量的那一筆仍然固定一行（太長就截斷，列高才會一致） */
+  await p.evaluate(() => {
+    var d = dayOf(curDate);
+    d.entries[d.entries.length - 1].portion = '便當盒、白飯約 1.5 碗、另外加了一份燙青菜與滷蛋';
+    render();
+  });
+  await p.waitForTimeout(400);
   const rowSub = await p.$eval('.row-mid span', (e) => getComputedStyle(e).whiteSpace);
-  check('每一筆的份量說明固定一行（太長就截斷，列高才會一致）', rowSub === 'nowrap', rowSub);
+  check('有份量時固定一行（太長就截斷，列高才會一致）', rowSub === 'nowrap', rowSub);
 
   console.log('\n[G] 觸控目標尺寸（iOS 44px 規範）與輸入字級（防自動放大）');
   const small = await p.$$eval('button, .row, .weigh, a', (els) => els
