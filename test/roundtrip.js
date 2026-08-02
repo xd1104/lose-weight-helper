@@ -152,6 +152,21 @@ t('三大營養素可以有小數（食品標示常常是 2.5 g，全部進位�
   assert.strictEqual(f[0].f, 2.8);
 });
 
+t('體重的兩位小數要留著（有些體重計是 0.05 kg 一格）', () => {
+  const back = S.parseDay('2026-07-25', S.serializeDay({
+    date: '2026-07-25', weight: 59.45, entries: [], moves: [], notes: '',
+  }));
+  assert.strictEqual(back.weight, 59.45);
+  // 再多的位數就沒有意義了，砍到兩位
+  const back2 = S.parseDay('2026-07-25', S.serializeDay({
+    date: '2026-07-25', weight: 59.4567, entries: [], moves: [], notes: '',
+  }));
+  assert.strictEqual(back2.weight, 59.46);
+  // 整數與一位小數不可以被寫成 59.00 / 59.40
+  const md = S.serializeDay({ date: '2026-07-25', weight: 59, entries: [], moves: [], notes: '' });
+  assert.ok(md.includes('weight: 59\n'), md.split('\n')[2]);
+});
+
 console.log('profile round-trip');
 
 t('profile 欄位原樣回來', () => {
@@ -164,6 +179,13 @@ t('profile 欄位原樣回來', () => {
   assert.strictEqual(back.activity, 1.55);
   assert.strictEqual(back.goal, -300);
   assert.strictEqual(back.model, 'claude-opus-5');
+});
+
+t('身體資料的體重也留兩位小數（以前被 round() 進位成整數）', () => {
+  const back = S.parseProfile(S.serializeProfile({
+    sex: 'male', age: 27, height: 168, weight: 59.45, activity: 1.2, goal: -300,
+  }));
+  assert.strictEqual(back.weight, 59.45, '打 59.45 存進去不可以變成 59');
 });
 
 t('生日：填了就由生日推算年齡，生日過了自動 +1', () => {

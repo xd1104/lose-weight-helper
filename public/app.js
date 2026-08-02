@@ -1,7 +1,7 @@
 "use strict";
 
 /* 版本號。改前端時跟 sw.js 的 cache 版本號一起 +1。 */
-var APP_VER="4.2";
+var APP_VER="4.3";
 /*
  * 減重助手 — 前端主程式
  * 資料層在 store.js（LocalStore / GitHubStore 自動切）、AI 在 ai.js。
@@ -23,6 +23,12 @@ function fmtLong(key){
   return (d.getMonth()+1)+" 月 "+d.getDate()+" 日（"+WD[d.getDay()]+"）";
 }
 function kcal(n){ return Math.round(num(n)).toLocaleString("zh-TW"); }
+/* 體重的顯示：59.4 就寫 59.4，59.45 要看得到，59 寫成 59.0（體重習慣帶一位小數）。
+ * 有些體重計是 0.05 kg 一格，硬是砍到一位小數會跟他看到的數字對不起來。 */
+function kgTxt(v){
+  var n=Math.round(num(v)*100)/100;
+  return (Math.abs(n*10-Math.round(n*10))<0.001) ? n.toFixed(1) : n.toFixed(2);
+}
 /* 營養素的顯示：2.5 要看得到，25 不要變成 25.0 */
 function gram(n){
   var v=Math.round(num(n)*10)/10;
@@ -516,7 +522,7 @@ function weighHtml(d){
   return '<section class="sec"><button class="weigh'+(todo?" todo":"")+'" data-act="edit-weight">'+
       '<span class="weigh-ico">⚖️</span>'+
       '<div class="weigh-mid">'+
-        (w?'<b class="num">'+w.toFixed(1)+'<i>kg</i></b>':'<b class="none">記錄今天的體重</b>')+
+        (w?'<b class="num">'+kgTxt(w)+'<i>kg</i></b>':'<b class="none">記錄今天的體重</b>')+
         sub+
       '</div>'+
       '<span class="chev">›</span>'+
@@ -807,7 +813,7 @@ function viewHistory(){
     var cls=over ? ((tdeeH>0 && v<=tdeeH) ? "mid" : "over") : "";
     h+='<button class="hrow" data-act="open-day" data-date="'+esc(k)+'">'+
         '<div class="d">'+esc(fmtMD(k))+(d&&d.coach?'<i class="has-coach" title="有營養師講評">🥗</i>':'')+
-          '<small>'+(d&&num(d.weight)?num(d.weight).toFixed(1)+' kg':'週'+WD[parseDateKey(k).getDay()])+'</small></div>'+
+          '<small>'+(d&&num(d.weight)?kgTxt(d.weight)+' kg':'週'+WD[parseDateKey(k).getDay()])+'</small></div>'+
         '<div class="hbar"><i class="'+cls+'" style="width:'+(pct*100).toFixed(0)+'%"></i></div>'+
         '<div class="v num '+(v==null?"none":cls)+'">'+(v==null?"—":kcal(v))+'</div>'+
        '</button>';
@@ -844,7 +850,7 @@ function weightTrendHtml(keys){
   }
   return '<div class="sec"><div class="wcard">'+
       '<div class="wtop">'+
-        '<div><span>目前體重</span><b class="num">'+last.w.toFixed(1)+'<i>kg</i></b></div>'+
+        '<div><span>目前體重</span><b class="num">'+kgTxt(last.w)+'<i>kg</i></b></div>'+
         (pts.length>=2
           ? '<div class="wdiff '+(diff<0?"down":(diff>0?"up":""))+'"><span>'+esc(fmtMD(first.k))+' 以來</span>'+
             '<b class="num">'+(diff>0?"+":"")+diff.toFixed(1)+'<i>kg</i></b></div>'
@@ -1092,7 +1098,7 @@ function setSections(){
   var p=db.profile, mt=macroTargets(p), key=getAiKey();
   var list=[
     { g:"身體與目標", id:"body",     icon:"\u2696\uFE0F", label:"身體資料",
-      sum:(p.sex==="female"?"女":"男")+" · "+round(p.age)+" 歲 · "+round(p.height)+" cm · "+num(p.weight).toFixed(1)+" kg" },
+      sum:(p.sex==="female"?"女":"男")+" · "+round(p.age)+" 歲 · "+round(p.height)+" cm · "+kgTxt(p.weight)+" kg" },
     { g:"身體與目標", id:"activity", icon:"\uD83D\uDEB6", label:"活動量與 TDEE",
       sum:activityInfo(p).label+" · TDEE "+kcal(tdeeOf(p))+" 大卡" },
     { g:"身體與目標", id:"goal",     icon:"\uD83C\uDFAF", label:"每日目標",
@@ -1201,7 +1207,7 @@ function setBody(sec){
       '<div class="field"><label>生日（選填）</label>'+
         '<input type="date" id="s-birth" data-birth="1" value="'+esc(p.birth)+'" max="'+esc(dateKey())+'">'+
         '<div class="hint" id="birth-hint">'+birthHintText(p)+'</div></div>'+
-      '<div class="field"><label>體重 (kg)</label><input type="number" inputmode="decimal" step="0.1" data-num="weight" value="'+p.weight+'"></div>'+
+      '<div class="field"><label>體重 (kg)</label><input type="number" inputmode="decimal" step="0.01" data-num="weight" value="'+p.weight+'"></div>'+
       '<div id="set-live">'+setLive(sec)+'</div>';
   }
 
@@ -2729,7 +2735,7 @@ function openWeightSheet(){
   var isToday=curDate===dateKey();
   var body='<form id="f-weigh">'+
     '<div class="field" style="margin-top:0"><label>'+esc(fmtLong(curDate))+' 的體重 (kg)</label>'+
-      '<input type="number" inputmode="decimal" step="0.1" id="w-val" value="'+(cur?cur:"")+'" '+
+      '<input type="number" inputmode="decimal" step="0.01" id="w-val" value="'+(cur?cur:"")+'" '+
         'placeholder="'+(prevWeight()||db.profile.weight||70)+'" autofocus>'+
       '<div class="hint">早上起床、上完廁所、空腹量最準。同一個時間點量才有可比性。</div></div>'+
     (isToday?'<div class="tdee-box" style="margin-top:12px"><div class="r">'+
@@ -2759,7 +2765,7 @@ function openWeightSheet(){
         db.profile=cleanProfile(db.profile);
         persistProfile();
       }
-      closeSheet(); render(); toast(v?"已記錄 "+v.toFixed(1)+" kg":"已清除");
+      closeSheet(); render(); toast(v?"已記錄 "+kgTxt(v)+" kg":"已清除");
     };
   }});
 }
@@ -2779,7 +2785,7 @@ function openSetupSheet(){
         '<div class="field"><label>年齡</label><input type="number" inputmode="numeric" id="s-age" value="'+p.age+'"></div>'+
         '<div class="field"><label>身高 (cm)</label><input type="number" inputmode="decimal" id="s-height" value="'+p.height+'"></div>'+
       '</div>'+
-      '<div class="field"><label>體重 (kg)</label><input type="number" inputmode="decimal" step="0.1" id="s-weight" value="'+p.weight+'"></div>'+
+      '<div class="field"><label>體重 (kg)</label><input type="number" inputmode="decimal" step="0.01" id="s-weight" value="'+p.weight+'"></div>'+
       '<div class="field"><label>活動量</label><div class="chips">'+
         ACTIVITIES.map(function(a){
           return '<button type="button" class="chip '+(Math.abs(p.activity-a.v)<0.01?"on":"")+'" data-s="activity" data-v="'+a.v+'">'+a.label+'</button>';

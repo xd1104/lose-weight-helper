@@ -75,7 +75,9 @@ function check(name, cond, got) {
   console.log('\n[C] 體重同步進身體資料（TDEE 才不會失準）');
   await openSet(p, 'body');
   const pw = await p.inputValue('[data-num="weight"]');
-  check('今天量的體重已同步到 profile', Number(pw) === 78, pw);
+  /* 78.4 要原樣進去。以前 cleanProfile 走 round() 會進位成 78，
+     這條斷言當初就是照著那個 bug 寫的（v4.3 修掉） */
+  check('今天量的體重已同步到 profile，小數沒被吃掉', Number(pw) === 78.4, pw);
   await closeSet(p);
 
   console.log('\n[D] 歷史頁體重趨勢');

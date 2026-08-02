@@ -217,6 +217,9 @@ function round(v) { return Math.round(num(v)); }
 // 一天記十筆就會累積出可觀的誤差。熱量維持整數（0.5 大卡沒有意義）。
 // ⚠️ 與 public/store.js 的 round1 是鏡像。
 function round1(v) { return Math.round(num(v) * 10) / 10; }
+// 體重保留兩位小數：有些體重計是 0.05 kg 一格（59.45）。
+// ⚠️ 與 public/store.js 的 round2 是鏡像。
+function round2(v) { return Math.round(num(v) * 100) / 100; }
 
 const MEALS = ['breakfast', 'lunch', 'dinner', 'snack'];
 
@@ -310,7 +313,7 @@ function serializeDay(d) {
   const L = [];
   L.push('---');
   L.push('date: ' + fmString(d.date));
-  L.push('weight: ' + fmNumber(d.weight)); // 0 = 當天沒量
+  L.push('weight: ' + fmNumber(round2(d.weight))); // 0 = 當天沒量
   L.push('updatedAt: ' + fmString(d.updatedAt || new Date().toISOString()));
   L.push('---');
   L.push('');
@@ -455,7 +458,7 @@ function cleanProfile(p) {
     age: Math.min(120, Math.max(1, round((p && p.age) || d.age))),
     birth: cleanBirth(p && p.birth),
     height: Math.min(260, Math.max(80, round((p && p.height) || d.height))),
-    weight: Math.min(400, Math.max(20, round((p && p.weight) || d.weight))),
+    weight: Math.min(400, Math.max(20, round2((p && p.weight) || d.weight))),
     activity: num(p && p.activity) || d.activity,
     tdee: Math.max(0, round(p && p.tdee)),
     goal: round(p && p.goal),

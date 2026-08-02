@@ -16,6 +16,10 @@ function round(v){ return Math.round(num(v)); }
  * 全部四捨五入成整數，一天記十筆就會累積出可觀的誤差。
  * 熱量維持整數（0.5 大卡沒有意義）。 */
 function round1(v){ return Math.round(num(v)*10)/10; }
+/* 體重保留兩位小數：有些體重計是 0.05 kg 一格（59.45）。
+ * 以前 profile.weight 走 round() 被進位成整數，使用者打 59.4 存進去變 59。
+ * ⚠️ 與 server.js 的 round2 是鏡像。 */
+function round2(v){ return Math.round(num(v)*100)/100; }
 function uid(){ return "x"+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
 function pad2(n){ return (n<10?"0":"")+n; }
 /* 一律用「當地時區」的日期，不能用 toISOString（那是 UTC，台灣半夜會跳成前一天） */
@@ -155,7 +159,7 @@ function cleanCoach(c){
 function serializeDay(d){
   var L=["---"];
   L.push("date: "+fmString(d.date));
-  L.push("weight: "+fmNumber(d.weight));
+  L.push("weight: "+fmNumber(round2(d.weight)));
   L.push("updatedAt: "+fmString(d.updatedAt||new Date().toISOString()));
   L.push("---","","## 飲食","");
   (d.entries||[]).forEach(function(e){ L.push("- "+JSON.stringify(cleanEntry(e))); });
@@ -254,7 +258,7 @@ function cleanProfile(p){
     age:Math.min(120,Math.max(1, round((p&&p.age)||d.age))),
     birth:cleanBirth(p&&p.birth),
     height:Math.min(260,Math.max(80, round((p&&p.height)||d.height))),
-    weight:Math.min(400,Math.max(20, round((p&&p.weight)||d.weight))),
+    weight:Math.min(400,Math.max(20, round2((p&&p.weight)||d.weight))),
     activity:num(p&&p.activity)||d.activity,
     tdee:Math.max(0, round(p&&p.tdee)),
     goal:round(p&&p.goal),
