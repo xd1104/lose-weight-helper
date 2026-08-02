@@ -243,6 +243,15 @@ const getFoods = (u) => fetch(BASE + '/api/core?u=' + encodeURIComponent(u)).the
   await p.waitForTimeout(400);
   await p.click('[data-tab="fav"]');
   await p.waitForTimeout(400);
+  /* v4.9 起清單少於 8 筆時不放搜尋框（短清單放搜尋只是多一個要滑過去的東西），
+     所以要先把清單湊長，才測得到搜尋 */
+  await p.evaluate(() => {
+    for (var i = 0; i < 8; i++) {
+      db.foods.push({ id: 'pad' + i, name: '湊數' + i, kcal: 100, p: 1, c: 1, f: 1, n: 1 });
+    }
+    drawAddSheet(false);
+  });
+  await p.waitForTimeout(500);
   await p.click('[data-fav="f1"]');
   await p.waitForTimeout(400);
   await p.fill('#i-fav-q', '燒');

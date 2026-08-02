@@ -1,7 +1,7 @@
 "use strict";
 
 /* 版本號。改前端時跟 sw.js 的 cache 版本號一起 +1。 */
-var APP_VER="4.8";
+var APP_VER="4.9";
 /*
  * 減重助手 — 前端主程式
  * 資料層在 store.js（LocalStore / GitHubStore 自動切）、AI 在 ai.js。
@@ -1294,12 +1294,12 @@ function setBody(sec){
       '</div></div>'+
       '<div class="grid2">'+
         '<div class="field" id="age-field">'+ageFieldHtml(p)+'</div>'+
-        '<div class="field"><label>身高 (cm)</label><input type="number" inputmode="decimal" step="0.1" data-num="height" value="'+p.height+'"></div>'+
+        '<div class="field"><label>身高（cm）</label><input type="number" inputmode="decimal" step="0.1" data-num="height" value="'+p.height+'"></div>'+
       '</div>'+
       '<div class="field"><label>生日（選填）</label>'+
         '<input type="date" id="s-birth" data-birth="1" value="'+esc(p.birth)+'" max="'+esc(dateKey())+'">'+
         '<div class="hint" id="birth-hint">'+birthHintText(p)+'</div></div>'+
-      '<div class="field"><label>體重 (kg)</label><input type="number" inputmode="decimal" step="0.01" data-num="weight" value="'+p.weight+'"></div>'+
+      '<div class="field"><label>體重（kg）</label><input type="number" inputmode="decimal" step="0.01" data-num="weight" value="'+p.weight+'"></div>'+
       '<div id="set-live">'+setLive(sec)+'</div>';
   }
 
@@ -1326,7 +1326,7 @@ function setBody(sec){
           return '<button class="chip '+(round(p.goal)===g.v?"on":"")+'" data-set="goal" data-val="'+g.v+'">'+g.label+'</button>';
         }).join("")+
       '</div>'+
-      '<div class="field"><label>自訂調整 (大卡)</label>'+
+      '<div class="field"><label>自訂調整（大卡）</label>'+
         '<input type="number" inputmode="numeric" step="1" data-num="goal" value="'+p.goal+'">'+
         '<div class="hint">負數 = 減脂缺口，正數 = 增肌盈餘。</div></div>'+
       '<div id="set-live">'+setLive(sec)+'</div>';
@@ -1922,8 +1922,11 @@ function addTabBody(){
              '也可以直接自己建一筆。</p></div>'+
              '<button class="btn" type="button" data-fav-new="1">＋ 新增常吃項目</button>';
     }
-    return '<div class="field"><label>搜尋</label>'+
-      '<input type="text" id="i-fav-q" placeholder="輸入食物名稱" autocomplete="off"></div>'+
+    /* 清單短的時候搜尋框只是多一個要滑過去的東西 */
+    return (db.foods.length>=8
+      ? '<div class="field"><label>搜尋</label>'+
+        '<input type="text" id="i-fav-q" placeholder="輸入食物名稱" autocomplete="off"></div>'
+      : '')+
       '<button class="btn ghost" type="button" data-fav-new="1" style="margin-top:8px">＋ 新增常吃項目</button>'+
       '<div id="fav-list">'+favListHtml(favQ)+'</div>'+
       '<div id="fav-go">'+favGoHtml()+'</div>'+
@@ -1933,7 +1936,9 @@ function addTabBody(){
   return '<form id="f-manual">'+
     '<div class="field"><label>名稱</label>'+
       taHtml("m-name", "", "例如：滷肉飯", { enter:"submit", required:true })+'</div>'+
-    '<div class="field"><label>熱量 (大卡)</label><input type="number" inputmode="decimal" step="0.1" id="m-kcal" placeholder="0" required></div>'+
+    '<div class="field"><label>份量（選填）</label>'+
+      taHtml("m-por", "", "例如：一碗（約一個拳頭）", { enter:"submit" })+'</div>'+
+    '<div class="field"><label>熱量（大卡）</label><input type="number" inputmode="decimal" step="0.1" id="m-kcal" placeholder="0" required></div>'+
     '<div class="ai-nums c3" style="margin-top:12px">'+
       '<label><span>蛋白 g</span><input type="number" inputmode="decimal" step="0.1" id="m-p" placeholder="0"></label>'+
       '<label><span>碳水 g</span><input type="number" inputmode="decimal" step="0.1" id="m-c" placeholder="0"></label>'+
@@ -1988,7 +1993,7 @@ function favRowHtml(f){
     '<button class="food-row'+(on?" on":"")+'" data-fav="'+esc(f.id)+'" aria-pressed="'+(on?"true":"false")+'">'+
       '<span class="tick">'+(on?"✓":"")+'</span>'+
       '<b>'+esc(f.name)+(f.portion?'<span class="por">'+esc(f.portion)+'</span>':'')+'</b>'+
-      '<span class="k num">'+kcal(f.kcal)+'</span>'+
+      '<span class="k num">'+kcal(f.kcal)+'<i>大卡</i></span>'+
     '</button>'+
     '<button class="food-del" data-fav-edit="'+esc(f.id)+'" aria-label="編輯 '+esc(f.name)+'">✎</button>'+
   '</div>';
@@ -2206,7 +2211,8 @@ function wireAddSheet(root){
       kcal:k, p:Number((root.querySelector("#m-p")||{}).value)||0,
       c:Number((root.querySelector("#m-c")||{}).value)||0,
       f:Number((root.querySelector("#m-f")||{}).value)||0,
-      portion:"", src:"manual" };
+      portion:((root.querySelector("#m-por")||{}).value||"").replace(/[\r\n]+/g," ").trim(),
+      src:"manual" };
     addEntries([item]);
   };
 }
@@ -2272,8 +2278,7 @@ function drawAiResult(){
   if(aiResult.note) body+='<div class="ai-note">💡 '+esc(aiResult.note)+'</div>';
   /* 「652 大卡」看起來像量過的，其實是估的。不講清楚，使用者會把兩次估算的差
    * 當成 app 壞掉；講清楚之後，同一個誤差就只是正常範圍。 */
-  body+='<div class="ai-acc">估算誤差大約 ±20%，照片看不出油量與飯量，這是上限。'+
-        '份量寫錯就直接改數字，一週的平均比單餐的數字可靠得多。</div>';
+  body+='<div class="ai-acc">估算誤差約 ±20%。份量寫錯就點名稱進去調倍數。</div>';
   body+=mealPicker();
 
   /* 吃過的東西沿用上次的數字。
@@ -2706,7 +2711,6 @@ function openEntrySheet(id){
       '<label><span>脂肪 g</span><input type="number" inputmode="decimal" step="0.1" id="e-f" value="'+gram(e.f)+'"></label>'+
     '</div>'+
     scaleChipsHtml()+
-    '<div class="field"><label>時間</label><input type="time" id="e-time" value="'+esc(e.time||"")+'"></div>'+
     /* 一鍵存成常吃：營養素直接沿用這一筆，不用自己記碳水蛋白質 */
     '<button class="btn ghost star-btn'+(isStarred(e.name)?" on":"")+'" type="button" id="e-star">'+
       (isStarred(e.name)?"★ 已在常吃清單":"☆ 加入常吃清單")+'</button>'+
@@ -2771,7 +2775,6 @@ function openEntrySheet(id){
       e.c=Math.max(0, round1(Number(root.querySelector("#e-c").value)||0));
       e.f=Math.max(0, round1(Number(root.querySelector("#e-f").value)||0));
       e.portion=curPortion;
-      e.time=root.querySelector("#e-time").value||e.time;
       persistDay(curDate);
       closeSheet(); render(); toast("已更新");
     };
@@ -2821,7 +2824,7 @@ function openMoveSheet(id){
         '而且是<b>淨消耗</b>（扣掉那段時間本來就會燒的基礎代謝）。</div>'
       : '')+
     '<div id="mv-detail"></div>'+
-    '<div class="field"><label>消耗熱量 (大卡)</label>'+
+    '<div class="field"><label>消耗熱量（大卡）</label>'+
       '<input type="number" inputmode="decimal" step="0.1" id="mv-kcal" value="'+(mv?mv.kcal:"")+'" placeholder="0" required>'+
       '<div class="hint">只記「額外」運動。日常走路已經算在活動係數裡了，重複記會高估。</div></div>'+
     '<button class="btn" type="submit">'+(mv?"儲存":"加入")+'</button>'+
@@ -2946,7 +2949,7 @@ function openWeightSheet(){
   var cur=num(d.weight);
   var isToday=curDate===dateKey();
   var body='<form id="f-weigh">'+
-    '<div class="field" style="margin-top:0"><label>'+esc(fmtLong(curDate))+' 的體重 (kg)</label>'+
+    '<div class="field" style="margin-top:0"><label>'+esc(fmtLong(curDate))+' 的體重（kg）</label>'+
       '<input type="number" inputmode="decimal" step="0.01" id="w-val" value="'+(cur?cur:"")+'" '+
         'placeholder="'+(prevWeight()||db.profile.weight||70)+'" autofocus>'+
       '<div class="hint">早上起床、上完廁所、空腹量最準。同一個時間點量才有可比性。</div></div>'+
@@ -2995,9 +2998,9 @@ function openSetupSheet(){
       '</div></div>'+
       '<div class="grid2">'+
         '<div class="field"><label>年齡</label><input type="number" inputmode="numeric" step="1" id="s-age" value="'+p.age+'"></div>'+
-        '<div class="field"><label>身高 (cm)</label><input type="number" inputmode="decimal" step="0.1" id="s-height" value="'+p.height+'"></div>'+
+        '<div class="field"><label>身高（cm）</label><input type="number" inputmode="decimal" step="0.1" id="s-height" value="'+p.height+'"></div>'+
       '</div>'+
-      '<div class="field"><label>體重 (kg)</label><input type="number" inputmode="decimal" step="0.01" id="s-weight" value="'+p.weight+'"></div>'+
+      '<div class="field"><label>體重（kg）</label><input type="number" inputmode="decimal" step="0.01" id="s-weight" value="'+p.weight+'"></div>'+
       '<div class="field"><label>活動量</label><div class="chips">'+
         ACTIVITIES.map(function(a){
           return '<button type="button" class="chip '+(Math.abs(p.activity-a.v)<0.01?"on":"")+'" data-s="activity" data-v="'+a.v+'">'+a.label+'</button>';
