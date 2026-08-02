@@ -8,6 +8,7 @@
 - {"id":"xms3xe4epmt8o","name":"水煮蛋","kcal":140,"p":13,"c":1,"f":10,"portion":"2顆，約50克/顆","star":true,"n":2}
 - {"id":"xms08qs8ecwxz","name":"炒空心菜","kcal":60,"p":2,"c":5,"f":4,"portion":"約一碗，清炒","n":3}
 - {"id":"xms08qs8bajwi","name":"糙米飯","kcal":130,"p":3,"c":28,"f":1,"portion":"約半碗（100g）","n":3}
+- {"id":"xms1k9j1735nj","name":"羊肉片","kcal":420,"p":34,"f":30,"portion":"中份約200-250g生肉片，火鍋涮煮","n":2}
 - {"id":"xms08qs8es0ij","name":"洋蔥炒魷魚","kcal":180,"p":15,"c":10,"f":8,"portion":"約一小盤，魷魚約80克、洋蔥約50克","n":2}
 - {"id":"xms96u0t29qas","name":"意麵","kcal":300,"p":8,"c":55,"f":5,"portion":"一份燴煮意麵，約1份乾麵量","n":2}
 - {"id":"xms33mrorijgv","name":"滷豆乾","kcal":140,"p":15,"c":5,"f":9,"portion":"約100克","n":2}
@@ -21,6 +22,7 @@
 - {"id":"xms1qj1uc1fk1","name":"木耳炒蛋","kcal":150,"p":7,"c":6,"f":11,"portion":"約一人份，含一顆蛋","n":1}
 - {"id":"xms96rl6mftqz","name":"火腿","kcal":90,"p":9,"c":2,"f":5,"portion":"約3-4片火腿，3/4份量","n":1}
 - {"id":"xms1k9j18ck6q","name":"火鍋料(如魚餃、貢丸等)","kcal":100,"p":5,"c":8,"f":6,"portion":"少許，約2-3顆綜合火鍋料","n":1}
+- {"id":"xmsbr67hsga65","name":"奶白湯底（湯汁本身熱量，未含火鍋料）","kcal":150,"p":3,"c":6,"f":12,"portion":"一小碗約200ml飲用量","n":1}
 - {"id":"xms7fjnd220wm","name":"奶油餅乾","kcal":144,"p":2.9,"c":20.7,"f":5.5,"n":1}
 - {"id":"xmsameowhjnjo","name":"巧克力厚片","kcal":75,"p":1,"c":11,"f":2,"portion":"約1/4份巧克力厚片吐司（整份約300大卡）","n":1}
 - {"id":"xms96si9way7k","name":"巧克力厚片吐司","kcal":130,"p":3,"c":18,"f":6,"portion":"整片厚片的1/4，約1/4片","n":1}
@@ -28,9 +30,9 @@
 - {"id":"xms7fih1s4pmi","name":"巧克力麵包","kcal":100,"p":1.5,"c":15,"f":3.5,"n":1}
 - {"id":"xms04sq500kft","name":"白木耳蓮子甜湯","kcal":150,"p":2,"c":35,"portion":"馬克杯一杯，約250ml，含白木耳、蓮子、糖水","n":1}
 - {"id":"xms1k9j196fuo","name":"白飯","kcal":280,"p":5,"c":62,"portion":"一般碗白飯約1碗(210克)","n":1}
+- {"id":"xmsbr67hyi0zv","name":"白飯拌滷肉燥","kcal":220,"p":6,"c":32,"f":8,"portion":"半碗白飯（約140大卡）＋肉燥少許","n":1}
 - {"id":"xms7fekz4klqt","name":"皮蛋豆腐","kcal":95,"p":6,"c":4,"f":6,"portion":"半份，約半盤（皮蛋1顆、嫩豆腐半盒，含醬油膏與柴魚）","n":1}
 - {"id":"xms4rmub7sfn0","name":"米血串","kcal":90,"p":2,"c":19,"f":1,"portion":"1串，約60g","n":1}
-- {"id":"xms1k9j1735nj","name":"羊肉片","kcal":220,"p":18,"f":16,"portion":"約100克涮煮羊肉片","n":1}
 - {"id":"xms2pb1x7w36i","name":"肉鬆蛋捲","kcal":103,"p":2,"c":11,"f":5,"n":1}
 - {"id":"xmsam01aplz46","name":"冷凍地瓜","kcal":130,"p":2,"c":30,"portion":"一條，約150克（中等大小）","n":1}
 - {"id":"xms5q6vl6011q","name":"冷凍豬肉水餃","kcal":760,"p":24,"c":95,"f":28,"portion":"19顆，一般市售冷凍水餃(約每顆20-25g)","n":1}
