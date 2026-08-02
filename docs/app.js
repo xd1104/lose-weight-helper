@@ -1,7 +1,7 @@
 "use strict";
 
 /* 版本號。改前端時跟 sw.js 的 cache 版本號一起 +1。 */
-var APP_VER="4.6";
+var APP_VER="4.7";
 /*
  * 減重助手 — 前端主程式
  * 資料層在 store.js（LocalStore / GitHubStore 自動切）、AI 在 ai.js。
@@ -2544,6 +2544,7 @@ function openAiItemSheet(idx){
       taHtml("fix-name", it.name||"", "例如：叉燒，3 片", { enter:"submit", required:true })+'</div>'+
     '<div class="field"><label>份量（選填）</label>'+
       taHtml("fix-por", it.portion||"", "例如：約 80 克、半碗", { enter:"submit" })+'</div>'+
+    (isNew ? '' : scaleChipsHtml())+
     '<p class="hint" style="padding:0 4px">'+
       (aiResult.photos.length
         ? '會帶著原本'+(aiResult.photos.length>1?"那 "+aiResult.photos.length+" 張":"那張")+
@@ -2556,6 +2557,17 @@ function openAiItemSheet(idx){
   '</form>';
 
   openSheet(isNew?"補一項":"修正這一項", body, { onDraw:function(root){
+    root.querySelectorAll("[data-scale]").forEach(function(b){
+      b.onclick=function(){
+        var m=Number(b.getAttribute("data-scale"))||1;
+        it.kcal=round(num(it.kcal)*m);
+        it.p=round1(num(it.p)*m); it.c=round1(num(it.c)*m); it.f=round1(num(it.f)*m);
+        it.portion=markScaled(it.portion, m);
+        closeSheet();
+        drawAiResult();
+        toast("換算成 "+kcal(it.kcal)+" 大卡");
+      };
+    });
     var nameEl=root.querySelector("#fix-name"), porEl=root.querySelector("#fix-por");
     var go=root.querySelector("#fix-go");
 
@@ -2646,6 +2658,32 @@ function isStarred(name){
   return !!(hit && hit.star);
 }
 
+/* ============ 份量的倍數調整 ============
+ * 「這一顆到底幾公克」沒有人在餐桌上量得出來，但「這比它說的少一半」是看得出來的——
+ * 人判斷「相對量」比判斷「絕對量」準得多。所以給倍數按鈕，不要要求他填公克。
+ * 熱量與三大營養素一起換算，比例才不會歪掉（單獨改熱量會讓營養頁對不起來）。 */
+var SCALES=[{m:0.5,t:"½"},{m:0.75,t:"¾"},{m:1.5,t:"1.5"},{m:2,t:"2"}];
+function scaleChipsHtml(){
+  return '<div class="field"><label>份量不對？直接調倍數</label><div class="chips">'+
+    SCALES.map(function(s){
+      return '<button type="button" class="chip" data-scale="'+s.m+'">×'+s.t+'</button>';
+    }).join("")+'</div>'+
+    '<div class="hint">不用知道幾公克——只要判斷「比它講的多還是少」。'+
+    '熱量與三大營養素會一起換算。</div></div>';
+}
+/* 份量文字裡的數字沒辦法安全地縮放（「3顆，每顆約28g，共約85g」裡的「每顆」不該動），
+ * 所以不改原文，只在後面記一個累計倍率。連按兩次 ×½ 會變成 0.25 倍，
+ * 按了 ×½ 再按 ×2 就回到原樣、標記整個消失。 */
+function markScaled(txt, m){
+  var t=String(txt||"");
+  var mm=/（實際約([\d.]+)倍）/.exec(t);
+  var prev=mm ? (num(mm[1])||1) : 1;
+  var base=t.replace(/（實際約[^）]*）/g,"").trim();
+  var f=Math.round(prev*m*100)/100;
+  if(Math.abs(f-1)<0.005) return base;
+  return base+"（實際約"+f+"倍）";
+}
+
 /* ============ 編輯／刪除單筆飲食 ============ */
 function openEntrySheet(id){
   var d=dayOf(curDate);
@@ -2654,7 +2692,8 @@ function openEntrySheet(id){
   var body='<form id="f-edit">'+
     '<div class="field" style="margin-top:0"><label>名稱</label>'+
       taHtml("e-name", e.name, "", { enter:"submit", required:true })+'</div>'+
-    (e.portion?'<p class="hint" style="font-size:12px;color:var(--muted);margin:-6px 0 0;line-height:1.5">AI 假設：'+esc(e.portion)+'</p>':'')+
+    '<p class="hint" id="e-por" style="font-size:12px;color:var(--muted);margin:-6px 0 0;line-height:1.5">'+
+      (e.portion?'AI 假設：'+esc(e.portion):'')+'</p>'+
     '<div class="field"><label>記在哪一餐</label><div class="chips">'+
       MEALS.map(function(mk){
         return '<button type="button" class="chip '+(e.meal===mk?"on":"")+'" data-emeal="'+mk+'">'+
@@ -2666,6 +2705,7 @@ function openEntrySheet(id){
       '<label><span>碳水 g</span><input type="number" inputmode="decimal" step="0.1" id="e-c" value="'+gram(e.c)+'"></label>'+
       '<label><span>脂肪 g</span><input type="number" inputmode="decimal" step="0.1" id="e-f" value="'+gram(e.f)+'"></label>'+
     '</div>'+
+    scaleChipsHtml()+
     '<div class="field"><label>時間</label><input type="time" id="e-time" value="'+esc(e.time||"")+'"></div>'+
     /* 一鍵存成常吃：營養素直接沿用這一筆，不用自己記碳水蛋白質 */
     '<button class="btn ghost star-btn'+(isStarred(e.name)?" on":"")+'" type="button" id="e-star">'+
@@ -2675,7 +2715,23 @@ function openEntrySheet(id){
   '</form>';
 
   var pickedMeal=e.meal;
+  var curPortion=e.portion||"";
   openSheet("編輯", body, { onDraw:function(root){
+    root.querySelectorAll("[data-scale]").forEach(function(b){
+      b.onclick=function(){
+        var m=Number(b.getAttribute("data-scale"))||1;
+        var k=root.querySelector("#e-kcal"), pp=root.querySelector("#e-p"),
+            cc=root.querySelector("#e-c"), ff=root.querySelector("#e-f");
+        k.value=round(num(k.value)*m);
+        pp.value=gram(num(pp.value)*m);
+        cc.value=gram(num(cc.value)*m);
+        ff.value=gram(num(ff.value)*m);
+        curPortion=markScaled(curPortion, m);
+        var ph=root.querySelector("#e-por");
+        if(ph) ph.textContent=curPortion?("AI 假設："+curPortion):"";
+        toast("換算成 "+kcal(k.value)+" 大卡");
+      };
+    });
     var st=root.querySelector("#e-star");
     if(st) st.onclick=function(){
       /* 用畫面上當下的數字（他可能剛改過），不是原本存的那份 */
@@ -2685,7 +2741,7 @@ function openEntrySheet(id){
         p:Number(root.querySelector("#e-p").value)||0,
         c:Number(root.querySelector("#e-c").value)||0,
         f:Number(root.querySelector("#e-f").value)||0,
-        portion:e.portion||""
+        portion:curPortion
       });
       st.classList.add("on");
       st.textContent="★ 已在常吃清單";
@@ -2708,10 +2764,13 @@ function openEntrySheet(id){
       ev.preventDefault();
       e.name=(root.querySelector("#e-name").value||"").trim()||e.name;
       e.meal=pickedMeal;
-      e.kcal=Math.max(0, Math.round(Number(root.querySelector("#e-kcal").value)||0));
-      e.p=Math.max(0, Math.round(Number(root.querySelector("#e-p").value)||0));
-      e.c=Math.max(0, Math.round(Number(root.querySelector("#e-c").value)||0));
-      e.f=Math.max(0, Math.round(Number(root.querySelector("#e-f").value)||0));
+      e.kcal=Math.max(0, round(Number(root.querySelector("#e-kcal").value)||0));
+      /* 三大營養素留一位小數：輸入框收得下 2.5，這裡就不能再進位成 3
+       * （手動記錄與常吃編輯本來就沒進位，這裡以前不一致） */
+      e.p=Math.max(0, round1(Number(root.querySelector("#e-p").value)||0));
+      e.c=Math.max(0, round1(Number(root.querySelector("#e-c").value)||0));
+      e.f=Math.max(0, round1(Number(root.querySelector("#e-f").value)||0));
+      e.portion=curPortion;
       e.time=root.querySelector("#e-time").value||e.time;
       persistDay(curDate);
       closeSheet(); render(); toast("已更新");

@@ -92,7 +92,8 @@ const SIX = ['白飯', '叉燒肉', '油雞腿肉', '燒鴨肉', '燙青菜', '�
   await p.waitForTimeout(600);
   check('開出「修正這一項」', (await p.textContent('.sheet-head h2')).trim() === '修正這一項');
   check('帶入原本的名稱', (await p.inputValue('#fix-name')) === '燒鴨肉', await p.inputValue('#fix-name'));
-  check('有提到會帶原照片', /照片/.test((await p.textContent('#f-aifix .hint')) || ''));
+  /* v4.7 起這張表單多了「份量倍數」那一區，.hint 不只一個了，所以看整份表單 */
+  check('有提到會帶原照片', /照片/.test((await p.textContent('#f-aifix')) || ''));
 
   console.log('\n[C] 重新估這一項：帶原照片、只換那一項');
   const n0 = reqs.length;
