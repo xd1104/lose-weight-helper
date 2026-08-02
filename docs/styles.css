@@ -133,6 +133,9 @@ input,textarea,select{font-family:inherit; font-size:16px; color:inherit;}
 .row-kcal{flex:0 0 auto; font-size:15.5px; font-weight:800; font-variant-numeric:tabular-nums;}
 .row-kcal i{font-style:normal; font-size:11px; color:var(--muted); font-weight:700; margin-left:2px;}
 .row-kcal.burn{color:var(--acc-deep);}
+/* 「還有 N 項」的摺疊列：長得像一般的 row，但不是資料，所以灰一點 */
+.row.fold .row-mid b{color:var(--muted); font-weight:700; font-size:13.5px;}
+.row.fold .row-kcal i{font-style:normal; font-size:15px; color:var(--muted);}
 .empty{padding:16px 14px; color:var(--muted); font-size:13.5px; text-align:center;}
 .conf{display:inline-block; font-size:10.5px; font-weight:800; padding:1px 6px; border-radius:99px; margin-left:5px;
   vertical-align:1px;}
@@ -186,6 +189,9 @@ input,textarea,select{font-family:inherit; font-size:16px; color:inherit;}
   background:#fbfcfa; outline:none;}
 .field textarea{min-height:84px; resize:vertical; line-height:1.6;}
 .field input:focus, .field select:focus, .field textarea:focus{border-color:var(--acc); background:#fff;}
+/* 會自己長高的文字框：單行 input 打超過一行就看不到前面打的（Benson 反映）。
+ * resize:none + overflow:hidden，高度交給 fitTa() 依內容算。 */
+textarea.ta{resize:none; overflow:hidden; min-height:52px; line-height:1.5;}
 .field .hint{font-size:11.5px; color:var(--muted); margin-top:5px; line-height:1.5;}
 .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
 .chips{display:flex; flex-wrap:wrap; gap:8px;}

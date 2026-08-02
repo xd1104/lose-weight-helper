@@ -1,7 +1,7 @@
 "use strict";
 
 /* 版本號。改前端時跟 sw.js 的 cache 版本號一起 +1。 */
-var APP_VER="4.3";
+var APP_VER="4.4";
 /*
  * 減重助手 — 前端主程式
  * 資料層在 store.js（LocalStore / GitHubStore 自動切）、AI 在 ai.js。
@@ -23,6 +23,39 @@ function fmtLong(key){
   return (d.getMonth()+1)+" 月 "+d.getDate()+" 日（"+WD[d.getDay()]+"）";
 }
 function kcal(n){ return Math.round(num(n)).toLocaleString("zh-TW"); }
+/* 會自己長高的文字框。
+ * 單行的 <input> 一旦打超過一行，前面打的就被推出視窗外看不到了（Benson 反映）。
+ * 凡是「會寫成一句話」的欄位都改用這個：textarea + 依內容長高，一眼看得到全部。
+ * enter="submit" 的欄位（名稱、份量那類）維持「Enter 直接送出」，
+ * 跟原本 <input> 的行為一樣——那些欄位本來就不該有換行。 */
+function taHtml(id, value, ph, opts){
+  opts=opts||{};
+  return '<textarea class="ta" id="'+id+'" rows="1" placeholder="'+esc(ph||"")+'"'+
+    (opts.enter==="submit" ? ' data-enter="submit"' : '')+
+    (opts.required ? ' required' : '')+
+    (opts.attrs || '')+'>'+esc(value||"")+'</textarea>';
+}
+function fitTa(el){
+  el.style.height="auto";
+  el.style.height=(el.scrollHeight+2)+"px";
+}
+function wireTa(root){
+  (root||document).querySelectorAll("textarea.ta").forEach(function(el){
+    fitTa(el);
+    el.oninput=function(){ fitTa(el); };
+    if(el.getAttribute("data-enter")==="submit"){
+      el.onkeydown=function(ev){
+        if(ev.key!=="Enter" || ev.shiftKey) return;
+        ev.preventDefault();
+        /* 名稱類欄位貼到換行時一併清掉，不然會被存進資料裡 */
+        el.value=el.value.replace(/[\r\n]+/g," ").trim();
+        var f=el.closest("form");
+        if(f){ if(f.requestSubmit) f.requestSubmit(); else f.dispatchEvent(new Event("submit",{cancelable:true})); }
+      };
+    }
+  });
+}
+
 /* 體重的顯示：59.4 就寫 59.4，59.45 要看得到，59 寫成 59.0（體重習慣帶一位小數）。
  * 有些體重計是 0.05 kg 一格，硬是砍到一位小數會跟他看到的數字對不起來。 */
 function kgTxt(v){
@@ -429,11 +462,16 @@ function viewToday(){
     var list=(d.entries||[]).filter(function(e){ return e.meal===mk; });
     var info=MEAL_INFO[mk];
     if(!list.length){ empties.push({ act:'data-act="add" data-meal="'+mk+'"', label:info.emoji+' '+info.label }); return; }
+    /* 一鍋火鍋 AI 會拆成十幾樣，整個午餐就變成一整頁。
+     * 平常要看的是「這一餐吃了多少」——那個數字在標題右邊已經有了。
+     * 所以超過門檻就先收起來，需要細節再展開。摺疊狀態只在記憶體，不落檔。 */
+    var open = mealOpen[mk] || list.length<=MEAL_FOLD;
+    var show = open ? list : list.slice(0, MEAL_FOLD-1);
     h+='<section class="sec">'+
         '<div class="sec-head"><h2>'+info.emoji+' '+info.label+'</h2>'+
           '<span class="n">'+kcal(sumKcal(list))+' 大卡</span></div>'+
         '<div class="list">';
-    list.forEach(function(e){
+    show.forEach(function(e){
       h+='<button class="row" data-act="edit-entry" data-id="'+esc(e.id)+'">'+
           '<div class="row-mid"><b>'+esc(e.name)+'</b>'+
             (e.portion||e.time ? '<span>'+esc([e.time,e.portion].filter(Boolean).join(" · "))+'</span>' : '')+
@@ -441,6 +479,15 @@ function viewToday(){
           '<div class="row-kcal num">'+kcal(e.kcal)+'<i>大卡</i></div>'+
          '</button>';
     });
+    if(list.length>MEAL_FOLD){
+      var restN=list.length-show.length;
+      h+='<button class="row fold" data-act="fold-meal" data-meal="'+mk+'">'+
+          '<div class="row-mid"><b>'+(open
+            ? "收合這一餐"
+            : "還有 "+restN+" 項（共 "+kcal(sumKcal(list.slice(show.length)))+" 大卡）")+'</b></div>'+
+          '<div class="row-kcal"><i>'+(open?"⌃":"⌄")+'</i></div>'+
+         '</button>';
+    }
     h+='</div></section>';
   });
 
@@ -1516,13 +1563,18 @@ function doAct(act, el){
   }
   if(act==="new-user"){ closeAllSheets(); openUserSheet(null); return; }
   if(act==="open-keys"){ openKeysSheet(); return; }
-  if(act==="prev-day"){ curDate=shiftDate(curDate,-1); ensureDays([curDate]); render(); return; }
-  if(act==="next-day"){ if(curDate<dateKey()){ curDate=shiftDate(curDate,1); ensureDays([curDate]); render(); } return; }
-  if(act==="go-today"){ curDate=dateKey(); ensureDays([curDate]); render(); return; }
+  if(act==="prev-day"){ curDate=shiftDate(curDate,-1); mealOpen={}; ensureDays([curDate]); render(); return; }
+  if(act==="next-day"){ if(curDate<dateKey()){ curDate=shiftDate(curDate,1); mealOpen={}; ensureDays([curDate]); render(); } return; }
+  if(act==="go-today"){ curDate=dateKey(); mealOpen={}; ensureDays([curDate]); render(); return; }
+  if(act==="fold-meal"){
+    var fm=el.getAttribute("data-meal");
+    mealOpen[fm]=!mealOpen[fm];
+    render(); return;
+  }
   if(act==="toggle-detail"){ showDetail=!showDetail; render(); return; }
   if(act==="toggle-mnote"){ showMNote=!showMNote; render(); return; }
   if(act==="coach"){ openCoachSheet(false); return; }
-  if(act==="open-day"){ curDate=el.getAttribute("data-date"); view="today"; ensureDays([curDate]); render(); window.scrollTo(0,0); return; }
+  if(act==="open-day"){ curDate=el.getAttribute("data-date"); view="today"; mealOpen={}; ensureDays([curDate]); render(); window.scrollTo(0,0); return; }
   if(act==="add"){ if(requireWrite()) openAddSheet(el.getAttribute("data-meal")); return; }
   if(act==="add-move"){ if(requireWrite()) openMoveSheet(null); return; }
   if(act==="edit-entry"){ if(requireWrite()) openEntrySheet(el.getAttribute("data-id")); return; }
@@ -1736,6 +1788,9 @@ function drawSheet(){
   $sheetLayer.querySelector(".mask").onclick=closeSheet;
   $sheetLayer.querySelector('[data-sheet="close"]').onclick=closeSheet;
   if(s.opts.onDraw) s.opts.onDraw($sheetLayer);
+  /* 每個 sheet 都經過這裡（含 replaceSheet 的重畫），會長高的文字框在這裡一次接好，
+   * 各個 onDraw 就不用各自記得呼叫一次。 */
+  wireTa($sheetLayer);
 }
 /* 只換內容不重推堆疊（AI 讀取中 -> 結果） */
 function replaceSheet(title, bodyHtml, opts){
@@ -1795,8 +1850,8 @@ function addTabBody(){
     if(!hasAiKey()) return noKeyBox();
     return '<form id="f-text">'+
       '<div class="field"><label>吃了什麼</label>'+
-        '<textarea id="i-text" placeholder="例如：排骨便當加飯、南瓜湯頭的麵疙瘩、大杯半糖珍奶" '+
-          'autocomplete="off"></textarea>'+
+        '<textarea class="ta" id="i-text" rows="2" style="min-height:78px" '+
+          'placeholder="例如：排骨便當加飯、南瓜湯頭的麵疙瘩、大杯半糖珍奶" autocomplete="off"></textarea>'+
         '<div class="hint">講得越具體越準：份量、湯頭、甜度、加不加飯都可以寫。</div></div>'+
       '<button class="btn" type="submit">交給 AI 估算</button>'+
     '</form>';
@@ -1811,7 +1866,7 @@ function addTabBody(){
       '<input type="file" id="i-cam" accept="image/*" capture="environment" hidden>'+
       '<input type="file" id="i-lib" accept="image/*" multiple hidden>'+
       '<div class="field"><label>補充說明（選填）</label>'+
-        '<input type="text" id="i-hint" value="'+esc(lastHint)+'" placeholder="例如：這碗是大碗、白飯只吃一半" autocomplete="off"></div>'+
+        taHtml("i-hint", lastHint, "例如：這碗是大碗、白飯只吃一半")+'</div>'+
       '<button class="btn" type="submit" id="b-photo"'+(pendingPhotos.length?"":" disabled")+'>交給 AI 估算</button>'+
     '</form>';
   }
@@ -1831,7 +1886,8 @@ function addTabBody(){
   }
   /* manual */
   return '<form id="f-manual">'+
-    '<div class="field"><label>名稱</label><input type="text" id="m-name" placeholder="例如：滷肉飯" autocomplete="off" required></div>'+
+    '<div class="field"><label>名稱</label>'+
+      taHtml("m-name", "", "例如：滷肉飯", { enter:"submit", required:true })+'</div>'+
     '<div class="field"><label>熱量 (大卡)</label><input type="number" inputmode="numeric" id="m-kcal" placeholder="0" required></div>'+
     '<div class="ai-nums c3" style="margin-top:12px">'+
       '<label><span>蛋白 g</span><input type="number" inputmode="decimal" step="0.1" id="m-p" placeholder="0"></label>'+
@@ -1925,9 +1981,9 @@ function openFoodSheet(id){
   var star=!!(f && f.star);
   var body='<form id="f-food">'+
     '<div class="field" style="margin-top:0"><label>名稱</label>'+
-      '<input type="text" id="fd-name" value="'+esc(d.name)+'" placeholder="例如：滷雞腿便當" autocomplete="off" required></div>'+
+      taHtml("fd-name", d.name, "例如：滷雞腿便當", { enter:"submit", required:true })+'</div>'+
     '<div class="field"><label>份量（選填）</label>'+
-      '<input type="text" id="fd-por" value="'+esc(d.portion||"")+'" placeholder="例如：一個便當盒" autocomplete="off"></div>'+
+      taHtml("fd-por", d.portion||"", "例如：一個便當盒", { enter:"submit" })+'</div>'+
     /* 不用自己記碳水蛋白質：打完名稱按這顆，AI 幫你填 */
     (hasAiKey()?'<button class="btn ghost" type="button" id="fd-ai">🤖 讓 AI 幫我填數字</button>':'')+
     '<div class="ai-nums" id="fd-nums">'+
@@ -2112,6 +2168,9 @@ function wireAddSheet(root){
 /* 一餐可以給好幾張（不同的盤子、或飲料另外拍）。
  * 上限 4 張：壓縮後每張約 1000 個 token，四張還在零頭；再多只是讓 AI 更容易重複計算。 */
 var MAX_PHOTOS=4;
+/* 一餐超過幾項就先收起來（火鍋一次十幾樣）。展開狀態只在記憶體，換日期就重來。 */
+var MEAL_FOLD=4;
+var mealOpen={};
 var pendingPhotos=[];
 var lastHint="";                /* 上次照片的補充說明：回來「再估一次」時不用重打 */
 
@@ -2215,6 +2274,12 @@ function drawAiResult(){
     '</div>';
   });
   body+='<button class="btn ghost" data-fix="-1">＋ 補一項（AI 漏掉的）</button>';
+  /* 火鍋、合菜、自助餐這種一次十幾樣的，逐項記在今天頁會佔掉一整頁。
+   * 存進去之前先合併成一筆，之後常吃清單也只會多一筆「火鍋」——
+   * 下次吃同一家一鍵沿用，比十幾筆各自比對實用得多。 */
+  if(aiResult.items.length>=3){
+    body+='<button class="btn ghost" data-ai="merge">🍲 合併成一項（'+aiResult.items.length+' 樣併成一筆）</button>';
+  }
   var total=0; aiResult.items.forEach(function(i){ total+=num(i.kcal); });
   body+='<button class="btn" data-ai="save">加入 '+aiResult.items.length+' 筆 · 共 '+kcal(total)+' 大卡</button>'+
         '<button class="btn ghost" data-ai="retry">'+
@@ -2256,12 +2321,57 @@ function drawAiResult(){
     });
     var save=root.querySelector('[data-ai="save"]');
     if(save) save.onclick=function(){ addEntries(aiResult.items); };
+    var mg=root.querySelector('[data-ai="merge"]');
+    if(mg) mg.onclick=function(){ openMergeSheet(); };
     var retry=root.querySelector('[data-ai="retry"]');
     if(retry) retry.onclick=function(){
       if(aiResult.photos.length) addTab="photo";   /* 照片還在，直接回到照片那一頁 */
       drawAddSheet(false);
     };
   }});
+}
+
+/* 把整批合併成一筆。營養素直接加總，份量欄留下「裡面有什麼」當紀錄。 */
+function openMergeSheet(){
+  var items=aiResult.items;
+  var total=0; items.forEach(function(i){ total+=num(i.kcal); });
+  var names=items.map(function(i){ return i.name; });
+  var guess=String(lastHint||"").trim().split(/[\s,，、。]/)[0] || "";
+  var body='<form id="f-merge">'+
+    '<p class="desc" style="margin-top:0">把這 '+items.length+' 樣併成一筆 '+kcal(total)+
+      ' 大卡，今天頁就只會多一列。營養素會加總，裡面有什麼會寫在份量欄。</p>'+
+    '<div class="field"><label>這一餐叫什麼</label>'+
+      taHtml("mg-name", guess, "例如：火鍋、鹽水雞、家庭聚餐", { enter:"submit", required:true })+
+      '<div class="hint">之後這個名字會進常吃清單，下次吃同一家一鍵沿用。</div></div>'+
+    '<div class="tdee-box"><div class="r"><span>會併進來的</span></div>'+
+      '<div class="r"><span style="font-size:12px;line-height:1.6">'+esc(names.join("、"))+'</span></div></div>'+
+    '<button class="btn" type="submit">合併</button>'+
+  '</form>';
+  openSheet("合併成一項", body, { onDraw:function(root){
+    root.querySelector("#f-merge").onsubmit=function(ev){
+      ev.preventDefault();
+      var nm=(root.querySelector("#mg-name").value||"").replace(/[\r\n]+/g," ").trim();
+      if(!nm){ toast("先給這一餐一個名字", true); return; }
+      mergeAiItems(nm);
+      closeSheet();
+      drawAiResult();
+      toast("已併成一筆");
+    };
+  }});
+}
+function mergeAiItems(name){
+  var items=aiResult.items;
+  var k=0,p=0,c=0,f=0, names=[];
+  items.forEach(function(it){
+    k+=num(it.kcal); p+=num(it.p); c+=num(it.c); f+=num(it.f);
+    names.push(it.name);
+  });
+  var por="共 "+items.length+" 樣："+names.slice(0,8).join("、")+(names.length>8?" 等":"");
+  aiResult.items=[{
+    id:uid(), name:name,
+    kcal:round(k), p:round1(p), c:round1(c), f:round1(f),
+    portion:por.slice(0,140), confidence:"medium", src:"ai"
+  }];
 }
 
 /* 把某一項換成常吃清單裡記過的數字。
@@ -2386,11 +2496,9 @@ function openAiItemSheet(idx){
 
   var body='<form id="f-aifix">'+
     '<div class="field" style="margin-top:0"><label>這一項是什麼</label>'+
-      '<input type="text" id="fix-name" value="'+esc(it.name||"")+'" '+
-        'placeholder="例如：叉燒，3 片" autocomplete="off" required></div>'+
+      taHtml("fix-name", it.name||"", "例如：叉燒，3 片", { enter:"submit", required:true })+'</div>'+
     '<div class="field"><label>份量（選填）</label>'+
-      '<input type="text" id="fix-por" value="'+esc(it.portion||"")+'" '+
-        'placeholder="例如：約 80 克、半碗" autocomplete="off"></div>'+
+      taHtml("fix-por", it.portion||"", "例如：約 80 克、半碗", { enter:"submit" })+'</div>'+
     '<p class="hint" style="padding:0 4px">'+
       (aiResult.photos.length
         ? '會帶著原本'+(aiResult.photos.length>1?"那 "+aiResult.photos.length+" 張":"那張")+
@@ -2500,7 +2608,7 @@ function openEntrySheet(id){
   if(!e) return;
   var body='<form id="f-edit">'+
     '<div class="field" style="margin-top:0"><label>名稱</label>'+
-      '<input type="text" id="e-name" value="'+esc(e.name)+'" autocomplete="off" required></div>'+
+      taHtml("e-name", e.name, "", { enter:"submit", required:true })+'</div>'+
     (e.portion?'<p class="hint" style="font-size:12px;color:var(--muted);margin:-6px 0 0;line-height:1.5">AI 假設：'+esc(e.portion)+'</p>':'')+
     '<div class="field"><label>記在哪一餐</label><div class="chips">'+
       MEALS.map(function(mk){
@@ -2602,7 +2710,7 @@ function openMoveSheet(id){
         return '<button type="button" class="chip'+(p.mine?" mine":"")+'" data-mp="'+i+'">'+esc(p.name)+'</button>';
       }).join("")+'</div></div>')+
     '<div class="field"><label>項目</label>'+
-      '<input type="text" id="mv-name" value="'+esc(mv?mv.name:"")+'" placeholder="例如：飛輪 45 分、爬象山來回" autocomplete="off" required></div>'+
+      taHtml("mv-name", mv?mv.name:"", "例如：飛輪 45 分、爬象山來回", { enter:"submit", required:true })+'</div>'+
     (hasAiKey()
       ? '<button class="btn ghost ai-move" type="button" data-ai-move="1">🤖 讓 AI 估消耗</button>'+
         '<div class="hint" style="margin-top:6px">清單裡沒有的運動，打上去讓 AI 算。會依你的體重估，'+

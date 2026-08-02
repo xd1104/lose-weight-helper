@@ -22,7 +22,7 @@ function check(n, c, g) {
 const SIX = ['白飯', '叉燒肉', '油雞腿肉', '燒鴨肉', '燙青菜', '蔥薑醬料'];
 
 (async () => {
-  await seedUser();
+  const u = await seedUser();
   const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
   const p = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
   const errs = [];
@@ -150,8 +150,13 @@ const SIX = ['白飯', '叉燒肉', '油雞腿肉', '燒鴨肉', '燙青菜', '�
   console.log('\n[F] 存進去');
   await p.click('[data-ai="save"]');
   await p.waitForTimeout(1800);
-  const rows = await p.$$eval('.row-mid b', (e) => e.map((x) => x.textContent.trim()));
-  check('七項都寫進今天', ['糙米飯', '叉燒（3 片）', '例湯'].every((n) => rows.some((r) => r.indexOf(n) >= 0)), rows);
+  /* 今天頁超過 4 項會摺疊（v4.4），所以問資料、不要數畫面上的列 */
+  const d = new Date();
+  const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const saved = await (await fetch(BASE + '/api/days?u=' + u + '&dates=' + key)).json();
+  const rows = ((saved.days[0] || {}).entries || []).map((e) => e.name);
+  check('七項都寫進今天', rows.length === 7
+    && ['糙米飯', '叉燒（3 片）', '例湯'].every((n) => rows.some((r) => r.indexOf(n) >= 0)), rows);
   const eaten = (await p.textContent('.kv.eat b')).trim();
   // 100(糙米飯) + 110 + 120 + 260(叉燒重估) + 140 + 150 + 60(例湯) = 940
   check('總熱量用重估後的數字（940）', eaten === '940', eaten);
