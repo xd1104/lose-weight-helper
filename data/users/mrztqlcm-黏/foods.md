@@ -24,6 +24,9 @@
 - {"id":"xms1qj1uc1fk1","name":"木耳炒蛋","kcal":150,"p":7,"c":6,"f":11,"portion":"約一人份，含一顆蛋","n":1}
 - {"id":"xms96rl6mftqz","name":"火腿","kcal":90,"p":9,"c":2,"f":5,"portion":"約3-4片火腿，3/4份量","n":1}
 - {"id":"xms1k9j18ck6q","name":"火鍋料(如魚餃、貢丸等)","kcal":100,"p":5,"c":8,"f":6,"portion":"少許，約2-3顆綜合火鍋料","n":1}
+- {"id":"xmscu5za6m8q5","name":"火雞肉絲","kcal":110,"p":20,"f":3,"portion":"約一掌心量（約80g）","n":1}
+- {"id":"xmscu5za19spv","name":"火雞肉飯白飯","kcal":280,"p":5,"c":60,"f":1,"portion":"便當盒內約1碗（約200g）","n":1}
+- {"id":"xmscu5za8t3f0","name":"半熟荷包蛋＋起司片","kcal":150,"p":10,"c":1,"f":11,"portion":"1顆蛋（約50g）＋1片起司（約20g）","n":1}
 - {"id":"xmsbr67hsga65","name":"奶白湯底（湯汁本身熱量，未含火鍋料）","kcal":150,"p":3,"c":6,"f":12,"portion":"一小碗約200ml飲用量","n":1}
 - {"id":"xms7fjnd220wm","name":"奶油餅乾","kcal":144,"p":2.9,"c":20.7,"f":5.5,"n":1}
 - {"id":"xmsameowhjnjo","name":"巧克力厚片","kcal":75,"p":1,"c":11,"f":2,"portion":"約1/4份巧克力厚片吐司（整份約300大卡）","n":1}
@@ -44,7 +47,9 @@
 - {"id":"xmsby00lobxv1","name":"芒果冰沙","kcal":90,"p":1,"c":22,"portion":"120ml，小杯份量","n":1}
 - {"id":"xms4rmubba57p","name":"豆皮串","kcal":60,"p":5,"c":1,"f":4,"portion":"半串，約25g","n":1}
 - {"id":"xms4rmub9kxt5","name":"豆乾串","kcal":100,"p":9,"c":3,"f":6,"portion":"1串，約50g","n":1}
+- {"id":"xmscu5zad93os","name":"味噌湯","kcal":50,"p":3,"c":5,"f":2,"portion":"小馬克杯一杯（約200ml）","n":1}
 - {"id":"xms1k9j181x2h","name":"昆布鍋底食材(高麗菜、豆腐、菇類等)","kcal":120,"p":8,"c":12,"f":5,"portion":"什錦火鍋料一份，約200克蔬菜豆腐類","n":1}
+- {"id":"xmscu5zabsa2j","name":"炒高麗菜筍絲","kcal":110,"p":2,"c":8,"f":7,"portion":"約半碗（約100g，含炒油）","n":1}
 - {"id":"xms46nxj5auh6","name":"炒筍絲","kcal":50,"p":1,"c":6,"f":2,"portion":"約半碗，清炒","n":1}
 - {"id":"xms1qj1ub7gp4","name":"炒蕃薯葉","kcal":90,"p":3,"c":6,"f":6,"portion":"約一人份，一小盤","n":1}
 - {"id":"xmscmgxcp5bih","name":"芭樂","kcal":51,"p":1,"c":12,"portion":"約3/4個拳頭大（約135g）","n":1}
@@ -97,6 +102,7 @@
 - {"id":"xms96sz95l79f","name":"蔥抓餅加蛋","kcal":150,"p":6,"c":15,"f":8,"portion":"整份約市售一片蔥抓餅加一顆蛋，取其1/3份量","n":1}
 - {"id":"xmsameoweqsln","name":"蔥油餅加蛋","kcal":133,"p":4,"c":15,"f":7,"portion":"約1/3份蔥油餅加蛋（整份約400大卡，含蛋與煎油）","n":1}
 - {"id":"xmsamfmt24xq0","name":"蔬菜（青江菜、玉米筍、番茄等）","kcal":80,"p":3,"c":15,"f":1,"portion":"綜合蔬菜約1.5碗份量","n":1}
+- {"id":"xmscu5za94soq","name":"燙地瓜葉","kcal":50,"p":2,"c":6,"f":1,"portion":"約半碗（約80g）","n":1}
 - {"id":"xms4rkngg8k0n","name":"燙地瓜葉佐蒜末醬油","kcal":110,"p":3,"c":9,"f":7,"portion":"自助餐一般盤裝，估全盤約250克，實際食用2/3份約170克","n":1}
 - {"id":"xmrzvy2cobh9k","name":"蕈菇燉飯","kcal":520,"p":14,"c":72,"f":18,"portion":"約一碗份量(含飯約200g熟重、綜合菇類、起司醬汁)","n":1}
 - {"id":"xms4rjrmxq2ve","name":"鴨心湯麵（麵條與鴨心料，小碗）","kcal":320,"p":18,"c":40,"f":8,"portion":"小碗約0.7份，油麵約1碗，鴨心5-6片","n":1}
