@@ -47,6 +47,7 @@
 - {"id":"xms1k9j181x2h","name":"昆布鍋底食材(高麗菜、豆腐、菇類等)","kcal":120,"p":8,"c":12,"f":5,"portion":"什錦火鍋料一份，約200克蔬菜豆腐類","n":1}
 - {"id":"xms46nxj5auh6","name":"炒筍絲","kcal":50,"p":1,"c":6,"f":2,"portion":"約半碗，清炒","n":1}
 - {"id":"xms1qj1ub7gp4","name":"炒蕃薯葉","kcal":90,"p":3,"c":6,"f":6,"portion":"約一人份，一小盤","n":1}
+- {"id":"xmscmgxcp5bih","name":"芭樂","kcal":51,"p":1,"c":12,"portion":"約3/4個拳頭大（約135g）","n":1}
 - {"id":"xmsalxqoz7xv3","name":"花枝握壽司","kcal":110,"p":8,"c":18,"f":1,"portion":"迴轉壽司1盤，2貫","n":1}
 - {"id":"xmsbra5a7zooj","name":"花枝漿／麻吉魚漿糰","kcal":280,"p":18,"c":20,"f":14,"portion":"兩盤合計約7顆，每顆約30g","n":1}
 - {"id":"xms1qj1ucoz44","name":"青江菜炒菇","kcal":80,"p":3,"c":6,"f":5,"portion":"約一人份，一小盤","n":1}
