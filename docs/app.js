@@ -1,7 +1,7 @@
 "use strict";
 
 /* 版本號。改前端時跟 sw.js 的 cache 版本號一起 +1。 */
-var APP_VER="5.2";
+var APP_VER="5.3";
 /*
  * 減重助手 — 前端主程式
  * 資料層在 store.js（LocalStore / GitHubStore 自動切）、AI 在 ai.js。
@@ -1449,7 +1449,17 @@ function setBody(sec){
        '<br>提醒是 GitHub 上的排程送的，<b>電腦關機也照樣會響</b>。'+
        '不過排程有時候會誤點 <b>5～30 分鐘</b>，當提醒夠用、當鬧鐘不行。</p>';
 
-    if(myPush) h+='<p class="desc">設定只對<b>這台裝置</b>有效。換手機或重灌要再打開一次。</p>';
+    if(myPush){
+      var owner=users.filter(function(x){ return x.id===myPush.u; })[0];
+      if(owner && owner.id!==me.id){
+        /* 一台裝置只有一個訂閱，但「今天量過了嗎」是看某一位使用者的紀錄。
+         * 綁錯人的話會在該提醒的時候不提醒，所以直接寫出來。 */
+        h+='<div class="set-alert amber"><b>目前是看「'+esc(owner.name)+'」有沒有量體重</b>'+
+           '<span>動一下上面的時間或選項，就會改成看「'+esc(me.name)+'」的。</span></div>';
+      }
+      h+='<p class="desc">設定只對<b>這台裝置</b>有效（一台裝置一組提醒）。'+
+         '換手機或重灌要再打開一次。</p>';
+    }
     return h;
   }
 
@@ -1521,7 +1531,8 @@ function wireSetSheet(root, sec, redraw){
     b.onclick=function(){
       var t=b.getAttribute("data-ptime");
       if(!myPush){ pendPushTime=t; redraw(false); return; }
-      var next=Object.assign({}, myPush, {time:t});
+      /* 動到設定就把它綁給現在這位使用者：「要看誰有沒有量體重」以最後設定的人為準 */
+      var next=Object.assign({}, myPush, {time:t, u:me.id});
       setMyPush(next, myPush.endpoint).then(function(){
         toast("改成每天 "+t); redraw(false); render();
       }).catch(function(e){
@@ -1532,7 +1543,7 @@ function wireSetSheet(root, sec, redraw){
   var pSkip=root.querySelector("[data-pskip]");
   if(pSkip) pSkip.onclick=function(){
     if(!myPush){ pendPushSkip=!pendPushSkip; redraw(false); return; }
-    var next=Object.assign({}, myPush, {skipIfWeighed:myPush.skipIfWeighed===false});
+    var next=Object.assign({}, myPush, {skipIfWeighed:myPush.skipIfWeighed===false, u:me.id});
     setMyPush(next, myPush.endpoint).then(function(){ redraw(false); }).catch(function(e){
       pushMsg=e.userMessage||"儲存失敗"; redraw(false);
     });
@@ -3320,9 +3331,15 @@ function b64urlToU8(s){
   return out;
 }
 
-/* 讀整份訂閱，並認出「這台裝置 × 這位使用者」那一筆。
+/* 讀整份訂閱，並認出「這台裝置」那一筆。
  * 認的是 endpoint（推播服務給的裝置位址），不是裝置 id——
- * 我們沒有可靠的裝置 id，但 endpoint 本來就唯一。 */
+ * 我們沒有可靠的裝置 id，但 endpoint 本來就唯一。
+ *
+ * ⚠️ 刻意只比 endpoint、不比使用者：瀏覽器層面**一台裝置只有一個訂閱**，
+ * 所以「一台裝置＝一筆提醒」。以前這裡比 (endpoint, 使用者)，結果切到另一位
+ * 使用者時 app 就完全看不到自己那筆——顯示「關閉中」、金鑰也補不上去，
+ * 而且在另一位底下按打開會被去重規則默默丟掉。
+ * `u` 欄位的意義是「要看誰有沒有量體重」，不是「這筆屬於誰」。 */
 function loadPushState(){
   if(!pushSupported()) return Promise.resolve();
   return Promise.all([
@@ -3332,7 +3349,7 @@ function loadPushState(){
   ]).then(function(r){
     pushSubs=r[0]||[];
     var sub=r[1], ep=sub?sub.endpoint:"";
-    myPush=ep ? (pushSubs.filter(function(x){ return x.endpoint===ep && x.u===(me&&me.id); })[0]||null) : null;
+    myPush=ep ? (pushSubs.filter(function(x){ return x.endpoint===ep; })[0]||null) : null;
     if(!myPush) return;
     pendPushTime=myPush.time; pendPushSkip=myPush.skipIfWeighed!==false;
     /* v5.2 之前訂的沒存加密金鑰（那時候送的是無內容推播）。
@@ -3345,12 +3362,11 @@ function loadPushState(){
 }
 
 /* 整份覆蓋前一定要先重讀：別台裝置與女友的提醒都在同一個檔，
- * 拿記憶體裡的舊清單去寫會把別人的提醒無聲關掉。 */
+ * 拿記憶體裡的舊清單去寫會把別人的提醒無聲關掉。
+ * 濾掉的條件只看 endpoint ＝ 一台裝置一筆（見 loadPushState 上面那段）。 */
 function setMyPush(sub, endpoint){
   return STORE.loadPush().catch(function(){ return pushSubs||[]; }).then(function(cur){
-    var rest=(cur||[]).filter(function(x){
-      return !(x.endpoint===endpoint && x.u===(me&&me.id));
-    });
+    var rest=(cur||[]).filter(function(x){ return x.endpoint!==endpoint; });
     var next=sub ? rest.concat([sub]) : rest;
     return STORE.savePush(next).then(function(){
       pushSubs=next;

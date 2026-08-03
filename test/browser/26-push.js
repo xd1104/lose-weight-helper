@@ -164,6 +164,39 @@ const stub = (perm, subscribed) => `
   check('金鑰被默默補上去了', subs[0] && subs[0].p256dh === 'BPfake-p256dh', subs[0]);
   check('其他欄位沒被動到', subs[0] && subs[0].time === '07:30' && subs[0].id === 'old', subs[0]);
 
+  console.log('\n[J] 訂閱綁在另一位使用者身上時，還是要認得出來（v5.3 的真 bug）');
+  /* 實際踩到的：訂閱是在「黏」底下開的，app 現在切到「肚」。
+     以前用 (endpoint, 使用者) 去找自己那筆 -> 完全看不到：
+     顯示「關閉中」、加密金鑰補不上去，而且在「肚」底下按打開會被去重規則默默丟掉。
+     瀏覽器層面一台裝置只有一個訂閱，所以正確的鍵是 endpoint。 */
+  await ctx.close();
+  await fetch(BASE + '/api/users', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ users: [
+      { id: u, name: 'Benson', emoji: '🐻', color: '#2fa86a' },
+      { id: 'other-one', name: '黏', emoji: '🐱', color: '#e0447f' }] }),
+  });
+  await setPush([
+    { id: 'bound', u: 'other-one', time: '07:30', tz: -480, endpoint: EP, skipIfWeighed: true },
+  ]);
+  ({ ctx, p } = await open(stub('granted', true)));   // 現在的使用者是 u，訂閱綁在 other-one
+  await p.waitForTimeout(1600);
+  subs = await getPush();
+  check('金鑰照樣補得上去 ← 這正是他手機上卡住的地方',
+    subs[0] && subs[0].p256dh === 'BPfake-p256dh', subs);
+  check('補金鑰不會偷偷改綁定的人', subs[0] && subs[0].u === 'other-one', subs[0]);
+  await openPush(p);
+  check('設定頁顯示「開著」，不是「關閉中」', !!(await p.$('[data-push="off"]')));
+  check('而且講明現在是看誰的體重', /目前是看「黏」有沒有量體重/.test(await p.textContent('.sheet')),
+    (await p.textContent('.sheet')).slice(0, 200));
+  await p.click('[data-ptime="08:30"]');
+  await p.waitForTimeout(1500);
+  subs = await getPush();
+  check('動了設定就改綁現在這位 ← 不然會一直看錯人的紀錄',
+    subs.length === 1 && subs[0].u === u && subs[0].time === '08:30', subs);
+  await ctx.close();
+  ({ ctx, p } = await open(stub('granted', true)));
+
   console.log('\n[F] 關閉：真的退訂，push.md 那一筆消失');
   await openPush(p);
   await p.click('[data-push="off"]');
