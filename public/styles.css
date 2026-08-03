@@ -253,6 +253,12 @@ textarea.ta{resize:none; overflow:hidden; min-height:52px; line-height:1.5;}
   line-height:1.5;}
 .opt-row.on span{color:var(--acc-deep);}
 
+/* 狀態一覽：綠點 ＝ 這關過了，紅點 ＝ 卡在這裡 */
+.pdot{font-size:13px; font-weight:700; color:var(--bad); display:inline-flex; align-items:center; gap:6px;}
+.pdot::before{content:""; width:8px; height:8px; border-radius:99px; background:var(--bad); flex:0 0 auto;}
+.pdot.on{color:var(--acc-deep);}
+.pdot.on::before{background:var(--acc);}
+
 .tdee-box{background:var(--acc-soft); border-radius:14px; padding:13px 14px; margin-top:14px;}
 .tdee-box .r{display:flex; align-items:baseline; justify-content:space-between; font-size:13px; color:var(--acc-deep);
   font-weight:700; margin-top:4px;}

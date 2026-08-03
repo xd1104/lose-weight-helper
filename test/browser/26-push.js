@@ -197,6 +197,36 @@ const stub = (perm, subscribed) => `
   await ctx.close();
   ({ ctx, p } = await open(stub('granted', true)));
 
+  console.log('\n[K] 狀態一覽 ＋ 一鍵重新設定（v5.4）');
+  /* 「通知沒跳」的成因有好幾種，從外面完全看不出是哪一種——猜了好幾輪都沒中。
+     所以 app 要自己把每一關的狀態顯示出來，並且給一顆一次收掉所有情況的按鈕。 */
+  await ctx.close();
+  await setPush([
+    { id: 'stale', u, time: '07:30', tz: -480, endpoint: 'https://web.push.apple.com/OLD-gone',
+      skipIfWeighed: true },     // 雲端有一筆，但這台裝置的訂閱已經沒了
+  ]);
+  ({ ctx, p } = await open(stub('granted', false)));   // getSubscription() -> null
+  await openPush(p);
+  let panel = await p.textContent('.sheet');
+  check('看得出訂閱不見了', /沒有（可能被 iOS 撤銷）/.test(panel), panel.slice(0, 260));
+  check('有「重新設定」按鈕', !!(await p.$('[data-push="fix"]')));
+  await p.click('[data-push="fix"]');
+  await p.waitForTimeout(2000);
+  subs = await getPush();
+  const fresh = subs.filter((x) => x.endpoint === EP)[0];
+  check('這台裝置多了一筆新的訂閱', !!fresh, subs);
+  check('金鑰補齊了', fresh && fresh.p256dh === 'BPfake-p256dh' && fresh.auth === 'BPfake-auth', fresh);
+  check('綁到目前這位使用者', fresh && fresh.u === u, fresh);
+  /* 舊訂閱已經被 iOS 撤銷 -> app 無從得知雲端哪一筆是自己的（他可能還有第二台裝置）。
+     刻意不猜著刪：這種孤兒紀錄由送出端收到 410 時自動清掉。 */
+  check('猜不到的舊紀錄留著，交給 410 清（不要亂刪別台裝置的）',
+    subs.filter((x) => x.endpoint === 'https://web.push.apple.com/OLD-gone').length === 1, subs);
+  panel = await p.textContent('.sheet');
+  check('三個狀態都變綠（沒有紅點文字了）',
+    !/缺少|被拒絕|可能被 iOS 撤銷/.test(panel), panel.slice(0, 260));
+  await ctx.close();
+  ({ ctx, p } = await open(stub('granted', true)));
+
   console.log('\n[F] 關閉：真的退訂，push.md 那一筆消失');
   await openPush(p);
   await p.click('[data-push="off"]');
@@ -204,7 +234,7 @@ const stub = (perm, subscribed) => `
   check('有呼叫 unsubscribe ← 只清檔不退訂的話推播服務還是會推過來',
     (await p.evaluate(() => window.__unsub)) === 1, await p.evaluate(() => window.__unsub));
   subs = await getPush();
-  check('自己那筆不見了', !subs.filter((x) => x.u === u).length, subs);
+  check('自己那筆不見了', !subs.filter((x) => x.endpoint === EP).length, subs);
   await ctx.close();
 
   console.log('\n[D] 先選 08:00 再打開，存的要是 08:00');

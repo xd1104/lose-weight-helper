@@ -1,7 +1,7 @@
 "use strict";
 
 /* 版本號。改前端時跟 sw.js 的 cache 版本號一起 +1。 */
-var APP_VER="5.3";
+var APP_VER="5.4";
 /*
  * 減重助手 — 前端主程式
  * 資料層在 store.js（LocalStore / GitHubStore 自動切）、AI 在 ai.js。
@@ -1449,6 +1449,20 @@ function setBody(sec){
        '<br>提醒是 GitHub 上的排程送的，<b>電腦關機也照樣會響</b>。'+
        '不過排程有時候會誤點 <b>5～30 分鐘</b>，當提醒夠用、當鬧鐘不行。</p>';
 
+    /* 狀態一覽：通知沒跳的時候，一眼看得出卡在哪一關 */
+    h+='<div class="tdee-box" style="margin-top:14px">'+
+        pushRow("通知權限", Notification.permission==="granted", 
+          Notification.permission==="granted"?"已允許":(Notification.permission==="denied"?"被拒絕":"還沒問"))+
+        pushRow("這台裝置的訂閱", pushDiag.sub, pushDiag.checked?(pushDiag.sub?"正常":"沒有（可能被 iOS 撤銷）"):"檢查中…")+
+        pushRow("推播加密金鑰", pushDiag.keys, pushDiag.checked?(pushDiag.keys?"已備妥":"缺少"):"檢查中…")+
+      '</div>';
+    if(myPush && (!pushDiag.sub || !pushDiag.keys)){
+      h+='<div class="set-alert"><b>提醒不會響</b>'+
+         '<span>上面有紅點的那一項卡住了。按「重新設定」通常一次就好。</span></div>';
+    }
+    h+='<button class="btn ghost" type="button" data-push="fix"'+(pushBusy?" disabled":"")+'>'+
+        (pushBusy?"處理中…":"重新設定提醒（修復用）")+'</button>';
+
     if(myPush){
       var owner=users.filter(function(x){ return x.id===myPush.u; })[0];
       if(owner && owner.id!==me.id){
@@ -1473,6 +1487,12 @@ function setBody(sec){
       '平常關掉重開就會是新的，想馬上換就按上面那顆。</p>';
   }
   return "";
+}
+
+/* 狀態一覽的一列。綠 ＝ 這關過了，紅 ＝ 卡在這裡。 */
+function pushRow(label, ok, text){
+  return '<div class="r"><span>'+esc(label)+'</span>'+
+    '<b class="pdot'+(ok?" on":"")+'">'+esc(text)+'</b></div>';
 }
 
 /* 半小時一格。排程是每 30 分鐘跑一次，給到分鐘級只會讓他覺得「怎麼沒準時」。 */
@@ -1548,13 +1568,16 @@ function wireSetSheet(root, sec, redraw){
       pushMsg=e.userMessage||"儲存失敗"; redraw(false);
     });
   };
-  var pBtn=root.querySelector("[data-push]");
-  if(pBtn) pBtn.onclick=function(){
-    var again=function(){ redraw(false); render(); };
-    if(pBtn.getAttribute("data-push")==="off"){ disablePush(again); return; }
-    /* requestPermission 要在手勢裡直接呼叫，所以這裡不能先 await 任何東西 */
-    enablePush(pendPushTime, pendPushSkip, again);
-  };
+  root.querySelectorAll("[data-push]").forEach(function(pBtn){
+    pBtn.onclick=function(){
+      var again=function(){ redraw(false); render(); };
+      var mode=pBtn.getAttribute("data-push");
+      if(mode==="off"){ disablePush(again); return; }
+      if(mode==="fix"){ repairPush(again); return; }
+      /* requestPermission 要在手勢裡直接呼叫，所以這裡不能先 await 任何東西 */
+      enablePush(pendPushTime, pendPushSkip, again);
+    };
+  });
 
   /* 重畫前先把已經敲進去、還沒 change 的數字收起來，不然會被吃掉 */
   function readNums(){
@@ -3281,6 +3304,11 @@ var pushMsg="";         /* 設定頁要顯示的一次性訊息 */
  * 不然「先選 8:00 再按打開」會用到預設的 7:30。 */
 var pendPushTime="07:30";
 var pendPushSkip=true;
+/* 這台裝置「實際」的狀態（不是雲端那筆說的）。
+ * 為什麼要存：通知沒跳的原因有好幾種，從外面完全看不出是哪一種——
+ * 瀏覽器的訂閱被 iOS 撤銷了？金鑰沒補上去？權限被關了？
+ * 猜了好幾輪都猜不中，所以直接顯示出來。 */
+var pushDiag={ sub:false, keys:false, checked:false };
 
 function pushSupported(){
   return typeof Notification!=="undefined" && "serviceWorker" in navigator && "PushManager" in window;
@@ -3349,15 +3377,22 @@ function loadPushState(){
   ]).then(function(r){
     pushSubs=r[0]||[];
     var sub=r[1], ep=sub?sub.endpoint:"";
+    pushDiag={ sub:!!ep, keys:false, checked:true };
     myPush=ep ? (pushSubs.filter(function(x){ return x.endpoint===ep; })[0]||null) : null;
     if(!myPush) return;
+    pushDiag.keys=!!(myPush.p256dh && myPush.auth);
     pendPushTime=myPush.time; pendPushSkip=myPush.skipIfWeighed!==false;
     /* v5.2 之前訂的沒存加密金鑰（那時候送的是無內容推播）。
      * 這裡默默補上去，不用叫他把提醒關掉再開一次。 */
     if(myPush.p256dh && myPush.auth) return;
     var k=subKeys(sub);
     if(!k.p256dh || !k.auth) return;
-    return setMyPush(Object.assign({}, myPush, k), ep).catch(function(){});
+    return setMyPush(Object.assign({}, myPush, k), ep).then(function(){
+      pushDiag.keys=true;
+    }).catch(function(e){
+      /* 以前這裡整個吞掉，結果「金鑰沒補上」完全無聲。至少要留一句給設定頁看。 */
+      pushMsg="自動補金鑰失敗："+(e.userMessage||e.message||"未知錯誤")+"，請按下面的「重新設定」。";
+    });
   });
 }
 
@@ -3405,6 +3440,60 @@ function enablePush(time, skipIfWeighed, done){
     pushMsg=""; toast("提醒開好了，明天 "+time+" 見");
   }).catch(function(e){
     pushMsg=e.userMessage||"提醒設定失敗，等一下再試一次。";
+  }).then(function(){
+    pushBusy=false; done();
+  });
+}
+
+/* 一鍵重來：不管現在是什麼狀態，退掉舊的、重新訂一次、整份寫回去。
+ * 「通知沒跳」的成因有好幾種（訂閱被 iOS 撤銷、金鑰沒補上、綁到別的使用者），
+ * 一項一項查太慢，這顆按鈕把所有情況一次收掉。 */
+function repairPush(done){
+  var why=pushBlockReason();
+  if(why){ pushMsg=why; done(); return; }
+  var ask;
+  try{ ask=Notification.requestPermission(); }catch(e){ ask=null; }
+  if(!ask || !ask.then){ pushMsg="這個瀏覽器不支援推播通知。"; done(); return; }
+
+  pushBusy=true; done();
+  var oldEp=(myPush&&myPush.endpoint)||"";
+  ask.then(function(perm){
+    if(perm!=="granted") throw uiErr("通知權限沒有開。到 iPhone 的「設定 → 通知 → 減重助手」打開。");
+    return navigator.serviceWorker.ready;
+  }).then(function(reg){
+    return reg.pushManager.getSubscription().then(function(cur){
+      /* 舊訂閱可能已經被 iOS 撤銷、或綁在舊的金鑰上，一律退掉重來 */
+      return (cur ? cur.unsubscribe().catch(function(){ return null; }) : Promise.resolve())
+        .then(function(){
+          return reg.pushManager.subscribe({
+            userVisibleOnly:true,
+            applicationServerKey:b64urlToU8(VAPID_PUBLIC)
+          });
+        });
+    });
+  }).then(function(sub){
+    var k=subKeys(sub);
+    if(!k.p256dh || !k.auth) throw uiErr("拿不到推播金鑰，這台裝置可能不支援。");
+    return STORE.loadPush().catch(function(){ return pushSubs||[]; }).then(function(cur){
+      /* 舊 endpoint 與新 endpoint 都清掉，只留新的一筆 */
+      var rest=(cur||[]).filter(function(x){
+        return x.endpoint!==sub.endpoint && (!oldEp || x.endpoint!==oldEp);
+      });
+      var next=rest.concat([{
+        id:(myPush&&myPush.id)||uid(), u:me.id, time:pendPushTime,
+        tz:new Date().getTimezoneOffset(), endpoint:sub.endpoint,
+        p256dh:k.p256dh, auth:k.auth, skipIfWeighed:!!pendPushSkip
+      }]);
+      return STORE.savePush(next).then(function(){
+        pushSubs=next;
+        myPush=next[next.length-1];
+        pushDiag={ sub:true, keys:true, checked:true };
+      });
+    });
+  }).then(function(){
+    pushMsg=""; toast("重新設定好了，可以再測一次");
+  }).catch(function(e){
+    pushMsg=e.userMessage||e.message||"重新設定失敗";
   }).then(function(){
     pushBusy=false; done();
   });
