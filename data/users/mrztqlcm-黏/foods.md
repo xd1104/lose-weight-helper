@@ -102,6 +102,7 @@
 - {"id":"xms33mroscx1r","name":"滷豬皮","kcal":90,"p":8,"c":2,"f":6,"portion":"約1/2碗","n":1}
 - {"id":"xms603xh4c6mu","name":"滷蕃薯葉","kcal":25,"p":2,"c":3,"f":1,"portion":"約80克","n":1}
 - {"id":"xms96u0tb746w","name":"綜合蔬菜（青江菜、玉米筍、番茄、黑木耳）","kcal":60,"p":2,"c":10,"f":1,"portion":"約1碗份量蔬菜","n":1}
+- {"id":"xmsdw4vm3ppam","name":"綠豆湯","kcal":340,"p":6,"c":68,"f":3,"portion":"約400ml，等於一般碗（約280ml）的1.4碗，含綠豆與糖水","n":1}
 - {"id":"xms4rmubagdxq","name":"熱狗串","kcal":90,"p":3,"c":2,"f":8,"portion":"半串，約30g","n":1}
 - {"id":"xms96sz95l79f","name":"蔥抓餅加蛋","kcal":150,"p":6,"c":15,"f":8,"portion":"整份約市售一片蔥抓餅加一顆蛋，取其1/3份量","n":1}
 - {"id":"xmsameoweqsln","name":"蔥油餅加蛋","kcal":133,"p":4,"c":15,"f":7,"portion":"約1/3份蔥油餅加蛋（整份約400大卡，含蛋與煎油）","n":1}
