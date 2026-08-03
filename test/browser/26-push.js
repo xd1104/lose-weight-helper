@@ -271,6 +271,28 @@ const stub = (perm, subscribed) => `
   check('push.md 沒有留下東西', (await getPush()).length === 0);
   await ctx.close();
 
+  console.log('\n[L] 唯讀裝置（還沒貼 GitHub 金鑰）要先擋下來');
+  /* 女友的手機、或剛裝好還沒貼金鑰的裝置。不擋的話流程很難看：
+     通知權限問完了、訂閱也成功了，最後才卡在存檔那步失敗。 */
+  await ctx.close();
+  await setPush([]);
+  ({ ctx, p } = await open(stub('granted')));
+  /* 真的唯讀模式要 ?store=github 且不給 PAT，但那樣會去打真的 GitHub，
+     測試環境連不到、app 會停在選人畫面。守門讀的就是 STORE.canWrite()，直接換掉它。 */
+  await p.evaluate(() => { STORE.canWrite = function(){ return false; }; render(); });
+  await p.waitForTimeout(400);
+  await p.click('[data-nav="settings"]'); await p.waitForTimeout(500);
+  check('索引就寫「要先貼 GitHub 金鑰」',
+    /要先貼 GitHub 金鑰/.test(await p.textContent('[data-sec="push"]')),
+    await p.textContent('[data-sec="push"]'));
+  await p.click('[data-sec="push"]'); await p.waitForTimeout(500);
+  const ro = await p.textContent('.sheet');
+  check('說明是唯讀、要去哪裡貼金鑰', /唯讀/.test(ro) && /GitHub 同步/.test(ro), ro.slice(0, 200));
+  check('不給打開的按鈕', !(await p.$('[data-push="on"]')));
+  check('沒有跟使用者要通知權限 ← 擋不住的話會先問完權限才失敗',
+    (await p.evaluate(() => window.__asked)) === 0);
+  await ctx.close();
+
   console.log('\n[B] iPhone Safari 分頁：先叫他加入主畫面');
   ({ ctx, p } = await open(stub('default'),
     'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1'));

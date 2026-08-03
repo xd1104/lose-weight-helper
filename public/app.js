@@ -1,7 +1,7 @@
 "use strict";
 
 /* 版本號。改前端時跟 sw.js 的 cache 版本號一起 +1。 */
-var APP_VER="5.5";
+var APP_VER="5.6";
 /*
  * 減重助手 — 前端主程式
  * 資料層在 store.js（LocalStore / GitHubStore 自動切）、AI 在 ai.js。
@@ -1268,6 +1268,7 @@ var SET_TITLES={ body:"身體資料", activity:"活動量與 TDEE", goal:"每日
 function pushSummary(){
   if(!pushSupported()) return "這個瀏覽器不支援";
   if(isIOS() && !isStandalone()) return "要先加入主畫面";
+  if(!STORE.canWrite()) return "要先貼 GitHub 金鑰";
   if(myPush) return "每天 "+myPush.time+" 提醒";
   return "關閉中";
 }
@@ -3344,6 +3345,11 @@ function pushBlockReason(){
   if(!pushSupported()) return "這個瀏覽器不支援推播通知。";
   if(isIOS() && !isStandalone())
     return "iPhone 只有「加入主畫面」的版本收得到通知。請先用 Safari 的分享鍵 → 加入主畫面，再從主畫面打開來設定。";
+  /* 唯讀（還沒貼 GitHub 金鑰）：提醒設定要存到雲端才送得出去。
+   * 不先擋的話流程會很難看——通知權限問完、訂閱也成功了，最後卡在存檔那一步失敗。
+   * app 其他每個寫入入口都有 requireWrite 守門，這裡也要一致。 */
+  if(!STORE.canWrite())
+    return "這台裝置還沒貼 GitHub 金鑰（目前是唯讀）。提醒設定要存到雲端，請先到「設定 → GitHub 同步」貼上金鑰再回來開。";
   if(Notification.permission==="denied")
     return "通知權限之前被拒絕過，瀏覽器不會再問第二次。要到 iPhone 的「設定 → 通知 → 減重助手」手動打開。";
   return "";
