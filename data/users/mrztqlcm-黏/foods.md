@@ -84,6 +84,7 @@
 - {"id":"xms96u0t5m6yq","name":"番茄鍋燒湯底","kcal":120,"p":2,"c":10,"f":7,"portion":"約500ml湯，含番茄與油脂調味","n":1}
 - {"id":"xms2qc9zy3w0h","name":"紫米素粽","kcal":460,"p":9,"c":85,"f":9,"portion":"1顆約290克（含糯米、香菇、花生、素料餡）","n":1}
 - {"id":"xms1qj1udn9j7","name":"蛤蜊魚湯","kcal":100,"p":10,"c":4,"f":4,"portion":"約一碗，含少量魚肉與蛤蜊","n":1}
+- {"id":"xmsdw4exewtcl","name":"越式生春捲（蝦）","kcal":180,"p":8,"c":30,"f":2,"portion":"2捲，每捲約80g（含米皮、蝦、生菜、米線），共約160g","n":1}
 - {"id":"xms4rmubedrey","name":"黑輪串","kcal":70,"p":4,"c":9,"f":2,"portion":"1串，約60g","n":1}
 - {"id":"xmsajxu2f8uo3","name":"新台鐵草莓夾心麵包","kcal":185,"p":5,"c":35,"f":3,"portion":"整包1份，78公克","n":1}
 - {"id":"xms7fe4fxf0da","name":"滑蛋瘦肉粥","kcal":380,"p":18,"c":50,"f":11,"portion":"一般碗，約450ml，含粥底、蛋、瘦肉","n":1}
