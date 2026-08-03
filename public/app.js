@@ -1,7 +1,7 @@
 "use strict";
 
 /* 版本號。改前端時跟 sw.js 的 cache 版本號一起 +1。 */
-var APP_VER="5.1";
+var APP_VER="5.2";
 /*
  * 減重助手 — 前端主程式
  * 資料層在 store.js（LocalStore / GitHubStore 自動切）、AI 在 ai.js。
@@ -3294,6 +3294,24 @@ function pushBlockReason(){
   return "";
 }
 
+/* 訂閱裡的兩把加密金鑰（送有內容的推播要用）。
+ * toJSON() 直接給 base64url 字串，最省事；舊瀏覽器沒有就自己從 ArrayBuffer 轉。 */
+function subKeys(sub){
+  try{
+    var j=sub.toJSON && sub.toJSON();
+    if(j && j.keys && j.keys.p256dh && j.keys.auth)
+      return { p256dh:j.keys.p256dh, auth:j.keys.auth };
+  }catch(e){}
+  return { p256dh:u8ToB64url(sub.getKey && sub.getKey("p256dh")),
+           auth:u8ToB64url(sub.getKey && sub.getKey("auth")) };
+}
+function u8ToB64url(buf){
+  if(!buf) return "";
+  var a=new Uint8Array(buf), str="";
+  for(var i=0;i<a.length;i++) str+=String.fromCharCode(a[i]);
+  return btoa(str).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+
 function b64urlToU8(s){
   var pad="=".repeat((4-s.length%4)%4);
   var raw=atob((s+pad).replace(/-/g,"+").replace(/_/g,"/"));
@@ -3313,9 +3331,16 @@ function loadPushState(){
       .catch(function(){ return null; })
   ]).then(function(r){
     pushSubs=r[0]||[];
-    var ep=r[1]?r[1].endpoint:"";
+    var sub=r[1], ep=sub?sub.endpoint:"";
     myPush=ep ? (pushSubs.filter(function(x){ return x.endpoint===ep && x.u===(me&&me.id); })[0]||null) : null;
-    if(myPush){ pendPushTime=myPush.time; pendPushSkip=myPush.skipIfWeighed!==false; }
+    if(!myPush) return;
+    pendPushTime=myPush.time; pendPushSkip=myPush.skipIfWeighed!==false;
+    /* v5.2 之前訂的沒存加密金鑰（那時候送的是無內容推播）。
+     * 這裡默默補上去，不用叫他把提醒關掉再開一次。 */
+    if(myPush.p256dh && myPush.auth) return;
+    var k=subKeys(sub);
+    if(!k.p256dh || !k.auth) return;
+    return setMyPush(Object.assign({}, myPush, k), ep).catch(function(){});
   });
 }
 
@@ -3353,10 +3378,12 @@ function enablePush(time, skipIfWeighed, done){
       applicationServerKey:b64urlToU8(VAPID_PUBLIC)
     });
   }).then(function(sub){
+    var k=subKeys(sub);
     return setMyPush({
       id:uid(), u:me.id, time:time,
       tz:new Date().getTimezoneOffset(),          /* 台灣 -480；送的那端靠它換回 UTC */
-      endpoint:sub.endpoint, skipIfWeighed:!!skipIfWeighed
+      endpoint:sub.endpoint, p256dh:k.p256dh, auth:k.auth,
+      skipIfWeighed:!!skipIfWeighed
     }, sub.endpoint);
   }).then(function(){
     pushMsg=""; toast("提醒開好了，明天 "+time+" 見");

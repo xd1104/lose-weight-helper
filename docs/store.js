@@ -118,6 +118,10 @@ function cleanPushSub(s){
   /* getTimezoneOffset()：台灣是 -480。Actions 靠這個把當地時間換回 UTC */
   o.tz=Math.round(num(s&&s.tz));
   o.endpoint=String((s&&s.endpoint)||"");
+  /* 送有內容的推播要用這兩把（RFC 8291 的 ECDH + AES-GCM）。
+   * 舊資料沒有 ⇒ 送出端會退回「沒有內容」的推播，文字用 sw.js 裡的預設。 */
+  if(s&&s.p256dh) o.p256dh=String(s.p256dh);
+  if(s&&s.auth) o.auth=String(s.auth);
   o.skipIfWeighed=(s&&s.skipIfWeighed)!==false;
   if(s&&s.sentAt) o.sentAt=String(s.sentAt);
   return o;
@@ -136,7 +140,10 @@ function normalizePushSubs(list){
 function serializePushSubs(list){
   var L=["## 提醒",""];
   normalizePushSubs(list).forEach(function(s){
-    var o={ id:s.id, u:s.u, time:s.time, tz:s.tz, endpoint:s.endpoint, skipIfWeighed:s.skipIfWeighed };
+    var o={ id:s.id, u:s.u, time:s.time, tz:s.tz, endpoint:s.endpoint };
+    if(s.p256dh) o.p256dh=s.p256dh;
+    if(s.auth) o.auth=s.auth;
+    o.skipIfWeighed=s.skipIfWeighed;
     if(s.sentAt) o.sentAt=s.sentAt;
     L.push("- "+JSON.stringify(o));
   });

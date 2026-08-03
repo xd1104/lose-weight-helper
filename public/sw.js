@@ -6,8 +6,8 @@
  * 鐵律：skipWaiting + activate 清舊快取 + clients.claim，已安裝的 PWA 才吃得到新版
  * 改前端記得把 cache 版本號 +1
  */
-const SHELL_CACHE = 'lwh-shell-v35';
-const DATA_CACHE = 'lwh-data-v35';
+const SHELL_CACHE = 'lwh-shell-v36';
+const DATA_CACHE = 'lwh-data-v36';
 const KEEP = [SHELL_CACHE, DATA_CACHE];
 
 // 相對於 SW scope 解析（localhost 根目錄或 Pages 子路徑 /lose-weight-helper/ 都對）
@@ -61,8 +61,9 @@ async function networkFirst(request, cacheName) {
 
 /* ---- 每日提醒 ----
  * 推播由 GitHub Actions 排程送出（.github/workflows/daily-reminder.yml）。
- * 刻意送「沒有內容的推播」：帶內容的話要做 ECDH + AES-GCM 加密，
- * 送出端會複雜一大截；文字反正是固定的，寫在這裡就好。
+ * v5.2 起送的是「有內容」的推播（文字在 e.data 裡）。原本送無內容的，
+ * Apple 回 201 收下了、手機卻不顯示——payload-less 在 iOS 上是唯一沒把握的環節。
+ * 下面的預設文字保留：舊訂閱沒存加密金鑰時，送出端仍會退回無內容送法。
  * ⚠️ userVisibleOnly:true 是 iOS 的硬性要求 —— 收到 push 一定要跳一則通知出來，
  * 靜靜吃掉的話瀏覽器會直接把訂閱撤銷。所以這裡不做任何「要不要顯示」的判斷，
  * 「今天已經量過就不要吵」是在送出端決定的（Actions 會先看當天的紀錄）。 */

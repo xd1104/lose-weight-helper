@@ -284,6 +284,9 @@ function cleanPushSub(s) {
   o.time = /^([01]\d|2[0-3]):[0-5]\d$/.test(s && s.time) ? s.time : '07:30';
   o.tz = Math.round(num(s && s.tz));
   o.endpoint = String((s && s.endpoint) || '');
+  // 送有內容的推播要用這兩把（RFC 8291）。舊資料沒有 -> 退回無內容推播。
+  if (s && s.p256dh) o.p256dh = String(s.p256dh);
+  if (s && s.auth) o.auth = String(s.auth);
   o.skipIfWeighed = (s && s.skipIfWeighed) !== false;
   if (s && s.sentAt) o.sentAt = String(s.sentAt);
   return o;
@@ -302,7 +305,10 @@ function normalizePushSubs(list) {
 function serializePushSubs(list) {
   const L = ['## 提醒', ''];
   for (const s of normalizePushSubs(list)) {
-    const o = { id: s.id, u: s.u, time: s.time, tz: s.tz, endpoint: s.endpoint, skipIfWeighed: s.skipIfWeighed };
+    const o = { id: s.id, u: s.u, time: s.time, tz: s.tz, endpoint: s.endpoint };
+    if (s.p256dh) o.p256dh = s.p256dh;
+    if (s.auth) o.auth = s.auth;
+    o.skipIfWeighed = s.skipIfWeighed;
     if (s.sentAt) o.sentAt = s.sentAt;
     L.push('- ' + JSON.stringify(o));
   }

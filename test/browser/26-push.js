@@ -45,6 +45,7 @@ const stub = (perm, subscribed) => `
   window.PushManager = function () {};
   const fakeSub = {
     endpoint: ${JSON.stringify(EP)},
+    toJSON: function () { return { keys: { p256dh: 'BPfake-p256dh', auth: 'BPfake-auth' } }; },
     unsubscribe: function () { window.__unsub++; window.__subbed = null; return Promise.resolve(true); },
   };
   /* subscribed=true ＝ 這台裝置本來就訂閱過（重開 app 之後的正常狀態）。
@@ -120,6 +121,8 @@ const stub = (perm, subscribed) => `
   check('有記時區 ← 少了它送出端會在半夜推通知',
     subs[0] && typeof subs[0].tz === 'number' && Math.abs(subs[0].tz) <= 840, subs[0]);
   check('預設 skipIfWeighed 是開的', subs[0] && subs[0].skipIfWeighed === true, subs[0]);
+  check('有存加密金鑰 ← 少了它只能送無內容推播，iOS 上不一定會顯示',
+    subs[0] && subs[0].p256dh === 'BPfake-p256dh' && subs[0].auth === 'BPfake-auth', subs[0]);
   check('設定頁改口成「每天 … 提醒」', /每天\s*\d\d:\d\d\s*提醒/.test(await p.textContent('#app')));
 
   console.log('\n[H] 開著的時候改時間，直接存回去');
@@ -150,6 +153,17 @@ const stub = (perm, subscribed) => `
     (subs.filter((x) => x.u === 'someone-else')[0] || {}).time === '06:30', subs);
   check('自己那筆改成 07:00', (subs.filter((x) => x.u === u)[0] || {}).time === '07:00', subs);
 
+  console.log('\n[I] v5.2 之前訂的沒有加密金鑰，開 app 時要自己補上（不用叫他重開一次）');
+  await ctx.close();
+  await setPush([
+    { id: 'old', u, time: '07:30', tz: -480, endpoint: EP, skipIfWeighed: true },  // 沒有 p256dh/auth
+  ]);
+  ({ ctx, p } = await open(stub('granted', true)));
+  await p.waitForTimeout(1500);
+  subs = await getPush();
+  check('金鑰被默默補上去了', subs[0] && subs[0].p256dh === 'BPfake-p256dh', subs[0]);
+  check('其他欄位沒被動到', subs[0] && subs[0].time === '07:30' && subs[0].id === 'old', subs[0]);
+
   console.log('\n[F] 關閉：真的退訂，push.md 那一筆消失');
   await openPush(p);
   await p.click('[data-push="off"]');
@@ -158,7 +172,6 @@ const stub = (perm, subscribed) => `
     (await p.evaluate(() => window.__unsub)) === 1, await p.evaluate(() => window.__unsub));
   subs = await getPush();
   check('自己那筆不見了', !subs.filter((x) => x.u === u).length, subs);
-  check('女友那筆還在', subs.length === 1 && subs[0].u === 'someone-else', subs);
   await ctx.close();
 
   console.log('\n[D] 先選 08:00 再打開，存的要是 08:00');

@@ -34,9 +34,43 @@ async function t(name, fn) {
 const hits = [];
 let reply = 201;
 const server = http.createServer((req, res) => {
-  hits.push({ url: req.url, auth: req.headers.authorization || '' });
-  res.writeHead(reply); res.end();
+  const chunks = [];
+  req.on('data', (c) => chunks.push(c));
+  req.on('end', () => {
+    hits.push({
+      url: req.url,
+      auth: req.headers.authorization || '',
+      enc: req.headers['content-encoding'] || '',
+      body: Buffer.concat(chunks),
+    });
+    res.writeHead(reply); res.end();
+  });
 });
+
+/* 假的「裝置」：產一對 ECDH 金鑰 + auth secret，等一下要把收到的密文解回來。
+   解得開才代表加密是對的——這段錯了症狀是手機收到卻不顯示，跟沒送到長得一樣。 */
+const device = (() => {
+  const ecdh = crypto.createECDH('prime256v1');
+  ecdh.generateKeys();
+  return { ecdh, pub: ecdh.getPublicKey(), auth: crypto.randomBytes(16) };
+})();
+function hkdf(salt, ikm, info, len) {
+  const prk = crypto.createHmac('sha256', salt).update(ikm).digest();
+  return crypto.createHmac('sha256', prk)
+    .update(Buffer.concat([info, Buffer.from([1])])).digest().subarray(0, len);
+}
+function decryptForDevice(block) {
+  const salt = block.subarray(0, 16), idlen = block[20];
+  const as = block.subarray(21, 21 + idlen), ct = block.subarray(21 + idlen);
+  const ikm = hkdf(device.auth, device.ecdh.computeSecret(as),
+    Buffer.concat([Buffer.from('WebPush: info\0'), device.pub, as]), 32);
+  const cek = hkdf(salt, ikm, Buffer.from('Content-Encoding: aes128gcm\0'), 16);
+  const nonce = hkdf(salt, ikm, Buffer.from('Content-Encoding: nonce\0'), 12);
+  const d = crypto.createDecipheriv('aes-128-gcm', cek, nonce);
+  d.setAuthTag(ct.subarray(ct.length - 16));
+  const out = Buffer.concat([d.update(ct.subarray(0, ct.length - 16)), d.final()]);
+  return out.subarray(0, out.length - 1).toString('utf8');   // 去掉 0x02 padding delimiter
+}
 
 /* 把 repo 複製一份到暫存目錄再跑，免得測試動到真的 data/ */
 function sandbox(pushMd, files) {
@@ -251,6 +285,39 @@ server.listen(0, async () => {
     const dir = sandbox(md([subDueNow(port, 300)]));
     await run(dir, { FORCE: 'false' });
     assert.strictEqual(hits.length, 0, 'FORCE=false 還照送的話，每 30 分鐘就會被吵一次');
+  });
+
+  await t('有金鑰時送加密的內容，而且裝置解得回原文 ← 解不開的話手機收到也不會顯示', async () => {
+    hits.length = 0; reply = 201;
+    const dir = sandbox(md([subDueNow(port, 10, {
+      p256dh: device.pub.toString('base64url'), auth: device.auth.toString('base64url') })]));
+    await run(dir);
+    assert.strictEqual(hits.length, 1);
+    assert.strictEqual(hits[0].enc, 'aes128gcm', 'Content-Encoding 要是 aes128gcm');
+    assert.ok(hits[0].body.length > 21, '應該有密文');
+    const text = decryptForDevice(hits[0].body);
+    const j = JSON.parse(text);
+    assert.ok(j.title && j.body, '解出來要是 {title, body}：' + text);
+    assert.ok(/量個體重/.test(j.title), j.title);
+  });
+
+  await t('每次送的密文都不一樣 ← salt 與臨時金鑰固定的話等於沒加密', async () => {
+    hits.length = 0;
+    const sub = subDueNow(port, 10, {
+      p256dh: device.pub.toString('base64url'), auth: device.auth.toString('base64url') });
+    await run(sandbox(md([sub])));
+    await run(sandbox(md([sub])));
+    assert.strictEqual(hits.length, 2);
+    assert.ok(!hits[0].body.equals(hits[1].body), '兩次密文一樣');
+    assert.strictEqual(decryptForDevice(hits[0].body), decryptForDevice(hits[1].body), '但解出來要一樣');
+  });
+
+  await t('舊訂閱沒有金鑰就退回無內容推播（不要整個送不出去）', async () => {
+    hits.length = 0;
+    await run(sandbox(md([subDueNow(port)])));
+    assert.strictEqual(hits.length, 1);
+    assert.strictEqual(hits[0].enc, '', '沒金鑰時不該宣告 Content-Encoding');
+    assert.strictEqual(hits[0].body.length, 0, '沒金鑰時不該有 body');
   });
 
   await t('送出端與 public/app.js 的 VAPID 公鑰一致 ← 不一致就推不動，而且沒有錯誤訊息', () => {

@@ -363,6 +363,16 @@ t('提醒 round-trip：欄位原樣回來', () => {
   assert.deepStrictEqual(back, [SUB]);
 });
 
+t('加密金鑰有寫才留，而且 round-trip 帶得回來', () => {
+  const withKeys = Object.assign({}, SUB, { p256dh: 'BM'.padEnd(87, 'x'), auth: 'aGVsbG93b3JsZDEyMw' });
+  const back = S.parsePushSubs(S.serializePushSubs([withKeys]))[0];
+  assert.strictEqual(back.p256dh, withKeys.p256dh);
+  assert.strictEqual(back.auth, withKeys.auth);
+  // 舊訂閱沒有這兩欄，不要硬生出空字串（送出端是靠「有沒有」決定要不要加密）
+  assert.ok(!/p256dh|auth/.test(S.serializePushSubs([SUB])));
+  assert.strictEqual(S.parsePushSubs(S.serializePushSubs([SUB]))[0].p256dh, undefined);
+});
+
 t('sentAt 有寫才留（沒送過的不要多一個空欄位）', () => {
   assert.ok(!/sentAt/.test(S.serializePushSubs([SUB])));
   const withSent = Object.assign({}, SUB, { sentAt: '2026-08-03' });
@@ -414,7 +424,8 @@ t('push.md 的 parser 三邊逐字相同（store.js / server.js / tools/send-rem
   const sender = new Function(cut + '\n;return {serializePushSubs, parsePushSubs};')();
 
   const list = [SUB, Object.assign({}, SUB, { id: 'p2', u: 'x-gf', time: '09:00',
-    endpoint: 'https://web.push.apple.com/ZZZ', skipIfWeighed: false, sentAt: '2026-08-03' })];
+    endpoint: 'https://web.push.apple.com/ZZZ', p256dh: 'BM'.padEnd(87, 'x'), auth: 'aGVsbG8',
+    skipIfWeighed: false, sentAt: '2026-08-03' })];
   const a = S.serializePushSubs(list);
   assert.strictEqual(front.serializePushSubs(list), a, 'store.js 與 server.js 不一致');
   assert.strictEqual(sender.serializePushSubs(list), a, 'tools/send-reminders.js 與 server.js 不一致');

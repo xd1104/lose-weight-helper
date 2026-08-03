@@ -5,9 +5,12 @@
  * ——GitHub Pages 是靜態的不會主動做事，家裡的 server.js 外面連不到、電腦關機就沒了。
  * Actions 排程剛好是免費又一直在的那台。
  *
- * 零套件（跟 server.js 一樣的規矩）：VAPID 只需要 ES256 簽章，Node 內建 crypto 就有。
- * 而且刻意送「沒有內容的推播」——帶內容要做 ECDH + HKDF + AES-GCM 加密，
- * 文字反正是固定的，寫在 sw.js 裡就好。
+ * 零套件（跟 server.js 一樣的規矩）：VAPID 的 ES256 簽章與 RFC 8291 的內容加密
+ * （ECDH P-256 + HKDF + AES-128-GCM）Node 內建 crypto 都有。
+ *
+ * v5.2 起改送「有內容」的推播。原本送無內容的（文字寫死在 sw.js），
+ * Apple 回 201 收下了、手機卻不顯示——payload-less 是 iOS 上唯一不確定的環節，
+ * 與其猜不如直接消除。舊訂閱沒存加密金鑰時仍會退回無內容送法。
  *
  * 一天只吵一次：送完把 sentAt 寫回 data/push.md 並 commit。
  * 不靠「排程準時」來去重——Actions 誤點 5～30 分鐘是常態，用時間窗去推會漏送或重送。
@@ -46,6 +49,8 @@ function cleanPushSub(s) {
   o.time = /^([01]\d|2[0-3]):[0-5]\d$/.test(s && s.time) ? s.time : '07:30';
   o.tz = Math.round(num(s && s.tz));
   o.endpoint = String((s && s.endpoint) || '');
+  if (s && s.p256dh) o.p256dh = String(s.p256dh);
+  if (s && s.auth) o.auth = String(s.auth);
   o.skipIfWeighed = (s && s.skipIfWeighed) !== false;
   if (s && s.sentAt) o.sentAt = String(s.sentAt);
   return o;
@@ -64,7 +69,10 @@ function normalizePushSubs(list) {
 function serializePushSubs(list) {
   const L = ['## 提醒', ''];
   for (const s of normalizePushSubs(list)) {
-    const o = { id: s.id, u: s.u, time: s.time, tz: s.tz, endpoint: s.endpoint, skipIfWeighed: s.skipIfWeighed };
+    const o = { id: s.id, u: s.u, time: s.time, tz: s.tz, endpoint: s.endpoint };
+    if (s.p256dh) o.p256dh = s.p256dh;
+    if (s.auth) o.auth = s.auth;
+    o.skipIfWeighed = s.skipIfWeighed;
     if (s.sentAt) o.sentAt = s.sentAt;
     L.push('- ' + JSON.stringify(o));
   }
@@ -133,16 +141,56 @@ function vapidHeader(endpoint, key) {
   return 'vapid t=' + head + '.' + body + '.' + sig.toString('base64url') + ', k=' + VAPID_PUBLIC;
 }
 
-async function sendPush(endpoint, key) {
-  const res = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      Authorization: vapidHeader(endpoint, key),
-      TTL: '10800',              // 手機關機的話，3 小時內開機仍然收得到
-      'Content-Length': '0',
-    },
-  });
+/* ---- RFC 8291：把通知內容加密 ----
+ * 推播服務只是個中繼站，看不到內容——金鑰是瀏覽器產的，只有那台裝置解得開。
+ * 所以這段一定要對，錯了症狀是手機收到卻不顯示（跟沒送到長得一模一樣）。 */
+function hkdf(salt, ikm, info, len) {
+  const prk = crypto.createHmac('sha256', salt).update(ikm).digest();
+  return crypto.createHmac('sha256', prk)
+    .update(Buffer.concat([info, Buffer.from([1])])).digest().subarray(0, len);
+}
+function encryptPayload(p256dhB64, authB64, text) {
+  const ua = Buffer.from(p256dhB64, 'base64url');      // 裝置公鑰（65 bytes）
+  const auth = Buffer.from(authB64, 'base64url');      // 裝置的 auth secret（16 bytes）
+  const es = crypto.createECDH('prime256v1');
+  es.generateKeys();
+  const as = es.getPublicKey();                        // 這次專用的臨時公鑰
+  const ikm = hkdf(auth, es.computeSecret(ua),
+    Buffer.concat([Buffer.from('WebPush: info\0'), ua, as]), 32);
+  const salt = crypto.randomBytes(16);
+  const cek = hkdf(salt, ikm, Buffer.from('Content-Encoding: aes128gcm\0'), 16);
+  const nonce = hkdf(salt, ikm, Buffer.from('Content-Encoding: nonce\0'), 12);
+  const c = crypto.createCipheriv('aes-128-gcm', cek, nonce);
+  // 明文結尾要接一個 0x02 當 padding delimiter，少了它瀏覽器會解不開
+  const body = Buffer.concat([
+    c.update(Buffer.concat([Buffer.from(text, 'utf8'), Buffer.from([2])])), c.final(), c.getAuthTag()]);
+  const rs = Buffer.alloc(4);
+  rs.writeUInt32BE(4096);
+  return Buffer.concat([salt, rs, Buffer.from([as.length]), as, body]);
+}
+
+async function sendPush(sub, key, text) {
+  const headers = {
+    Authorization: vapidHeader(sub.endpoint, key),
+    TTL: '10800',                // 手機關機的話，3 小時內開機仍然收得到
+  };
+  let body;
+  if (sub.p256dh && sub.auth) {
+    body = encryptPayload(sub.p256dh, sub.auth, text);
+    headers['Content-Encoding'] = 'aes128gcm';
+    headers['Content-Type'] = 'application/octet-stream';
+    headers['Content-Length'] = String(body.length);
+  } else {
+    // 舊訂閱沒存金鑰：退回無內容，文字用 sw.js 裡的預設
+    headers['Content-Length'] = '0';
+  }
+  const res = await fetch(sub.endpoint, { method: 'POST', headers, body });
   return res.status;
+}
+
+/* 通知文字。有內容的推播才看得到這個，無內容的會用 sw.js 的預設。 */
+function noticeFor() {
+  return JSON.stringify({ title: '早安 ☀️ 量個體重吧', body: '30 秒的事。順便把昨天沒記的補一補。' });
 }
 
 (async () => {
@@ -182,7 +230,7 @@ async function sendPush(endpoint, key) {
     if (DRY) { console.log('[dry-run] 會送：' + label); keep.push(s); continue; }
 
     let status = 0;
-    try { status = await sendPush(s.endpoint, key); }
+    try { status = await sendPush(s, key, noticeFor()); }
     catch (e) { console.log('送出失敗（網路）：' + label + ' － ' + e.message); keep.push(s); continue; }
 
     if (status === 404 || status === 410) {
@@ -192,7 +240,8 @@ async function sendPush(endpoint, key) {
       continue;
     }
     if (status >= 200 && status < 300) {
-      console.log('已送出：' + label + '（' + status + '）' + (FORCE ? ' [force]' : ''));
+      console.log('已送出：' + label + '（' + status + '）'
+        + (s.p256dh && s.auth ? ' 有內容' : ' 無內容(舊訂閱)') + (FORCE ? ' [force]' : ''));
       // force 是測試，不記 sentAt——否則今天真正的提醒會被這一發吃掉
       if (FORCE) { keep.push(s); continue; }
       keep.push(Object.assign({}, s, { sentAt: L.date }));
