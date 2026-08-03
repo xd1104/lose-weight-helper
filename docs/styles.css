@@ -258,6 +258,9 @@ textarea.ta{resize:none; overflow:hidden; min-height:52px; line-height:1.5;}
 .pdot::before{content:""; width:8px; height:8px; border-radius:99px; background:var(--bad); flex:0 0 auto;}
 .pdot.on{color:var(--acc-deep);}
 .pdot.on::before{background:var(--acc);}
+/* 還沒開 ＝ 中性灰。紅色只留給「應該要好卻壞了」 */
+.pdot.off{color:var(--muted);}
+.pdot.off::before{background:#c9d2c4;}
 
 .tdee-box{background:var(--acc-soft); border-radius:14px; padding:13px 14px; margin-top:14px;}
 .tdee-box .r{display:flex; align-items:baseline; justify-content:space-between; font-size:13px; color:var(--acc-deep);

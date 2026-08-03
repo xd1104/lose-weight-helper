@@ -1,7 +1,7 @@
 "use strict";
 
 /* 版本號。改前端時跟 sw.js 的 cache 版本號一起 +1。 */
-var APP_VER="5.4";
+var APP_VER="5.5";
 /*
  * 減重助手 — 前端主程式
  * 資料層在 store.js（LocalStore / GitHubStore 自動切）、AI 在 ai.js。
@@ -1449,19 +1449,31 @@ function setBody(sec){
        '<br>提醒是 GitHub 上的排程送的，<b>電腦關機也照樣會響</b>。'+
        '不過排程有時候會誤點 <b>5～30 分鐘</b>，當提醒夠用、當鬧鐘不行。</p>';
 
-    /* 狀態一覽：通知沒跳的時候，一眼看得出卡在哪一關 */
+    /* 狀態一覽：通知沒跳的時候，一眼看得出卡在哪一關。
+     * 「雲端有紀錄、這台裝置卻沒有訂閱」＝ iOS 把訂閱撤銷了（收到推播卻沒跳通知會觸發），
+     * 這是真的故障；單純還沒開則是灰色，不要嚇人。 */
+    var cloud=(pushSubs||[]).filter(function(x){ return x.u===(me&&me.id); })[0];
+    var expectOn=!!(myPush || cloud);
+    var broken=expectOn && pushDiag.checked && (!pushDiag.sub || !pushDiag.keys);
+    var perm=Notification.permission;
     h+='<div class="tdee-box" style="margin-top:14px">'+
-        pushRow("通知權限", Notification.permission==="granted", 
-          Notification.permission==="granted"?"已允許":(Notification.permission==="denied"?"被拒絕":"還沒問"))+
-        pushRow("這台裝置的訂閱", pushDiag.sub, pushDiag.checked?(pushDiag.sub?"正常":"沒有（可能被 iOS 撤銷）"):"檢查中…")+
-        pushRow("推播加密金鑰", pushDiag.keys, pushDiag.checked?(pushDiag.keys?"已備妥":"缺少"):"檢查中…")+
+        pushRow("通知權限", perm==="granted"?"ok":(perm==="denied"?"bad":"off"),
+          perm==="granted"?"已允許":(perm==="denied"?"被拒絕":"還沒問"))+
+        pushRow("這台裝置的訂閱",
+          !pushDiag.checked?"off":(pushDiag.sub?"ok":(expectOn?"bad":"off")),
+          !pushDiag.checked?"檢查中…":(pushDiag.sub?"正常":(expectOn?"沒有（被 iOS 撤銷了）":"尚未開啟")))+
+        pushRow("推播加密金鑰",
+          !pushDiag.checked?"off":(pushDiag.keys?"ok":(expectOn?"bad":"off")),
+          !pushDiag.checked?"檢查中…":(pushDiag.keys?"已備妥":(expectOn?"缺少":"尚未開啟")))+
       '</div>';
-    if(myPush && (!pushDiag.sub || !pushDiag.keys)){
-      h+='<div class="set-alert"><b>提醒不會響</b>'+
-         '<span>上面有紅點的那一項卡住了。按「重新設定」通常一次就好。</span></div>';
+    if(broken){
+      h+='<div class="set-alert"><b>提醒現在不會響</b>'+
+         '<span>iOS 有時候會自己把推播訂閱收回去。按下面那顆重新設定一次就好。</span></div>';
     }
-    h+='<button class="btn ghost" type="button" data-push="fix"'+(pushBusy?" disabled":"")+'>'+
-        (pushBusy?"處理中…":"重新設定提醒（修復用）")+'</button>';
+    /* 壞掉的時候這才是該按的那顆，做成主要按鈕；平常只是備用，維持低調 */
+    h+='<button class="btn'+(broken?"":" ghost")+'" type="button" data-push="fix"'+
+        (pushBusy?" disabled":"")+'>'+
+        (pushBusy?"處理中…":(broken?"重新設定提醒":"重新設定提醒（修復用）"))+'</button>';
 
     if(myPush){
       var owner=users.filter(function(x){ return x.id===myPush.u; })[0];
@@ -1489,10 +1501,14 @@ function setBody(sec){
   return "";
 }
 
-/* 狀態一覽的一列。綠 ＝ 這關過了，紅 ＝ 卡在這裡。 */
-function pushRow(label, ok, text){
+/* 狀態一覽的一列。三態，不是兩態：
+ *   on   綠 ＝ 這關過了
+ *   （紅）＝ 應該要好卻壞了
+ *   off  灰 ＝ 還沒開，本來就沒有——不是故障
+ * 只有兩態的話，「從來沒開過提醒」的人會看到兩顆紅點，以為 app 壞了。 */
+function pushRow(label, state, text){
   return '<div class="r"><span>'+esc(label)+'</span>'+
-    '<b class="pdot'+(ok?" on":"")+'">'+esc(text)+'</b></div>';
+    '<b class="pdot'+(state==="ok"?" on":(state==="off"?" off":""))+'">'+esc(text)+'</b></div>';
 }
 
 /* 半小時一格。排程是每 30 分鐘跑一次，給到分鐘級只會讓他覺得「怎麼沒準時」。 */

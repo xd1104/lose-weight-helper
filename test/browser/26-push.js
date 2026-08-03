@@ -102,6 +102,13 @@ const stub = (perm, subscribed) => `
 
   console.log('\n[C] 打開：權限 → 訂閱 → 寫進 push.md');
   await openPush(p);
+  /* 從來沒開過提醒的人，狀態一覽不可以是紅的——「還沒開」不是故障。
+     兩態的話新使用者一進來就看到兩顆紅點，會以為 app 壞了。 */
+  const virgin = await p.textContent('.sheet');
+  check('沒開過的人看到的是「尚未開啟」，不是紅字警告',
+    /尚未開啟/.test(virgin) && !/被 iOS 撤銷|提醒現在不會響/.test(virgin), virgin.slice(0, 300));
+  check('沒壞的時候「重新設定」維持低調（ghost）',
+    !!(await p.$('button.btn.ghost[data-push="fix"]')));
   check('有時間可以選', (await p.$$('[data-ptime]')).length >= 6);
   check('預設勾「已經量過就不要吵我」', !!(await p.$('.opt-row.on')));
   await p.click('[data-push="on"]');
@@ -208,8 +215,11 @@ const stub = (perm, subscribed) => `
   ({ ctx, p } = await open(stub('granted', false)));   // getSubscription() -> null
   await openPush(p);
   let panel = await p.textContent('.sheet');
-  check('看得出訂閱不見了', /沒有（可能被 iOS 撤銷）/.test(panel), panel.slice(0, 260));
-  check('有「重新設定」按鈕', !!(await p.$('[data-push="fix"]')));
+  check('看得出訂閱是被撤銷的（雲端有紀錄、裝置卻沒訂閱）',
+    /沒有（被 iOS 撤銷了）/.test(panel), panel.slice(0, 300));
+  check('明講現在不會響', /提醒現在不會響/.test(panel));
+  check('壞掉時「重新設定」升級成主要按鈕 ← 這時候它才是該按的那顆',
+    !!(await p.$('button.btn[data-push="fix"]')) && !(await p.$('button.btn.ghost[data-push="fix"]')));
   await p.click('[data-push="fix"]');
   await p.waitForTimeout(2000);
   subs = await getPush();
@@ -223,7 +233,7 @@ const stub = (perm, subscribed) => `
     subs.filter((x) => x.endpoint === 'https://web.push.apple.com/OLD-gone').length === 1, subs);
   panel = await p.textContent('.sheet');
   check('三個狀態都變綠（沒有紅點文字了）',
-    !/缺少|被拒絕|可能被 iOS 撤銷/.test(panel), panel.slice(0, 260));
+    !/缺少|被拒絕|被 iOS 撤銷/.test(panel), panel.slice(0, 260));
   await ctx.close();
   ({ ctx, p } = await open(stub('granted', true)));
 
