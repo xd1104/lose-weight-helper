@@ -1,7 +1,7 @@
 "use strict";
 
 /* 版本號。改前端時跟 sw.js 的 cache 版本號一起 +1。 */
-var APP_VER="5.6";
+var APP_VER="5.7";
 /*
  * 減重助手 — 前端主程式
  * 資料層在 store.js（LocalStore / GitHubStore 自動切）、AI 在 ai.js。
@@ -871,7 +871,7 @@ function viewHistory(){
           ? "最近 7 天平均每天比 TDEE 少 "+kcal(gap7)+" 大卡"
           : "最近 7 天平均每天比 TDEE 多 "+kcal(-gap7)+" 大卡")+'</b>'+
         '<span>照這個步調，一週約 '+weekPace(gap7)+
-          '（理論值，實際會被水分與肝醣蓋過去，看兩週以上的體重趨勢比較準）</span>'+
+          '（理論值，看兩週以上的趨勢比較準）</span>'+
        '</div>';
   }
 
@@ -1160,7 +1160,7 @@ function deficitAdvice(p){
   }
   return '<p class="hint" style="margin-top:12px">缺口佔 TDEE 的 '+pct+'%，'+
     (pct<=20?'在一般建議的 20% 以內。':'略高於一般建議的 20%。')+
-    '每週減重是理論值，實際會被水分與肝醣蓋過去，看兩週以上的趨勢比較準。</p>';
+    '每週減重是理論值，看兩週以上的趨勢比較準。</p>';
 }
 
 /* ---------- 設定 ----------
@@ -1299,7 +1299,7 @@ function setBody(sec){
   var p=db.profile;
 
   if(sec==="body"){
-    return '<p class="desc" style="margin-top:0">用 Mifflin-St Jeor 公式算基礎代謝。體重在首頁「量體重」記錄時也會同步更新。</p>'+
+    return '<p class="desc" style="margin-top:0">體重在首頁「量體重」記錄時會同步更新。</p>'+
       '<div class="field"><label>性別</label><div class="chips">'+
         '<button class="chip '+(p.sex==="male"?"on":"")+'" data-set="sex" data-val="male">男</button>'+
         '<button class="chip '+(p.sex==="female"?"on":"")+'" data-set="sex" data-val="female">女</button>'+
@@ -1316,15 +1316,13 @@ function setBody(sec){
   }
 
   if(sec==="activity"){
-    return '<p class="desc" style="margin-top:0">BMR 乘上活動係數就是 TDEE（每日總消耗）。</p>'+
-      '<div class="field"><label>活動量</label><div class="chips">'+
+    return '<div class="field" style="margin-top:0"><label>活動量</label><div class="chips">'+
         ACTIVITIES.map(function(a){
           return '<button class="chip '+(Math.abs(num(p.activity)-a.v)<0.01?"on":"")+'" data-set="activity" data-val="'+a.v+'">'+
                  a.label+'</button>';
         }).join("")+
       '</div><div class="hint">'+esc(activityInfo(p).hint)+
-        '<br><b>這裡只算「不含運動」的日常活動。</b>健身房、跑步那些記在首頁的「運動」就好，'+
-        '兩邊都算會重複扣，目標會虛高。</div></div>'+
+        '<br><b>只算日常活動</b>，運動另外記，不然會重複扣。</div></div>'+
       '<div id="set-live">'+setLive(sec)+'</div>'+
       '<div class="field"><label>手動覆寫 TDEE（0 = 用上面算的）</label>'+
         '<input type="number" inputmode="numeric" step="1" data-num="tdee" value="'+p.tdee+'">'+
@@ -1369,12 +1367,11 @@ function setBody(sec){
 
   if(sec==="ai"){
     var key=getAiKey();
-    return '<p class="desc" style="margin-top:0">用你自己的 Anthropic API key，從這台裝置直接呼叫 Claude。'+
-        'key 只存在這支手機的瀏覽器裡，不會上傳、也不會進 GitHub。'+
-        '<br><b>同一台裝置上兩個人共用同一把 key</b>（key 綁裝置，不綁使用者）。</p>'+
+    return '<p class="desc" style="margin-top:0">key 只存在這支手機，不會上傳。'+
+        '<b>同一台裝置的兩個人共用同一把。</b></p>'+
       '<div class="field"><label>API key</label>'+
         '<input type="password" id="ai-key" placeholder="sk-ant-..." value="'+esc(key)+'" autocomplete="off">'+
-        '<div class="hint">到 console.anthropic.com → API keys 申請，並記得在 Billing 設每月上限。</div></div>'+
+        '<div class="hint">到 console.anthropic.com 申請，記得設每月上限。</div></div>'+
       '<div class="field"><label>模型</label><div class="chips">'+
         AI_MODELS.map(function(m){
           return '<button class="chip '+(p.model===m.id?"on":"")+'" data-set="model" data-val="'+esc(m.id)+'">'+
@@ -1388,8 +1385,8 @@ function setBody(sec){
 
   if(sec==="gh"){
     var tok=getToken();
-    return '<p class="desc" style="margin-top:0">手機版直接讀寫 GitHub 上的資料檔。沒有金鑰只能看，不能記錄。'+
-        '請用 fine-grained PAT，只授權 lose-weight-helper 這一個 repo，Contents 設為 Read and write。</p>'+
+    return '<p class="desc" style="margin-top:0">沒有金鑰只能看，不能記錄。'+
+        '用 fine-grained PAT，只授權 lose-weight-helper，Contents 設 <b>Read and write</b>。</p>'+
       '<div class="field"><label>Personal access token</label>'+
         '<input type="password" id="gh-key" placeholder="github_pat_..." value="'+esc(tok)+'" autocomplete="off"></div>'+
       '<button class="btn" data-act="save-gh">儲存金鑰</button>'+
@@ -1411,9 +1408,9 @@ function setBody(sec){
   }
 
   if(sec==="data"){
-    return '<p class="desc" style="margin-top:0">紀錄存成 markdown：<br>'+
-        '<code style="font-size:12px">data/users/'+esc(me.id)+'/days/YYYY-MM-DD.md</code><br>'+
-        esc(me.name)+' 的常吃清單目前 '+db.foods.length+' 筆。單筆要刪，到「記一筆 → 常吃」點右邊的 ✕。</p>'+
+    return '<p class="desc" style="margin-top:0">'+
+        esc(me.name)+' 的常吃清單目前 '+db.foods.length+' 筆。'+
+        '單筆要刪，到「記一筆 → 常吃」點右邊的 ✕。</p>'+
       (db.foods.length?'<button class="btn ghost" data-act="clear-foods">清空常吃清單</button>':'');
   }
   if(sec==="push"){
@@ -1425,8 +1422,7 @@ function setBody(sec){
     if(why && !myPush){
       /* 開不了就不要給一顆按了沒反應的按鈕，直接講為什麼 */
       return h+'<div class="set-alert amber"><b>現在還開不了</b><span>'+esc(why)+'</span></div>'+
-        '<p class="desc">通知是手機系統跳出來的那種，跟一般 app 一樣會出現在鎖定畫面。'+
-        '它由 GitHub 上的排程送出，所以<b>不用開著 app、電腦關機也照樣會響</b>。</p>';
+        '<p class="desc">通知會出現在鎖定畫面，<b>不用開著 app、電腦關機也照樣會響</b>。</p>';
     }
 
     h+='<div class="field"><label>提醒時間</label>'+
@@ -1445,10 +1441,8 @@ function setBody(sec){
         (pushBusy ? "處理中…" : (myPush ? "關閉每日提醒" : "打開每日提醒"))+'</button>';
 
     h+='<p class="desc">'+(myPush
-        ? '每天 <b>'+esc(t)+'</b> 會跳一則通知出來，不用開著 app。'
-        : '打開之後，手機會先問你要不要允許通知，按「允許」。')+
-       '<br>提醒是 GitHub 上的排程送的，<b>電腦關機也照樣會響</b>。'+
-       '不過排程有時候會誤點 <b>5～30 分鐘</b>，當提醒夠用、當鬧鐘不行。</p>';
+        ? '每天 <b>'+esc(t)+'</b> 跳通知，不用開著 app。可能誤點 5～30 分鐘。'
+        : '打開後手機會問你要不要允許通知，按「允許」。')+'</p>';
 
     /* 狀態一覽：通知沒跳的時候，一眼看得出卡在哪一關。
      * 「雲端有紀錄、這台裝置卻沒有訂閱」＝ iOS 把訂閱撤銷了（收到推播卻沒跳通知會觸發），
@@ -1484,8 +1478,7 @@ function setBody(sec){
         h+='<div class="set-alert amber"><b>目前是看「'+esc(owner.name)+'」有沒有量體重</b>'+
            '<span>動一下上面的時間或選項，就會改成看「'+esc(me.name)+'」的。</span></div>';
       }
-      h+='<p class="desc">設定只對<b>這台裝置</b>有效（一台裝置一組提醒）。'+
-         '換手機或重灌要再打開一次。</p>';
+      h+='<p class="desc">一台裝置一組提醒，換手機要再開一次。</p>';
     }
     return h;
   }
@@ -1495,9 +1488,8 @@ function setBody(sec){
         '<div class="r"><span>現在跑的版本</span><b class="num">v'+APP_VER+'</b></div>'+
       '</div>'+
       '<div id="ver-state">'+verStateHtml()+'</div>'+
-      '<p class="desc">這個號碼是<b>手機上實際跑起來的那一份</b>，不是雲端最新的那一份。'+
-      'PWA 的殼會存在手機裡，新版下載好之後要重新載入才會換過去——'+
-      '平常關掉重開就會是新的，想馬上換就按上面那顆。</p>';
+      '<p class="desc">這是<b>這支手機實際跑的版本</b>，不是雲端最新的。'+
+      '平常關掉重開就會換到新版。</p>';
   }
   return "";
 }
@@ -2033,7 +2025,7 @@ function noKeyBox(){
   return '<div class="card" style="margin:14px 0 0">'+
     '<h2>還沒設定 API key</h2>'+
     '<p class="desc" style="margin-bottom:0">AI 判讀需要你自己的 Anthropic API key。'+
-    '到「設定 → AI 熱量判讀」貼上就能用；在那之前可以先用「手動」或「常吃」記錄。</p>'+
+    '到「設定 → AI 熱量判讀」貼上就能用，在那之前可以用「手動」或「常吃」。</p>'+
     '<button class="btn" data-act2="go-settings">前往設定</button></div>';
 }
 
@@ -2548,8 +2540,8 @@ function openMergeSheet(){
   var names=items.map(function(i){ return i.name; });
   var guess=String(lastHint||"").trim().split(/[\s,，、。]/)[0] || "";
   var body='<form id="f-merge">'+
-    '<p class="desc" style="margin-top:0">把這 '+items.length+' 樣併成一筆 '+kcal(total)+
-      ' 大卡，今天頁就只會多一列。營養素會加總，裡面有什麼會寫在份量欄。</p>'+
+    '<p class="desc" style="margin-top:0">'+items.length+' 樣併成一筆 '+kcal(total)+
+      ' 大卡，營養素加總，明細寫在份量欄。</p>'+
     '<div class="field"><label>這一餐叫什麼</label>'+
       taHtml("mg-name", guess, "例如：火鍋、鹽水雞、家庭聚餐", { enter:"submit", required:true })+
       '<div class="hint">之後這個名字會進常吃清單，下次吃同一家一鍵沿用。</div></div>'+
@@ -3074,15 +3066,13 @@ function openKeysSheet(){
     body+='<div class="field" style="margin-top:0"><label>GitHub 金鑰（記錄用，必填）</label>'+
       '<input type="password" id="k-gh" placeholder="github_pat_..." value="'+esc(getToken())+'" autocomplete="off">'+
       '<div class="hint">GitHub → Settings → Developer settings → Fine-grained tokens，'+
-      '只授權 lose-weight-helper 這一個 repo，Contents 設為 <b>Read and write</b>。<br>'+
-      '沒有這把金鑰只能看，不能記錄。</div></div>';
+      '只授權 lose-weight-helper，Contents 設 <b>Read and write</b>。</div></div>';
   }
   body+='<div class="field"><label>Anthropic API key（AI 判讀用，選填）</label>'+
     '<input type="password" id="k-ai" placeholder="sk-ant-..." value="'+esc(getAiKey())+'" autocomplete="off">'+
-    '<div class="hint">到 console.anthropic.com → API keys 申請，記得在 Billing 設每月上限。<br>'+
-    '不填也能用，只是沒有 AI 判讀（手動輸入與常吃清單照常）。</div></div>'+
-    '<p class="desc" style="margin:14px 0 0">兩把金鑰都只存在這支手機的瀏覽器裡，'+
-    '不會上傳、也不會進 GitHub。換手機要重貼。</p>'+
+    '<div class="hint">到 console.anthropic.com 申請，記得設每月上限。'+
+    '不填也能用，只是沒有 AI 判讀。</div></div>'+
+    '<p class="desc" style="margin:14px 0 0">金鑰只存在這支手機，不會上傳。換手機要重貼。</p>'+
     '<button class="btn" data-keys="save">儲存</button>';
 
   openSheet("金鑰設定", body, { onDraw:function(root){
@@ -3171,7 +3161,7 @@ function openSetupSheet(){
           return '<button type="button" class="chip '+(Math.abs(p.activity-a.v)<0.01?"on":"")+'" data-s="activity" data-v="'+a.v+'">'+a.label+'</button>';
         }).join("")+'</div>'+
         '<div class="hint">'+esc((ACTIVITIES.filter(function(a){return Math.abs(p.activity-a.v)<0.01;})[0]||{}).hint||"")+
-          '<br><b>只算不含運動的日常活動</b>，運動另外記，不然會重複扣。</div></div>'+
+          '<br><b>只算日常活動</b>，運動另外記，不然會重複扣。</div></div>'+
       '<div class="field"><label>目標</label><div class="chips">'+
         GOALS.map(function(g){
           return '<button type="button" class="chip '+(p.goal===g.v?"on":"")+'" data-s="goal" data-v="'+g.v+'">'+g.label+'</button>';
