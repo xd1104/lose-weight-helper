@@ -1,5 +1,6 @@
 ## 食物
 
+- {"id":"xmsbxvrp17zif","name":"麻吉燒（花生口味）","kcal":60,"p":1,"c":10,"f":2,"portion":"1顆，約28g（西北麻糬燒市售規格：一包 200g 裝 7-8 顆）","star":true,"n":1}
 - {"id":"xms08zonowf7c","name":"白飯","kcal":130,"p":2,"c":29,"portion":"小碗約0.7碗（約100克飯量，被鴨肉覆蓋）","n":6}
 - {"id":"xms474i6245tc","name":"水煮蛋","kcal":140,"p":13,"c":1,"f":10,"portion":"兩顆，約每顆50克","n":3}
 - {"id":"xms1i7sgy4bi2","name":"叉燒肉","kcal":180,"p":15,"c":8,"f":10,"portion":"約70克","n":2}
@@ -16,6 +17,7 @@
 - {"id":"xms1ii7ebg7jh","name":"上肩牛肉片","kcal":220,"p":17,"f":16,"portion":"一份火鍋肉片，約100克","n":1}
 - {"id":"xms08zonodsk7","name":"叉燒肉（去皮）","kcal":150,"p":18,"c":6,"f":6,"portion":"約3-4片，共80克","n":1}
 - {"id":"xms4rsmicfv11","name":"大腸（肥腸）","kcal":150,"p":4,"c":1,"f":14,"portion":"兩小塊，約40克","n":1}
+- {"id":"xmscptz9w18cz","name":"大腸頭","kcal":110,"p":6,"f":9,"portion":"約1/4手掌大小（約40g）","n":1}
 - {"id":"xmsbxvrp7ugy6","name":"手工蛋餃","kcal":160,"p":8,"c":6,"f":12,"portion":"2個","n":1}
 - {"id":"xmsbxvrpbc492","name":"火鍋湯底（奶香湯＋牛髓湯，飲用部分）","kcal":150,"p":5,"c":5,"f":12,"portion":"約1碗，200ml","n":1}
 - {"id":"xms1ii7edhh0y","name":"冬瓜檸檬冰沙","kcal":130,"c":33,"portion":"半杯約300ml（原份量700ml的一半）","n":1}
@@ -35,6 +37,7 @@
 - {"id":"xms3cawqff79y","name":"低脂起司片","kcal":50,"p":5,"c":1,"f":3,"portion":"1片（約20克）","n":1}
 - {"id":"xmsam86tbb4hl","name":"冷凍地瓜","kcal":100,"p":1,"c":24,"portion":"約半條，重量約100公克","n":1}
 - {"id":"xmsbxvrp31rpu","name":"秀珍菇與木耳","kcal":40,"p":2,"c":6,"f":1,"portion":"一小份，約80g","n":1}
+- {"id":"xmscptz9xp85o","name":"肝連肉","kcal":80,"p":8,"f":5,"portion":"約1/4手掌大小（約40g）","n":1}
 - {"id":"xms5q5x68zxgt","name":"芒果","kcal":150,"p":2,"c":38,"f":1,"portion":"約兩拳頭大小，切塊約250克","n":1}
 - {"id":"xms4rsmihmftj","name":"豆包（一口）","kcal":40,"p":3,"c":1,"f":3,"portion":"約20克","n":1}
 - {"id":"xms08zonpdvn9","name":"油雞腿肉（去皮）","kcal":140,"p":20,"c":3,"f":6,"portion":"約1隻腿肉份量，80克","n":1}
@@ -58,7 +61,6 @@
 - {"id":"xms96wuclgvzi","name":"荷包蛋","kcal":90,"p":6,"c":1,"f":7,"portion":"1顆，煎於蔥油餅上","n":1}
 - {"id":"xms3ccpsd746t","name":"荷包蛋（一顆）","kcal":90,"p":6,"c":1,"f":7,"portion":"一顆蛋，油煎","n":1}
 - {"id":"xms1ii7eck6tj","name":"魚肉","kcal":60,"p":11,"f":2,"portion":"三小塊，約60克","n":1}
-- {"id":"xmsbxvrp17zif","name":"麻吉燒（花生口味）","kcal":60,"p":1,"c":10,"f":2,"portion":"1顆，約28g（西北麻糬燒市售規格：一包 200g 裝 7-8 顆）","star":true,"n":1}
 - {"id":"xms1ii7ecuf5d","name":"無糖麥茶","kcal":0,"portion":"半杯約200ml","n":1}
 - {"id":"xms7flaa517xo","name":"蜂蜜麵包","kcal":100,"p":2,"c":15,"f":2,"n":1}
 - {"id":"xmsam76qekzpi","name":"壽司醋飯","kcal":35,"p":1,"c":8,"portion":"藏於海苔下方，約半貫壽司飯量，約20g","n":1}
@@ -92,3 +94,5 @@
 - {"id":"xms3ccpsc5uj0","name":"雞絲","kcal":90,"p":14,"f":4,"portion":"約50克手撕雞肉","n":1}
 - {"id":"xms1ii7e9qnvr","name":"藥膳鍋湯底","kcal":80,"p":2,"c":6,"f":5,"portion":"約400ml湯，含中藥材與少量油脂","n":1}
 - {"id":"xms4rsmibyrbm","name":"糯米腸","kcal":120,"p":2,"c":22,"f":3,"portion":"一顆，約60克","n":1}
+- {"id":"xmscptz9uuh2b","name":"麵線","kcal":220,"p":5,"c":45,"f":2,"portion":"約1碗份量，紙杯裝約510cc湯麵線中的麵線部分（約100g乾麵線煮熟）","n":1}
+- {"id":"xmscptz9zrslr","name":"麵線糊湯汁（含芡粉、醬油調味）","kcal":150,"p":2,"c":25,"f":4,"portion":"約510cc湯底，含勾芡澱粉與油脂","n":1}
