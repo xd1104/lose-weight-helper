@@ -6,8 +6,8 @@
  * 鐵律：skipWaiting + activate 清舊快取 + clients.claim，已安裝的 PWA 才吃得到新版
  * 改前端記得把 cache 版本號 +1
  */
-const SHELL_CACHE = 'lwh-shell-v34';
-const DATA_CACHE = 'lwh-data-v34';
+const SHELL_CACHE = 'lwh-shell-v35';
+const DATA_CACHE = 'lwh-data-v35';
 const KEEP = [SHELL_CACHE, DATA_CACHE];
 
 // 相對於 SW scope 解析（localhost 根目錄或 Pages 子路徑 /lose-weight-helper/ 都對）
@@ -58,6 +58,46 @@ async function networkFirst(request, cacheName) {
     return cached || offlineJson();
   }
 }
+
+/* ---- 每日提醒 ----
+ * 推播由 GitHub Actions 排程送出（.github/workflows/daily-reminder.yml）。
+ * 刻意送「沒有內容的推播」：帶內容的話要做 ECDH + AES-GCM 加密，
+ * 送出端會複雜一大截；文字反正是固定的，寫在這裡就好。
+ * ⚠️ userVisibleOnly:true 是 iOS 的硬性要求 —— 收到 push 一定要跳一則通知出來，
+ * 靜靜吃掉的話瀏覽器會直接把訂閱撤銷。所以這裡不做任何「要不要顯示」的判斷，
+ * 「今天已經量過就不要吵」是在送出端決定的（Actions 會先看當天的紀錄）。 */
+self.addEventListener('push', (e) => {
+  let title = '早安 ☀️ 量個體重吧';
+  let body = '30 秒的事。順便把昨天沒記的補一補。';
+  if (e.data) {
+    try {
+      const d = e.data.json();
+      if (d && d.title) title = d.title;
+      if (d && d.body) body = d.body;
+    } catch { /* 沒內容或不是 JSON：用預設文字 */ }
+  }
+  e.waitUntil(self.registration.showNotification(title, {
+    body,
+    icon: BASE + 'icons/icon-192.png',
+    badge: BASE + 'icons/icon-192.png',
+    tag: 'lwh-daily',      // 同一個 tag：沒點掉的舊提醒會被新的取代，不會疊一整排
+    renotify: true,
+    data: { url: BASE },
+  }));
+});
+
+/* 點通知：已經開著就切過去，沒開才開新的（不然會開出第二個實例） */
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  e.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      for (const c of list) {
+        if (c.url.indexOf(BASE) >= 0 && 'focus' in c) return c.focus();
+      }
+      return self.clients.openWindow ? self.clients.openWindow(BASE) : undefined;
+    })
+  );
+});
 
 self.addEventListener('fetch', (e) => {
   const req = e.request;

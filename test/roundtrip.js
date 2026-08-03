@@ -353,6 +353,75 @@ t('store.js 與 server.js 的區段標題／欄位順序一致', () => {
   }
 });
 
+console.log('每日提醒（push.md）');
+
+const SUB = { id: 'p1', u: 'mabc-benson', time: '07:30', tz: -480,
+  endpoint: 'https://web.push.apple.com/AAA-bbb_ccc', skipIfWeighed: true };
+
+t('提醒 round-trip：欄位原樣回來', () => {
+  const back = S.parsePushSubs(S.serializePushSubs([SUB]));
+  assert.deepStrictEqual(back, [SUB]);
+});
+
+t('sentAt 有寫才留（沒送過的不要多一個空欄位）', () => {
+  assert.ok(!/sentAt/.test(S.serializePushSubs([SUB])));
+  const withSent = Object.assign({}, SUB, { sentAt: '2026-08-03' });
+  assert.strictEqual(S.parsePushSubs(S.serializePushSubs([withSent]))[0].sentAt, '2026-08-03');
+});
+
+t('同一台裝置只留一筆 ← 重新訂閱會拿到同樣的 endpoint，不去重會每天收到兩則', () => {
+  const dup = [SUB, Object.assign({}, SUB, { id: 'p2', time: '09:00' })];
+  assert.strictEqual(S.normalizePushSubs(dup).length, 1);
+});
+
+t('缺 endpoint／缺使用者的整筆丟掉（推不到的訂閱留著只會每天白送）', () => {
+  assert.strictEqual(S.normalizePushSubs([
+    Object.assign({}, SUB, { endpoint: '' }),
+    Object.assign({}, SUB, { u: '', endpoint: 'https://x/1' }),
+  ]).length, 0);
+});
+
+t('壞掉的時間退回 07:30，不是拿去算出一個半夜的提醒', () => {
+  assert.strictEqual(S.cleanPushSub(Object.assign({}, SUB, { time: '25:99' })).time, '07:30');
+  assert.strictEqual(S.cleanPushSub(Object.assign({}, SUB, { time: '7:5' })).time, '07:30');
+});
+
+t('skipIfWeighed 預設是開的（沒寫 ＝ 開）', () => {
+  assert.strictEqual(S.cleanPushSub({ id: 'a', u: 'b', endpoint: 'https://x/1' }).skipIfWeighed, true);
+  assert.strictEqual(S.cleanPushSub(Object.assign({}, SUB, { skipIfWeighed: false })).skipIfWeighed, false);
+});
+
+t('tz 是數字：字串「-480」也要收成 -480 ← 存成字串會讓送出端整個時區算錯', () => {
+  assert.strictEqual(S.cleanPushSub(Object.assign({}, SUB, { tz: '-480' })).tz, -480);
+});
+
+t('push.md 的 parser 三邊逐字相同（store.js / server.js / tools/send-reminders.js）', () => {
+  /* 這個檔案有三份 parser：手機寫、電腦寫、GitHub Actions 讀。
+     任何一邊分岔的症狀都是「通知就是不跳」，而且完全沒有錯誤訊息可看。 */
+  const src = fs.readFileSync(path.join(__dirname, '..', 'public', 'store.js'), 'utf8');
+  const sandbox = {
+    location: { hostname: 'localhost', search: '' },
+    localStorage: { getItem: () => '', setItem: () => {}, removeItem: () => {} },
+    fetch: () => Promise.reject(new Error('no network in test')),
+    TextEncoder, TextDecoder, btoa: () => '', atob: () => '',
+  };
+  const front = new Function(...Object.keys(sandbox),
+    src + '\n;return {serializePushSubs, parsePushSubs};')(...Object.values(sandbox));
+
+  const senderSrc = fs.readFileSync(path.join(__dirname, '..', 'tools', 'send-reminders.js'), 'utf8');
+  // 送出端是個會自己跑起來的腳本，只把 parser 那幾個函式挖出來當函式庫用
+  const cut = senderSrc.slice(senderSrc.indexOf('function num('), senderSrc.indexOf('/* ---- 使用者當地時間'));
+  const sender = new Function(cut + '\n;return {serializePushSubs, parsePushSubs};')();
+
+  const list = [SUB, Object.assign({}, SUB, { id: 'p2', u: 'x-gf', time: '09:00',
+    endpoint: 'https://web.push.apple.com/ZZZ', skipIfWeighed: false, sentAt: '2026-08-03' })];
+  const a = S.serializePushSubs(list);
+  assert.strictEqual(front.serializePushSubs(list), a, 'store.js 與 server.js 不一致');
+  assert.strictEqual(sender.serializePushSubs(list), a, 'tools/send-reminders.js 與 server.js 不一致');
+  assert.deepStrictEqual(front.parsePushSubs(a), S.parsePushSubs(a), 'store.js 的 parse 不一致');
+  assert.deepStrictEqual(sender.parsePushSubs(a), S.parsePushSubs(a), '送出端的 parse 不一致');
+});
+
 t('前端 store.js 的 serializeDay 產出與 server.js 逐字相同', () => {
   // 在 Node 裡把 store.js 當純函式庫載入（它只有在最後幾行碰 location/localStorage，
   // 所以先塞最小的 stub 進去）

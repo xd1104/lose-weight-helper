@@ -23,6 +23,7 @@ const ROOT = __dirname;
 const PUBLIC_DIR = path.join(ROOT, 'public');
 const DATA_DIR = path.join(ROOT, 'data');
 const USERS_FILE = path.join(DATA_DIR, 'users.md');
+const PUSH_FILE = path.join(DATA_DIR, 'push.md');
 const USERS_DIR = path.join(DATA_DIR, 'users');
 
 const PORT = process.env.PORT || 3619;
@@ -269,6 +270,57 @@ function parseUsers(text) {
 async function readUsers() {
   try { return parseUsers(await fsp.readFile(USERS_FILE, 'utf8')); }
   catch { return []; } // 還沒有任何使用者：前端會顯示「新增第一位使用者」
+}
+
+/* ---- 每日提醒的推播訂閱（mirror：public/store.js 有同一份，改要一起改）----
+ * 一台裝置一行，全部放同一個檔 data/push.md：送推播的是 GitHub Actions，
+ * 它要一次看完所有裝置，一個檔讀一次最省事。
+ * endpoint ＝ 推播服務給的「這台裝置的信箱」；repo 是公開的所以看得到，
+ * 但推不動——推播服務會驗 VAPID 簽章，私鑰只在 Actions secret 裡。
+ * sentAt ＝ 最後送出的那一天（使用者當地日期），由 Actions 寫回，一天只吵一次。 */
+function cleanPushSub(s) {
+  const o = { id: String((s && s.id) || '') };
+  o.u = String((s && s.u) || '');
+  o.time = /^([01]\d|2[0-3]):[0-5]\d$/.test(s && s.time) ? s.time : '07:30';
+  o.tz = Math.round(num(s && s.tz));
+  o.endpoint = String((s && s.endpoint) || '');
+  o.skipIfWeighed = (s && s.skipIfWeighed) !== false;
+  if (s && s.sentAt) o.sentAt = String(s.sentAt);
+  return o;
+}
+function normalizePushSubs(list) {
+  const out = [], seen = {};
+  for (const s of Array.isArray(list) ? list : []) {
+    const o = cleanPushSub(s);
+    if (!o.id || !o.u || !o.endpoint) continue;
+    if (seen[o.endpoint]) continue;   // 同一台裝置只留一筆
+    seen[o.endpoint] = 1;
+    out.push(o);
+  }
+  return out;
+}
+function serializePushSubs(list) {
+  const L = ['## 提醒', ''];
+  for (const s of normalizePushSubs(list)) {
+    const o = { id: s.id, u: s.u, time: s.time, tz: s.tz, endpoint: s.endpoint, skipIfWeighed: s.skipIfWeighed };
+    if (s.sentAt) o.sentAt = s.sentAt;
+    L.push('- ' + JSON.stringify(o));
+  }
+  L.push('');
+  return L.join('\n');
+}
+function parsePushSubs(text) {
+  const out = [];
+  for (const line of String(text).replace(/\r\n/g, '\n').split('\n')) {
+    const im = /^-\s+(\{.*\})\s*$/.exec(line);
+    if (!im) continue;
+    try { out.push(JSON.parse(im[1])); } catch { /* 壞列跳過 */ }
+  }
+  return normalizePushSubs(out);
+}
+async function readPushSubs() {
+  try { return parsePushSubs(await fsp.readFile(PUSH_FILE, 'utf8')); }
+  catch { return []; }   // 還沒有人開提醒
 }
 
 /* ---- 飲食 / 運動 / 常吃 ---- */
@@ -683,6 +735,25 @@ async function handleApi(req, res, url) {
     return sendJson(res, 200, { ok: true, day: await readDay(id, date) });
   }
 
+  // GET /api/push -> 所有裝置的每日提醒訂閱（不分使用者：送推播的 Actions 要看整份）
+  if (p === '/api/push' && method === 'GET') {
+    return sendJson(res, 200, { subs: await readPushSubs() });
+  }
+
+  // POST /api/push  { subs }（整份覆蓋；呼叫端要先讀最新的再改，別拿舊的蓋掉別台裝置）
+  if (p === '/api/push' && method === 'POST') {
+    const body = await readJson(req);
+    const subs = normalizePushSubs(Array.isArray(body.subs) ? body.subs : []);
+    if (subs.length) {
+      await atomicWrite(PUSH_FILE, serializePushSubs(subs), 'utf8');
+    } else {
+      // 全部關掉就把檔案刪了，不要留一個空殼讓 Actions 每小時白跑
+      try { await fsp.unlink(PUSH_FILE); } catch { /* 本來就不存在 */ }
+    }
+    scheduleSync();
+    return sendJson(res, 200, { ok: true, subs });
+  }
+
   return sendJson(res, 404, { error: 'unknown endpoint' });
 }
 
@@ -760,6 +831,7 @@ if (require.main === module) {
 module.exports = {
   serializeDay, parseDay, serializeProfile, parseProfile,
   serializeFoods, parseFoods, serializeUsers, parseUsers,
+  serializePushSubs, parsePushSubs, cleanPushSub, normalizePushSubs,
   defaultProfile, cleanEntry, cleanCoach, cleanUser, normalizeUsers, safeDate, safeName, slugify,
   cleanBirth, ageFromBirth,
 };

@@ -1,7 +1,7 @@
 "use strict";
 
 /* 版本號。改前端時跟 sw.js 的 cache 版本號一起 +1。 */
-var APP_VER="5.0";
+var APP_VER="5.1";
 /*
  * 減重助手 — 前端主程式
  * 資料層在 store.js（LocalStore / GitHubStore 自動切）、AI 在 ai.js。
@@ -1209,6 +1209,8 @@ function setSections(){
     sum:users.length+" 人 · 資料各自獨立" });
   list.push({ g:"其他", id:"data", icon:"\uD83D\uDDC2\uFE0F", label:"資料與常吃清單",
     sum:"常吃 "+db.foods.length+" 筆" });
+  list.push({ g:"其他", id:"push", icon:"\uD83D\uDD14", label:"每日提醒",
+    sum: pushSummary() });
   list.push({ g:"其他", id:"ver", icon:"\u2139\uFE0F", label:"版本",
     sum: updateReady ? "有新版本 · 點一下更新" : "v"+APP_VER,
     warn: updateReady ? "amber" : "" });
@@ -1259,7 +1261,16 @@ function viewSettings(){
 /* ---- 設定的分頁 sheet ---- */
 var SET_TITLES={ body:"身體資料", activity:"活動量與 TDEE", goal:"每日目標", macros:"營養目標",
                  ai:"AI 熱量判讀", gh:"GitHub 同步", users:"使用者", data:"資料與常吃清單",
-                 ver:"版本" };
+                 push:"每日提醒", ver:"版本" };
+
+/* 索引那一列的摘要。這一列的重點是「這台裝置到底會不會響」，
+ * 所以不支援／要先加主畫面都直接寫在索引上，不用點進去才知道。 */
+function pushSummary(){
+  if(!pushSupported()) return "這個瀏覽器不支援";
+  if(isIOS() && !isStandalone()) return "要先加入主畫面";
+  if(myPush) return "每天 "+myPush.time+" 提醒";
+  return "關閉中";
+}
 
 /* 會被數字欄位影響的計算結果單獨包一塊：改數字時只換這一塊，
  * 不整份重畫——重畫會把正在編輯的 input 換掉，手機上鍵盤會跳掉。 */
@@ -1404,6 +1415,44 @@ function setBody(sec){
         esc(me.name)+' 的常吃清單目前 '+db.foods.length+' 筆。單筆要刪，到「記一筆 → 常吃」點右邊的 ✕。</p>'+
       (db.foods.length?'<button class="btn ghost" data-act="clear-foods">清空常吃清單</button>':'');
   }
+  if(sec==="push"){
+    var why=pushBlockReason();
+    var t=(myPush&&myPush.time)||pendPushTime;
+    var skip=myPush ? myPush.skipIfWeighed!==false : pendPushSkip;
+    var h=(pushMsg?'<div class="set-alert amber"><b>'+esc(pushMsg)+'</b></div>':'');
+
+    if(why && !myPush){
+      /* 開不了就不要給一顆按了沒反應的按鈕，直接講為什麼 */
+      return h+'<div class="set-alert amber"><b>現在還開不了</b><span>'+esc(why)+'</span></div>'+
+        '<p class="desc">通知是手機系統跳出來的那種，跟一般 app 一樣會出現在鎖定畫面。'+
+        '它由 GitHub 上的排程送出，所以<b>不用開著 app、電腦關機也照樣會響</b>。</p>';
+    }
+
+    h+='<div class="field"><label>提醒時間</label>'+
+       '<div class="chips">'+
+         PUSH_TIMES.map(function(x){
+           return '<button type="button" class="chip'+(x===t?" on":"")+'" data-ptime="'+x+'">'+x+'</button>';
+         }).join("")+
+       '</div></div>';
+
+    h+='<button type="button" class="opt-row'+(skip?" on":"")+'" data-pskip="1">'+
+        '<b>已經量過就不要吵我</b>'+
+        '<span>當天量過體重的話今天就不提醒。</span></button>';
+
+    h+='<button class="btn'+(myPush?" ghost":"")+'" type="button" data-push="'+(myPush?"off":"on")+'"'+
+        (pushBusy?" disabled":"")+'>'+
+        (pushBusy ? "處理中…" : (myPush ? "關閉每日提醒" : "打開每日提醒"))+'</button>';
+
+    h+='<p class="desc">'+(myPush
+        ? '每天 <b>'+esc(t)+'</b> 會跳一則通知出來，不用開著 app。'
+        : '打開之後，手機會先問你要不要允許通知，按「允許」。')+
+       '<br>提醒是 GitHub 上的排程送的，<b>電腦關機也照樣會響</b>。'+
+       '不過排程有時候會誤點 <b>5～30 分鐘</b>，當提醒夠用、當鬧鐘不行。</p>';
+
+    if(myPush) h+='<p class="desc">設定只對<b>這台裝置</b>有效。換手機或重灌要再打開一次。</p>';
+    return h;
+  }
+
   if(sec==="ver"){
     return '<div class="tdee-box" style="margin-top:0">'+
         '<div class="r"><span>現在跑的版本</span><b class="num">v'+APP_VER+'</b></div>'+
@@ -1415,6 +1464,9 @@ function setBody(sec){
   }
   return "";
 }
+
+/* 半小時一格。排程是每 30 分鐘跑一次，給到分鐘級只會讓他覺得「怎麼沒準時」。 */
+var PUSH_TIMES=["06:00","06:30","07:00","07:30","08:00","08:30","09:00","10:00"];
 
 /* 版本區塊的狀態：有新版就給「立即更新」，沒有就給「檢查一下」 */
 function verStateHtml(){
@@ -1463,6 +1515,35 @@ function wireSetSheet(root, sec, redraw){
   };
   var vGo=root.querySelector('[data-ver="reload"]');
   if(vGo) vGo.onclick=function(){ location.reload(); };
+
+  /* 時間 chip：已經開著的話直接改設定存回去，沒開就只是先選好 */
+  root.querySelectorAll("[data-ptime]").forEach(function(b){
+    b.onclick=function(){
+      var t=b.getAttribute("data-ptime");
+      if(!myPush){ pendPushTime=t; redraw(false); return; }
+      var next=Object.assign({}, myPush, {time:t});
+      setMyPush(next, myPush.endpoint).then(function(){
+        toast("改成每天 "+t); redraw(false); render();
+      }).catch(function(e){
+        pushMsg=e.userMessage||"改時間失敗"; redraw(false);
+      });
+    };
+  });
+  var pSkip=root.querySelector("[data-pskip]");
+  if(pSkip) pSkip.onclick=function(){
+    if(!myPush){ pendPushSkip=!pendPushSkip; redraw(false); return; }
+    var next=Object.assign({}, myPush, {skipIfWeighed:myPush.skipIfWeighed===false});
+    setMyPush(next, myPush.endpoint).then(function(){ redraw(false); }).catch(function(e){
+      pushMsg=e.userMessage||"儲存失敗"; redraw(false);
+    });
+  };
+  var pBtn=root.querySelector("[data-push]");
+  if(pBtn) pBtn.onclick=function(){
+    var again=function(){ redraw(false); render(); };
+    if(pBtn.getAttribute("data-push")==="off"){ disablePush(again); return; }
+    /* requestPermission 要在手勢裡直接呼叫，所以這裡不能先 await 任何東西 */
+    enablePush(pendPushTime, pendPushSkip, again);
+  };
 
   /* 重畫前先把已經敲進去、還沒 change 的數字收起來，不然會被吃掉 */
   function readNums(){
@@ -1797,6 +1878,10 @@ function loadUserData(){
     (days||[]).forEach(function(d){ db.days[d.date]=d; });
     histDates=Object.keys(db.days).filter(function(k){ return dayHasData(db.days[k]); });
     booted=true;
+    /* 提醒狀態是背景載入：讀失敗（沒網路、還沒有 push.md）也不能擋住整個 app，
+     * 所以刻意不接進上面那條鏈。讀完再重畫一次設定頁的摘要。 */
+    loadPushState().then(function(){ if(view==="settings" && !picking) render(); })
+      .catch(function(){});
   }).catch(function(e){
     booted=true;
     toast(e.userMessage||"載入失敗，先用預設值", true);
@@ -3168,6 +3253,140 @@ boot();
  * 要重新載入才會換過去。使用者完全看不到這件事，只會覺得「怎麼沒有新功能」。
  * 所以：偵測到新版就記起來（updateReady），設定裡給一個「立即更新」。
  * ⚠️ 版本號跟 sw.js 的 cache 版本號要一起 +1。 */
+/* ============ 每日提醒（Web Push）============
+ * 「app 沒開的時候也要跳提醒」只有推播做得到，而推播一定要有一台機器去送。
+ * 這個 app 兩台都不合格：Pages 是靜態的、家裡的 server.js 外面連不到。
+ * 所以送的那一端是 GitHub Actions 排程（.github/workflows/daily-reminder.yml）。
+ *
+ * 公鑰放在程式碼裡是正常的（它本來就要給瀏覽器）；私鑰只在 Actions secret。
+ * 換金鑰的話所有裝置都要重新訂閱一次——舊訂閱是綁在舊公鑰上的，換了就推不動。 */
+var VAPID_PUBLIC="BBlsPY61wGRzCZKpmz2nrnWGWlXyRjxIF0H1l5b2G9TjaV5JheSfRxG-Q8reWflHgPp7YrFgB0x1h2yQo8jQ74U";
+
+var pushSubs=null;      /* 整份訂閱清單（含別台裝置、女友的）；null ＝ 還沒讀過 */
+var myPush=null;        /* 這台裝置這位使用者的那一筆；null ＝ 沒開 */
+var pushBusy=false;
+var pushMsg="";         /* 設定頁要顯示的一次性訊息 */
+/* 還沒打開之前選的時間／選項先放這裡：訂閱成功才會寫進 push.md。
+ * 不然「先選 8:00 再按打開」會用到預設的 7:30。 */
+var pendPushTime="07:30";
+var pendPushSkip=true;
+
+function pushSupported(){
+  return typeof Notification!=="undefined" && "serviceWorker" in navigator && "PushManager" in window;
+}
+/* iOS 的硬規則：只有「加入主畫面」的 PWA 收得到推播，Safari 分頁一律不行。
+ * 而且分頁裡連 Notification.requestPermission 都不會給——先擋下來講清楚，
+ * 不然他會按了沒反應，以為是壞的。 */
+function isIOS(){
+  return /iP(hone|ad|od)/.test(navigator.userAgent)
+    || (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1);
+}
+function isStandalone(){
+  return window.navigator.standalone===true
+    || (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
+}
+function pushBlockReason(){
+  if(!pushSupported()) return "這個瀏覽器不支援推播通知。";
+  if(isIOS() && !isStandalone())
+    return "iPhone 只有「加入主畫面」的版本收得到通知。請先用 Safari 的分享鍵 → 加入主畫面，再從主畫面打開來設定。";
+  if(Notification.permission==="denied")
+    return "通知權限之前被拒絕過，瀏覽器不會再問第二次。要到 iPhone 的「設定 → 通知 → 減重助手」手動打開。";
+  return "";
+}
+
+function b64urlToU8(s){
+  var pad="=".repeat((4-s.length%4)%4);
+  var raw=atob((s+pad).replace(/-/g,"+").replace(/_/g,"/"));
+  var out=new Uint8Array(raw.length);
+  for(var i=0;i<raw.length;i++) out[i]=raw.charCodeAt(i);
+  return out;
+}
+
+/* 讀整份訂閱，並認出「這台裝置 × 這位使用者」那一筆。
+ * 認的是 endpoint（推播服務給的裝置位址），不是裝置 id——
+ * 我們沒有可靠的裝置 id，但 endpoint 本來就唯一。 */
+function loadPushState(){
+  if(!pushSupported()) return Promise.resolve();
+  return Promise.all([
+    STORE.loadPush().catch(function(){ return []; }),
+    navigator.serviceWorker.ready.then(function(reg){ return reg.pushManager.getSubscription(); })
+      .catch(function(){ return null; })
+  ]).then(function(r){
+    pushSubs=r[0]||[];
+    var ep=r[1]?r[1].endpoint:"";
+    myPush=ep ? (pushSubs.filter(function(x){ return x.endpoint===ep && x.u===(me&&me.id); })[0]||null) : null;
+    if(myPush){ pendPushTime=myPush.time; pendPushSkip=myPush.skipIfWeighed!==false; }
+  });
+}
+
+/* 整份覆蓋前一定要先重讀：別台裝置與女友的提醒都在同一個檔，
+ * 拿記憶體裡的舊清單去寫會把別人的提醒無聲關掉。 */
+function setMyPush(sub, endpoint){
+  return STORE.loadPush().catch(function(){ return pushSubs||[]; }).then(function(cur){
+    var rest=(cur||[]).filter(function(x){
+      return !(x.endpoint===endpoint && x.u===(me&&me.id));
+    });
+    var next=sub ? rest.concat([sub]) : rest;
+    return STORE.savePush(next).then(function(){
+      pushSubs=next;
+      myPush=sub;
+    });
+  });
+}
+
+function enablePush(time, skipIfWeighed, done){
+  var why=pushBlockReason();
+  if(why){ pushMsg=why; done(); return; }
+  /* ⚠️ requestPermission 必須在使用者手勢裡「直接」呼叫。
+   * 中間插一個 await（例如先去讀 push.md）iOS 就會當成不是手勢觸發、直接拒絕。 */
+  var ask;
+  try{ ask=Notification.requestPermission(); }catch(e){ ask=null; }
+  if(!ask || !ask.then){ pushMsg="這個瀏覽器不支援推播通知。"; done(); return; }
+
+  pushBusy=true; done();
+  ask.then(function(perm){
+    if(perm!=="granted") throw uiErr("你剛才選了不允許通知。要改的話到 iPhone 的「設定 → 通知 → 減重助手」。");
+    return navigator.serviceWorker.ready;
+  }).then(function(reg){
+    return reg.pushManager.subscribe({
+      userVisibleOnly:true,                       /* iOS 強制：收到就一定要跳通知 */
+      applicationServerKey:b64urlToU8(VAPID_PUBLIC)
+    });
+  }).then(function(sub){
+    return setMyPush({
+      id:uid(), u:me.id, time:time,
+      tz:new Date().getTimezoneOffset(),          /* 台灣 -480；送的那端靠它換回 UTC */
+      endpoint:sub.endpoint, skipIfWeighed:!!skipIfWeighed
+    }, sub.endpoint);
+  }).then(function(){
+    pushMsg=""; toast("提醒開好了，明天 "+time+" 見");
+  }).catch(function(e){
+    pushMsg=e.userMessage||"提醒設定失敗，等一下再試一次。";
+  }).then(function(){
+    pushBusy=false; done();
+  });
+}
+
+function disablePush(done){
+  pushBusy=true; done();
+  navigator.serviceWorker.ready.then(function(reg){
+    return reg.pushManager.getSubscription();
+  }).then(function(sub){
+    var ep=sub?sub.endpoint:(myPush&&myPush.endpoint)||"";
+    /* 先退訂再清檔：反過來的話中間失敗會留下一筆推得動、但 app 以為關掉的訂閱 */
+    return (sub?sub.unsubscribe().catch(function(){ return null; }):Promise.resolve())
+      .then(function(){ return setMyPush(null, ep); });
+  }).then(function(){
+    pushMsg=""; toast("提醒關掉了");
+  }).catch(function(e){
+    pushMsg=e.userMessage||"關閉失敗，等一下再試一次。";
+  }).then(function(){
+    pushBusy=false; done();
+  });
+}
+
+function uiErr(m){ var e=new Error(m); e.userMessage=m; return e; }
+
 var swReg=null;
 var updateReady=false;
 var verMsg="";                 /* 「檢查更新」的結果訊息，畫完就清掉 */

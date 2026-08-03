@@ -240,6 +240,57 @@
   - 每一項一顆 `.ai-last`「上次記 X 大卡（這次多 Y）· 沿用」。沿用後變成 `.ai-last.done`「已沿用」。
 - `useLastFood(idx)` 會**把名稱也對齊成清單裡的寫法**，之後的比對就是完全命中，常吃清單也不會愈長愈亂。`confidence` 設 `high`（這已經不是估的了）。`it.reused` 是畫面用的暫時旗標，`cleanEntry` 不會寫進檔案。
 - **刻意不自動套用**：他今天可能真的加飯，AI 這次的估算才對。自動蓋掉會靜靜地記錯，一顆按鈕的成本低得多。
+## 每日提醒＝Web Push，送出端是 GitHub Actions（v5.1）
+「app 沒開的時候也要跳提醒」只有推播做得到，而**推播一定要有一台機器主動送**。
+這個 app 兩台都不合格：Pages 是靜態的不會主動做事，`server.js` 外面連不到、電腦關機就沒了。
+所以送的那一端是 **GitHub Actions 排程**（`.github/workflows/daily-reminder.yml`
+→ `tools/send-reminders.js`）。repo 是公開的 ⇒ Actions 分鐘數免費無上限。
+
+### 設定與金鑰（換金鑰＝所有裝置都要重新訂閱）
+- VAPID 公鑰寫在 `public/app.js` 的 `VAPID_PUBLIC`（本來就要給瀏覽器，不是祕密）。
+- 私鑰在 repo 的 **Actions secret `VAPID_PRIVATE`**，另有 variables `VAPID_PUBLIC`／`VAPID_SUBJECT`。
+- **公私鑰是一對的**：訂閱是綁在當時那把公鑰上，換了金鑰舊訂閱一律推不動，
+  而症狀是「通知就是不跳、沒有任何錯誤」。真要換就得請所有裝置重開一次提醒。
+
+### `data/push.md`：一台裝置一行，三份 parser
+- 欄位：`{id,u,time,tz,endpoint,skipIfWeighed}`＋送出後才有的 `sentAt`。
+- **`tz` ＝ 瀏覽器的 `getTimezoneOffset()`（台灣 -480）**，送出端靠它把當地時間換回 UTC。
+  存成字串或漏掉，症狀是**半夜跳通知**。`cleanPushSub` 會強制轉數字。
+- **同一個檔裡有所有人、所有裝置的訂閱**，寫入是整份覆蓋 ⇒
+  **`savePush` 之前一定要先 `loadPush` 拿最新的整份再改**（`setMyPush` 就是在做這件事）。
+  拿記憶體裡的舊清單去寫，會把女友的提醒無聲關掉。守門測試 `26-push.js` 的 [G] 段。
+- `endpoint` 在公開 repo 裡看得到，但**光有它推不動**——推播服務會驗 VAPID 簽章。
+- **parser 有三份**：`public/store.js`（手機寫）、`server.js`（電腦寫）、
+  `tools/send-reminders.js`（Actions 讀）。任一邊分岔的症狀都是「通知就是不跳」，
+  完全沒有錯誤訊息。`test/roundtrip.js` 有三方逐字比對，改格式時它會先炸。
+
+### 刻意的決定
+- **送「沒有內容」的推播**：帶內容要做 ECDH + HKDF + AES-GCM 加密，送出端會複雜一大截。
+  文字是固定的，寫在 `sw.js` 的 `push` handler 裡就好。
+- **`userVisibleOnly:true` 是 iOS 的硬性要求**：收到 push 一定要跳一則通知，
+  靜靜吃掉瀏覽器會直接撤銷訂閱。所以「今天已經量過就不要吵」**是在送出端決定的**
+  （`weighedOn()` 直接讀 repo 裡當天的 md），不是在 SW 裡判斷要不要顯示。
+- **一天只吵一次靠 `sentAt`，不靠排程準時**：GitHub 排程誤點 5～30 分鐘是常態，
+  尖峰甚至整次跳過。用時間窗去推一定會漏送或重送。送出後把 `sentAt` 寫回並 commit。
+- **誤點超過 2 小時就跳過今天**（`WINDOW_MIN`）：早上 7:30 的提醒中午才跳只會讓人困惑。
+- **410／404 ＝ 訂閱失效，直接從清單移除**；429 之類的暫時錯誤**不記 `sentAt`**，下一輪再試。
+- 時間只給半小時一格（`PUSH_TIMES`）：排程 30 分鐘一次，給到分鐘級只會讓人覺得「怎麼沒準時」。
+
+### iOS 的兩條硬規則（UI 要先擋，不要給按了沒反應的按鈕）
+- **只有「加入主畫面」的 PWA 收得到推播**，Safari 分頁一律不行，連權限都不會問。
+  `pushBlockReason()` 會先擋下來並說明怎麼加入主畫面。
+- **`Notification.requestPermission()` 必須在使用者手勢裡「直接」呼叫**。
+  中間插一個 `await`（例如先去讀 `push.md`）iOS 會當成不是手勢觸發、直接拒絕——
+  所以 `enablePush()` 第一件事就是要權限，其他全部往後排。
+- 權限一旦被拒，瀏覽器**不會再問第二次**，只能去 iPhone 的「設定 → 通知 → 減重助手」。
+
+### 維運注意
+- **公開 repo 若 60 天沒有 commit，GitHub 會自動停用排程。** 這個 app 每天寫紀錄進 repo，
+  正常用不會遇到；長期沒用要回 Actions 頁面手動啟用。
+- 想立刻測一發：Actions 頁面的 **Run workflow**（`workflow_dispatch`）。
+- 送出邏輯的測試是 `test/reminders.js`（自己起一台假的推播服務，含誤點／時區／去重情境），
+  已掛進 `npm test`。app 那一端是 `test/browser/26-push.js`。
+
 ## 非同步流程的中斷（v5.0）— 「送出去等、然後反悔」
 第三輪稽核。**這一類 bug 在截圖裡完全看不出來**，只有真的去等、然後中途反悔才會踩到。
 守門測試：`test/browser/25-async.js`。抓到三個真的：

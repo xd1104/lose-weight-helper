@@ -101,6 +101,58 @@ function parseUsers(text){
   return normalizeUsers(out);
 }
 
+/* ---- 每日提醒的推播訂閱 ----
+ * 一台裝置一行。刻意跟使用者資料分開放同一個檔（`data/push.md`）：
+ * 送推播的是 GitHub Actions，它要一次看完所有裝置，一個檔讀一次最省事。
+ *
+ * `endpoint` 是 Apple／Google 給的推播網址，等於「這台裝置的信箱」。
+ * repo 是公開的，所以它看得到——但光有 endpoint 推不動，
+ * 推播服務會驗 VAPID 簽章，私鑰只在 GitHub Actions secret 裡。
+ *
+ * `sentAt` 是「最後送出的那一天（使用者當地日期）」，由 Actions 寫回來，
+ * 用來確保一天只吵一次（排程誤點也不會重複送）。 */
+function cleanPushSub(s){
+  var o={ id:String((s&&s.id)||"") };
+  o.u=String((s&&s.u)||"");
+  o.time=/^([01]\d|2[0-3]):[0-5]\d$/.test(s&&s.time) ? s.time : "07:30";
+  /* getTimezoneOffset()：台灣是 -480。Actions 靠這個把當地時間換回 UTC */
+  o.tz=Math.round(num(s&&s.tz));
+  o.endpoint=String((s&&s.endpoint)||"");
+  o.skipIfWeighed=(s&&s.skipIfWeighed)!==false;
+  if(s&&s.sentAt) o.sentAt=String(s.sentAt);
+  return o;
+}
+function normalizePushSubs(list){
+  var out=[], seen={};
+  (Array.isArray(list)?list:[]).forEach(function(s){
+    var o=cleanPushSub(s);
+    if(!o.id || !o.u || !o.endpoint) return;
+    if(seen[o.endpoint]) return;   /* 同一台裝置只留一筆（重新訂閱會拿到同樣的 endpoint） */
+    seen[o.endpoint]=1;
+    out.push(o);
+  });
+  return out;
+}
+function serializePushSubs(list){
+  var L=["## 提醒",""];
+  normalizePushSubs(list).forEach(function(s){
+    var o={ id:s.id, u:s.u, time:s.time, tz:s.tz, endpoint:s.endpoint, skipIfWeighed:s.skipIfWeighed };
+    if(s.sentAt) o.sentAt=s.sentAt;
+    L.push("- "+JSON.stringify(o));
+  });
+  L.push("");
+  return L.join("\n");
+}
+function parsePushSubs(text){
+  var out=[];
+  String(text).replace(/\r\n/g,"\n").split("\n").forEach(function(line){
+    var im=/^-\s+(\{.*\})\s*$/.exec(line);
+    if(!im) return;
+    try{ out.push(JSON.parse(im[1])); }catch(e){}
+  });
+  return normalizePushSubs(out);
+}
+
 /* ---- 飲食 / 運動 / 常吃 ---- */
 function cleanEntry(e){
   var o={ id:String((e&&e.id)||"") };
@@ -388,6 +440,7 @@ function pathProfile(u){ return "data/users/"+u+"/profile.md"; }
 function pathFoods(u){ return "data/users/"+u+"/foods.md"; }
 function pathDay(u, dk){ return "data/users/"+u+"/days/"+dk+".md"; }
 var PATH_USERS = "data/users.md";
+var PATH_PUSH  = "data/push.md";
 
 var LocalStore = {
   local:true,
@@ -427,7 +480,9 @@ var LocalStore = {
   },
   saveDay:function(u, d){ return this._post("api/days", Object.assign({u:u}, d), "紀錄儲存失敗"); },
   saveProfile:function(u, p){ return this._post("api/profile", {u:u, profile:p}, "設定儲存失敗"); },
-  saveFoods:function(u, l){ return this._post("api/foods", {u:u, foods:l}, "常吃清單儲存失敗"); }
+  saveFoods:function(u, l){ return this._post("api/foods", {u:u, foods:l}, "常吃清單儲存失敗"); },
+  loadPush:function(){ return this._get("api/push","讀取提醒設定失敗").then(function(j){ return j.subs||[]; }); },
+  savePush:function(list){ return this._post("api/push", {subs:list}, "提醒設定儲存失敗"); }
 };
 
 var GitHubStore = {
@@ -625,6 +680,16 @@ var GitHubStore = {
   saveFoods:function(u, l){
     var pathRel=pathFoods(u);
     return this._putFile(pathRel, b64EncodeUtf8(serializeFoods(l)), "mobile: update foods", this._sha[pathRel]||null);
+  },
+  loadPush:function(){
+    return this._readText(PATH_PUSH).then(function(txt){ return txt?parsePushSubs(txt):[]; });
+  },
+  /* ⚠️ 整份覆蓋。呼叫端一定要「先 loadPush 拿最新的整份、改完再存」，
+   * 不可以拿記憶體裡的舊清單來寫——別台裝置與女友的提醒都在同一個檔裡，
+   * 拿舊的覆蓋會把別人的提醒無聲關掉（見 app.js 的 setMyPush）。 */
+  savePush:function(list){
+    return this._putFile(PATH_PUSH, b64EncodeUtf8(serializePushSubs(list)),
+      "mobile: update reminders", this._sha[PATH_PUSH]||null);
   }
 };
 

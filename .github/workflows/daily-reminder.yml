@@ -1,0 +1,60 @@
+# 每日提醒的送出端。
+#
+# 手機推播一定要有一台機器主動送，而這個 app 兩台都不合格：GitHub Pages 是靜態的、
+# 家裡的 server.js 外面連不到、電腦關機就沒了。這個排程就是那台機器。
+#
+# 每 30 分鐘跑一次，實際要不要送由 tools/send-reminders.js 判斷
+# （看每個人設定的時間、時區，以及當天有沒有量過體重）。
+#
+# ⚠️ GitHub 的排程會誤點，5～30 分鐘是常態，尖峰時甚至可能整次跳過。
+#    所以送出端是用「時間到了而且今天還沒送過」來判斷，不是靠排程準時。
+# ⚠️ 公開 repo 若 60 天沒有任何 commit，GitHub 會自動停用排程。
+#    這個 app 每天都在寫紀錄進 repo，正常用不會遇到；長期沒用要回來手動啟用。
+name: 每日提醒
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:        # 想立刻測一發就從 Actions 頁面按 Run workflow
+
+concurrency:
+  group: daily-reminder     # 前一輪還沒寫完 push.md 就不要開下一輪
+  cancel-in-progress: false
+
+permissions:
+  contents: write           # 送出後要把 sentAt 寫回 data/push.md
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: 送出到期的提醒
+        env:
+          VAPID_PUBLIC: ${{ vars.VAPID_PUBLIC }}
+          VAPID_PRIVATE: ${{ secrets.VAPID_PRIVATE }}
+          VAPID_SUBJECT: ${{ vars.VAPID_SUBJECT }}
+        run: node tools/send-reminders.js
+
+      - name: 把 sentAt 寫回去（一天只吵一次）
+        run: |
+          if [ -z "$(git status --porcelain data/push.md)" ]; then
+            echo "沒有變動，不用 commit"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/push.md
+          git commit -m "reminder: mark sent"
+          # 本機 server 也會 push 同一個 repo，撞車就重抓再套一次
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin main && git push origin HEAD:main && exit 0
+            sleep $((i * 5))
+          done
+          echo "push 失敗，下一輪排程會再處理"
+          exit 0

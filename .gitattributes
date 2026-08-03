@@ -5,6 +5,9 @@
 *.js text eol=lf
 *.css text eol=lf
 *.html text eol=lf
+# workflow 的 run: 是 bash，CRLF 會讓每一行結尾多一個 \r 直接跑不動
+*.yml text eol=lf
+*.yaml text eol=lf
 
 # .bat 必須是 CRLF（Windows 要求）
 *.bat text eol=crlf
