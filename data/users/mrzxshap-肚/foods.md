@@ -25,6 +25,7 @@
 - {"id":"xms6072n2f1uk","name":"巧克力鬆餅","kcal":480,"p":8,"c":68,"f":18,"portion":"170克，無奶油，僅淋巧克力醬","n":1}
 - {"id":"xms7fmghn0tvh","name":"巧克力麵包","kcal":140,"p":4,"c":20,"f":3.5,"n":1}
 - {"id":"xmsbxvrp8oirx","name":"生蛋（涮煮用）","kcal":70,"p":6,"c":1,"f":5,"portion":"1顆","n":1}
+- {"id":"xmsd45131pest","name":"生菓子","kcal":144,"p":2.9,"c":20.7,"f":5.5,"portion":"50g","n":1}
 - {"id":"xmsam76qcqxe4","name":"生鮭魚丁","kcal":90,"p":10,"f":5,"portion":"約一貫壽司份量的生鮭魚丁，約50g","n":1}
 - {"id":"xmsam4iri78pu","name":"生鮭魚握壽司（迷你醋飯，2貫）","kcal":150,"p":8,"c":22,"f":4,"portion":"2貫，鮭魚生魚片約30g+迷你醋飯約60g","n":1}
 - {"id":"xms7fflxbtnmy","name":"皮蛋豆腐","kcal":110,"p":7,"c":4,"f":8,"portion":"半份，約1顆皮蛋+半盒嫩豆腐，含醬油膏與柴魚","n":1}
