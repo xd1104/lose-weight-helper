@@ -85,7 +85,9 @@ const FOODS = ['排骨便當', '鮪魚蛋吐司', '大冰奶', '茶葉蛋'];
   console.log('\n[C] 編輯一筆不再有「時間」欄位');
   await closeAll();
   await p.click('[data-nav="today"]'); await p.waitForTimeout(420);
-  await p.click('.row[data-act="edit-entry"]'); await p.waitForTimeout(600);
+  /* 不要用「第一列」——列表照時間排，[B] 剛加的那筆是「現在」，
+     中午前跑的話它會排到 12:30 那筆前面，就改到別人身上去了（時間相關的假失敗） */
+  await p.click('.row[data-act="edit-entry"]:has-text("鮪魚蛋吐司")'); await p.waitForTimeout(600);
   check('沒有時間欄位（列表早就不顯示了，留著只是孤兒）', !(await p.$('#e-time')));
   check('畫面上沒有 12 小時制的殘留', !/AM|PM/.test(await p.textContent('.sheet')));
   await p.fill('#e-kcal', '360');

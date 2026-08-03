@@ -1,7 +1,7 @@
 "use strict";
 
 /* 版本號。改前端時跟 sw.js 的 cache 版本號一起 +1。 */
-var APP_VER="4.9";
+var APP_VER="5.0";
 /*
  * 減重助手 — 前端主程式
  * 資料層在 store.js（LocalStore / GitHubStore 自動切）、AI 在 ai.js。
@@ -1805,9 +1805,19 @@ function loadUserData(){
 
 /* ============ sheet 基礎 ============ */
 var sheetStack=[];
+/* 每張 sheet 一個序號。
+ * AI 那幾條路都是「先開一張等待中的 sheet → await → 回來把內容換掉」，
+ * 但使用者可能在等的時候就把它關掉、或改去開別張。回來時如果不確認
+ * 「最上面那張還是不是我開的那張」，就會發生：關掉之後 sheet 自己彈回來
+ * 蓋住整個 app（等太久按關閉就會遇到），或是把別張 sheet 的內容換成 AI 結果。
+ * 所以非同步回來一律先問 sheetAlive()。 */
+var sheetSeq=0;
+function topSid(){ return sheetStack.length ? sheetStack[sheetStack.length-1].sid : 0; }
+function sheetAlive(sid){ return !!sid && topSid()===sid; }
+
 function openSheet(title, bodyHtml, opts){
   opts=opts||{};
-  sheetStack.push({title:title, body:bodyHtml, opts:opts});
+  sheetStack.push({sid:++sheetSeq, title:title, body:bodyHtml, opts:opts});
   drawSheet();
 }
 function closeSheet(){
@@ -1839,7 +1849,8 @@ function drawSheet(){
 }
 /* 只換內容不重推堆疊（AI 讀取中 -> 結果） */
 function replaceSheet(title, bodyHtml, opts){
-  sheetStack[sheetStack.length-1]={title:title, body:bodyHtml, opts:opts||{}};
+  if(!sheetStack.length) return;   /* 已經被關掉了就不要硬塞回去 */
+  sheetStack[sheetStack.length-1]={sid:++sheetSeq, title:title, body:bodyHtml, opts:opts||{}};
   drawSheet();
 }
 
@@ -1896,7 +1907,8 @@ function addTabBody(){
     return '<form id="f-text">'+
       '<div class="field"><label>吃了什麼</label>'+
         '<textarea class="ta" id="i-text" rows="2" style="min-height:78px" '+
-          'placeholder="例如：排骨便當加飯、南瓜湯頭的麵疙瘩、大杯半糖珍奶" autocomplete="off"></textarea>'+
+          'placeholder="例如：排骨便當加飯、南瓜湯頭的麵疙瘩、大杯半糖珍奶" autocomplete="off">'+
+          esc(lastText)+'</textarea>'+
         '<div class="hint">講得越具體越準：份量、湯頭、甜度、加不加飯都可以寫。</div></div>'+
       '<button class="btn" type="submit">交給 AI 估算</button>'+
     '</form>';
@@ -2131,6 +2143,7 @@ function wireAddSheet(root){
     ev.preventDefault();
     var t=(root.querySelector("#i-text")||{}).value||"";
     if(!t.trim()){ toast("先描述一下吃了什麼", true); return; }
+    lastText=t;
     runAi(function(){ return aiAnalyzeText(db.profile.model, t); });
   };
 
@@ -2224,6 +2237,9 @@ var MEAL_FOLD=4;
 var mealOpen={};
 var pendingPhotos=[];
 var lastHint="";                /* 上次照片的補充說明：回來「再估一次」時不用重打 */
+/* 文字描述同理。AI 失敗（沒網路、額度用完）是最常走到的分支之一，
+ * 打了一長串「排骨便當加飯、湯是南瓜的…」結果被清空，等於逼他重打一次。 */
+var lastText="";
 
 function wireFav(root){
   /* 只換清單那一塊，不整份重畫：搜尋框正在輸入時重畫會把焦點與鍵盤弄掉 */
@@ -2260,14 +2276,22 @@ function wireFav(root){
 function runAi(fn, photos){
   replaceSheet("AI 估算中",
     '<div class="spin"><div class="dots"><i></i><i></i><i></i></div>Claude 正在看你吃了什麼…</div>', {});
+  var sid=topSid();
   fn().then(function(res){
+    if(!sheetAlive(sid)) return;   /* 等的時候被關掉了，不要自己彈回來 */
     aiResult=res;
     /* 記住是哪張照片估出來的：之後「重估某一項」要把同一張圖再送一次 */
     aiResult.photos=(photos||[]).slice();
     drawAiResult();
   }).catch(function(e){
     toast(e.userMessage||"AI 估算失敗", true);
-    if(photo) addTab="photo";   /* 照片還在，退回去就看得到，不用重拍 */
+    if(!sheetAlive(sid)) return;   /* 關掉了就只提示，不要把輸入頁叫回來 */
+    /* ⚠️ 這裡以前寫 `if(photo)`——v4.1 把參數改成複數 photos 的時候漏改，
+     * 變成 ReferenceError。它在 .catch 裡面，所以整個 catch 從那行起中斷、
+     * 底下的 drawAddSheet 永遠不會跑，畫面就卡在「AI 估算中」轉圈圈回不去，
+     * 而且錯誤被 unhandled rejection 吃掉、console 也不會紅。
+     * 教訓：AI 失敗是最常走到的分支之一，一定要有測試。 */
+    if(photos && photos.length) addTab="photo";   /* 照片還在，退回去就看得到，不用重拍 */
     drawAddSheet(false); /* 退回輸入畫面，讓他改描述重試 */
   });
 }
@@ -2524,15 +2548,17 @@ function openCoachSheet(force){
   }
   var isNew=!force;
   draw(isNew, '<div class="spin"><div class="dots"><i></i><i></i><i></i></div>營養師正在看你今天吃了什麼…</div>', {});
+  var sid=topSid();
   aiCoachDay(db.profile.model, coachPrompt()).then(function(r){
     r.at=new Date().toISOString();
     dayOf(key).coach=r;
     persistDay(key);              /* 存進那一天，之後回頭看不用再花錢 */
-    draw(false, coachBodyHtml(r), { onDraw:wire });
+    /* 存檔要照做（錢已經花了），但畫面只在他還開著的時候才動 */
+    if(sheetAlive(sid)) draw(false, coachBodyHtml(r), { onDraw:wire });
     if(!picking) render();        /* 按鈕文案要換成「看講評」 */
   }).catch(function(e){
     toast(e.userMessage||"評估失敗", true);
-    closeSheet();
+    if(sheetAlive(sid)) closeSheet();
   });
 }
 
@@ -2582,11 +2608,14 @@ function openAiItemSheet(idx){
       if(!said){ toast("先寫這一項是什麼", true); return; }
       var por=(porEl.value||"").trim();
       go.disabled=true; go.textContent="估算中…";
+      var sid=topSid();
       aiAnalyzeOne(db.profile.model, aiResult.photos, isNew?"":orig,
                    por ? said+"（"+por+"）" : said)
         .then(function(res){
           var got=(res&&res.items)||[];
           if(!got.length) throw aiErrorLike("AI 沒有回傳結果，再試一次。");
+          /* 等的時候被關掉了：不要 closeSheet（會關到別人）也不要硬畫結果頁 */
+          if(!sheetAlive(sid)){ toast("已重估，回結果頁看得到"); return; }
           if(isNew) aiResult.items=aiResult.items.concat(got);
           else Array.prototype.splice.apply(aiResult.items, [idx,1].concat(got));
           closeSheet();      /* 回到結果頁 */
@@ -2632,7 +2661,7 @@ function addEntries(items){
   });
   persistFoods();      /* 整批只寫一次（rememberFood 不自己寫檔） */
   persistDay(curDate);
-  pendingPhotos=[]; aiResult=null; lastHint="";
+  pendingPhotos=[]; aiResult=null; lastHint=""; lastText="";
   closeAllSheets();
   render();
   toast("已記錄 "+items.length+" 筆");
