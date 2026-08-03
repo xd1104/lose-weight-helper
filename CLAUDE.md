@@ -247,8 +247,10 @@
 → `tools/send-reminders.js`）。repo 是公開的 ⇒ Actions 分鐘數免費無上限。
 
 ### 設定與金鑰（換金鑰＝所有裝置都要重新訂閱）
-- VAPID 公鑰寫在 `public/app.js` 的 `VAPID_PUBLIC`（本來就要給瀏覽器，不是祕密）。
-- 私鑰在 repo 的 **Actions secret `VAPID_PRIVATE`**，另有 variables `VAPID_PUBLIC`／`VAPID_SUBJECT`。
+- VAPID 公鑰寫在 `public/app.js` 的 `VAPID_PUBLIC`（本來就要給瀏覽器，不是祕密），
+  `tools/send-reminders.js` 也寫死同一份當預設值 ⇒ **要設定的只有一個 secret `VAPID_PRIVATE`**。
+  兩邊的公鑰字串一致由 `test/reminders.js` 守住（不一致的症狀是推不動又沒有錯誤訊息）。
+- 想覆蓋公鑰／subject 才需要另設 Actions variables `VAPID_PUBLIC`／`VAPID_SUBJECT`。
 - **公私鑰是一對的**：訂閱是綁在當時那把公鑰上，換了金鑰舊訂閱一律推不動，
   而症狀是「通知就是不跳、沒有任何錯誤」。真要換就得請所有裝置重開一次提醒。
 

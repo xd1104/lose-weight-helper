@@ -19,7 +19,12 @@ const crypto = require('crypto');
 const ROOT = path.join(__dirname, '..');
 const PUSH_FILE = path.join(ROOT, 'data', 'push.md');
 
-const VAPID_PUBLIC = process.env.VAPID_PUBLIC || '';
+/* 公鑰不是祕密（瀏覽器本來就拿得到），所以寫死在這裡當預設值——
+ * 這樣要設定的只有 VAPID_PRIVATE 一個 secret，少一個會忘記的步驟。
+ * ⚠️ 必須跟 public/app.js 的 VAPID_PUBLIC 完全一樣，不一樣就推不動而且沒有錯誤訊息。
+ *    test/reminders.js 有比對這兩個字串。 */
+const VAPID_PUBLIC = process.env.VAPID_PUBLIC
+  || 'BBlsPY61wGRzCZKpmz2nrnWGWlXyRjxIF0H1l5b2G9TjaV5JheSfRxG-Q8reWflHgPp7YrFgB0x1h2yQo8jQ74U';
 const VAPID_PRIVATE = process.env.VAPID_PRIVATE || '';
 const VAPID_SUB = process.env.VAPID_SUBJECT || 'mailto:a0970797036@gmail.com';
 const DRY = process.argv.includes('--dry-run');

@@ -227,6 +227,16 @@ server.listen(0, async () => {
     assert.ok(threw, '缺金鑰應該非零離開，不是安靜跳過');
   });
 
+  await t('送出端與 public/app.js 的 VAPID 公鑰一致 ← 不一致就推不動，而且沒有錯誤訊息', () => {
+    const appSrc = fs.readFileSync(path.join(ROOT, 'public', 'app.js'), 'utf8');
+    const sendSrc = fs.readFileSync(path.join(ROOT, 'tools', 'send-reminders.js'), 'utf8');
+    const inApp = /var VAPID_PUBLIC="([\w-]+)"/.exec(appSrc);
+    const inSend = /\|\|\s*'([\w-]+)';/.exec(sendSrc);
+    assert.ok(inApp && inSend, '兩邊都要找得到公鑰');
+    assert.strictEqual(inSend[1], inApp[1], '公鑰不一致');
+    assert.strictEqual(Buffer.from(inApp[1], 'base64url').length, 65, '公鑰要是 65 bytes 的未壓縮點');
+  });
+
   server.close();
   console.log('\n' + pass + ' passed' + (process.exitCode ? ', 有失敗' : ''));
 });

@@ -36,8 +36,10 @@ jobs:
 
       - name: 送出到期的提醒
         env:
-          VAPID_PUBLIC: ${{ vars.VAPID_PUBLIC }}
+          # 只有這一個是必要的（Settings → Secrets and variables → Actions → Secrets）。
+          # 公鑰與 subject 在 tools/send-reminders.js 裡有預設值，要覆蓋才需要設 variables。
           VAPID_PRIVATE: ${{ secrets.VAPID_PRIVATE }}
+          VAPID_PUBLIC: ${{ vars.VAPID_PUBLIC }}
           VAPID_SUBJECT: ${{ vars.VAPID_SUBJECT }}
         run: node tools/send-reminders.js
 
