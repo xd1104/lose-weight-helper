@@ -28,6 +28,11 @@ const VAPID_PUBLIC = process.env.VAPID_PUBLIC
 const VAPID_PRIVATE = process.env.VAPID_PRIVATE || '';
 const VAPID_SUB = process.env.VAPID_SUBJECT || 'mailto:a0970797036@gmail.com';
 const DRY = process.argv.includes('--dry-run');
+/* 測試用：不管時間、不管今天送過沒、不管量過體重，馬上推一發給所有人。
+ * 從 Actions 頁面 Run workflow 勾「force」進來的，用來確認整條路（金鑰、簽章、
+ * 訂閱）是通的——不然要等到隔天早上才知道有沒有設錯。
+ * 刻意不寫 sentAt：測試不該把今天真正的提醒吃掉。 */
+const FORCE = /^(1|true|yes)$/i.test(process.env.FORCE || '');
 
 /* 提醒時間之後多久內還算數。超過就不送了——早上 7:30 的提醒中午才跳出來只會讓人困惑。
  * 排程每 30 分鐘一次，所以正常情況下窗口一開就會被第一次執行接到。 */
@@ -157,19 +162,21 @@ async function sendPush(endpoint, key) {
     const want = targetMinutes(s.time);
     const label = s.u + ' ' + s.time + '（當地 ' + L.date + '）';
 
-    if (s.sentAt === L.date) { keep.push(s); continue; }                 // 今天送過了
-    if (L.minutes < want) { keep.push(s); continue; }                    // 還沒到時間
-    if (L.minutes >= want + WINDOW_MIN) {                                 // 錯過太久：跳過今天，別半夜才跳
-      console.log('略過（超過窗口）：' + label);
-      keep.push(Object.assign({}, s, { sentAt: L.date }));
-      changed = true;
-      continue;
-    }
-    if (s.skipIfWeighed && weighedOn(s.u, L.date)) {
-      console.log('略過（今天量過了）：' + label);
-      keep.push(Object.assign({}, s, { sentAt: L.date }));
-      changed = true;
-      continue;
+    if (!FORCE) {
+      if (s.sentAt === L.date) { keep.push(s); continue; }               // 今天送過了
+      if (L.minutes < want) { keep.push(s); continue; }                  // 還沒到時間
+      if (L.minutes >= want + WINDOW_MIN) {                              // 錯過太久：跳過今天，別半夜才跳
+        console.log('略過（超過窗口）：' + label);
+        keep.push(Object.assign({}, s, { sentAt: L.date }));
+        changed = true;
+        continue;
+      }
+      if (s.skipIfWeighed && weighedOn(s.u, L.date)) {
+        console.log('略過（今天量過了）：' + label);
+        keep.push(Object.assign({}, s, { sentAt: L.date }));
+        changed = true;
+        continue;
+      }
     }
 
     if (DRY) { console.log('[dry-run] 會送：' + label); keep.push(s); continue; }
@@ -185,7 +192,9 @@ async function sendPush(endpoint, key) {
       continue;
     }
     if (status >= 200 && status < 300) {
-      console.log('已送出：' + label + '（' + status + '）');
+      console.log('已送出：' + label + '（' + status + '）' + (FORCE ? ' [force]' : ''));
+      // force 是測試，不記 sentAt——否則今天真正的提醒會被這一發吃掉
+      if (FORCE) { keep.push(s); continue; }
       keep.push(Object.assign({}, s, { sentAt: L.date }));
       changed = true;
       continue;

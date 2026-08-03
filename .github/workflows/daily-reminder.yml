@@ -16,6 +16,11 @@ on:
   schedule:
     - cron: '*/30 * * * *'
   workflow_dispatch:        # 想立刻測一發就從 Actions 頁面按 Run workflow
+    inputs:
+      force:
+        description: '不管時間，馬上推一發（確認金鑰與訂閱是通的）'
+        type: boolean
+        default: false
 
 concurrency:
   group: daily-reminder     # 前一輪還沒寫完 push.md 就不要開下一輪
@@ -41,6 +46,7 @@ jobs:
           VAPID_PRIVATE: ${{ secrets.VAPID_PRIVATE }}
           VAPID_PUBLIC: ${{ vars.VAPID_PUBLIC }}
           VAPID_SUBJECT: ${{ vars.VAPID_SUBJECT }}
+          FORCE: ${{ inputs.force }}
         run: node tools/send-reminders.js
 
       - name: 把 sentAt 寫回去（一天只吵一次）

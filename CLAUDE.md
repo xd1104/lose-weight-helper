@@ -289,7 +289,9 @@
 ### 維運注意
 - **公開 repo 若 60 天沒有 commit，GitHub 會自動停用排程。** 這個 app 每天寫紀錄進 repo，
   正常用不會遇到；長期沒用要回 Actions 頁面手動啟用。
-- 想立刻測一發：Actions 頁面的 **Run workflow**（`workflow_dispatch`）。
+- **想立刻測一發：Actions 頁面 → Run workflow → 勾 `force`**（`FORCE=1`）。
+  它會略過時間、`sentAt`、「今天量過了」三個判斷直接推，而且**刻意不寫 `sentAt`**
+  ——測試不該把今天真正的提醒吃掉。設完金鑰不用等到隔天早上才知道有沒有設錯。
 - 送出邏輯的測試是 `test/reminders.js`（自己起一台假的推播服務，含誤點／時區／去重情境），
   已掛進 `npm test`。app 那一端是 `test/browser/26-push.js`。
 

@@ -227,6 +227,32 @@ server.listen(0, async () => {
     assert.ok(threw, '缺金鑰應該非零離開，不是安靜跳過');
   });
 
+  await t('FORCE=1 不管時間直接送，而且不記 sentAt ← 測試不該把今天真正的提醒吃掉', async () => {
+    hits.length = 0; reply = 201;
+    /* 提醒時間在 5 小時前（早就過了窗口），平常這一筆今天不會送 */
+    const dir = sandbox(md([subDueNow(port, 300)]));
+    await run(dir, { FORCE: '1' });
+    assert.strictEqual(hits.length, 1, 'force 應該照送');
+    assert.ok(!/sentAt/.test(readPush(dir) || ''), 'force 不可以記 sentAt');
+  });
+
+  await t('FORCE 也不看「今天量過了」← 它的用途是確認整條路通不通', async () => {
+    hits.length = 0;
+    const dir = sandbox(md([subDueNow(port)]), {
+      ['data/users/benson/days/' + todayLocal() + '.md']:
+        '---\ndate: "' + todayLocal() + '"\nweight: 78.4\nupdatedAt: "x"\n---\n',
+    });
+    await run(dir, { FORCE: '1' });
+    assert.strictEqual(hits.length, 1);
+  });
+
+  await t('FORCE 沒設的時候不可以誤判成開啟', async () => {
+    hits.length = 0;
+    const dir = sandbox(md([subDueNow(port, 300)]));
+    await run(dir, { FORCE: 'false' });
+    assert.strictEqual(hits.length, 0, 'FORCE=false 還照送的話，每 30 分鐘就會被吵一次');
+  });
+
   await t('送出端與 public/app.js 的 VAPID 公鑰一致 ← 不一致就推不動，而且沒有錯誤訊息', () => {
     const appSrc = fs.readFileSync(path.join(ROOT, 'public', 'app.js'), 'utf8');
     const sendSrc = fs.readFileSync(path.join(ROOT, 'tools', 'send-reminders.js'), 'utf8');
