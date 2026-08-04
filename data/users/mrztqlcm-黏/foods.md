@@ -8,9 +8,10 @@
 - {"id":"xms3c39qv0iud","name":"芒果","kcal":180,"p":2,"c":45,"f":1,"portion":"約兩個拳頭大小，約300克果肉","star":true,"n":4}
 - {"id":"xmscmgxcp5bih","name":"芭樂","kcal":51,"p":1,"c":12,"portion":"約3/4個拳頭大（約135g）","star":true,"n":3}
 - {"id":"xmseghx8d5ytp","name":"堅果","kcal":70,"p":2,"c":3,"f":6,"portion":"6顆，以腰果大小估算，每顆約2g，共約12g","star":true,"n":1}
-- {"id":"xms08qs8ecwxz","name":"炒空心菜","kcal":60,"p":2,"c":5,"f":4,"portion":"約一碗，清炒","n":3}
+- {"id":"xms08qs8ecwxz","name":"炒空心菜","kcal":216,"p":4,"c":9,"f":16,"portion":"1.5顆拳頭（約270g，含炒油）","n":4}
 - {"id":"xms08qs8bajwi","name":"糙米飯","kcal":130,"p":3,"c":28,"f":1,"portion":"約半碗（100g）","n":3}
 - {"id":"xms1k9j1735nj","name":"羊肉片","kcal":420,"p":34,"f":30,"portion":"中份約200-250g生肉片，火鍋涮煮","n":2}
+- {"id":"xmsam01aplz46","name":"冷凍地瓜","kcal":90,"p":1,"c":21,"portion":"1條，約一根手指長（約100g）","n":2}
 - {"id":"xms08qs8es0ij","name":"洋蔥炒魷魚","kcal":180,"p":15,"c":10,"f":8,"portion":"約一小盤，魷魚約80克、洋蔥約50克","n":2}
 - {"id":"xms04tjkxap09","name":"紅心芭樂","kcal":120,"p":2,"c":28,"f":1,"portion":"約兩顆拳頭大小，共約300g","n":2}
 - {"id":"xms96u0t29qas","name":"意麵","kcal":300,"p":8,"c":55,"f":5,"portion":"一份燴煮意麵，約1份乾麵量","n":2}
@@ -45,7 +46,6 @@
 - {"id":"xms7fekz4klqt","name":"皮蛋豆腐","kcal":95,"p":6,"c":4,"f":6,"portion":"半份，約半盤（皮蛋1顆、嫩豆腐半盒，含醬油膏與柴魚）","n":1}
 - {"id":"xms4rmub7sfn0","name":"米血串","kcal":90,"p":2,"c":19,"f":1,"portion":"1串，約60g","n":1}
 - {"id":"xms2pb1x7w36i","name":"肉鬆蛋捲","kcal":103,"p":2,"c":11,"f":5,"n":1}
-- {"id":"xmsam01aplz46","name":"冷凍地瓜","kcal":130,"p":2,"c":30,"portion":"一條，約150克（中等大小）","n":1}
 - {"id":"xms5q6vl6011q","name":"冷凍豬肉水餃","kcal":760,"p":24,"c":95,"f":28,"portion":"19顆，一般市售冷凍水餃(約每顆20-25g)","n":1}
 - {"id":"xmsbra5ab5aa3","name":"秀珍菇","kcal":10,"p":1,"c":2,"portion":"一小把，約30g","n":1}
 - {"id":"xmsby00lobxv1","name":"芒果冰沙","kcal":90,"p":1,"c":22,"portion":"120ml，小杯份量","n":1}
@@ -69,8 +69,10 @@
 - {"id":"xmsbra5aeiip2","name":"香菇貢丸","kcal":75,"p":4,"c":3,"f":5,"portion":"1顆，約30g（包裝內容，兩張照片為同一份）","n":1}
 - {"id":"xms33p56znhje","name":"香菇雞湯（含雞肉、香菇）","kcal":220,"p":22,"c":6,"f":11,"portion":"燉盅約550ml，含雞肉塊約100克、香菇約3朵","n":1}
 - {"id":"xms05mh8p4qi0","name":"香蕉","kcal":70,"p":1,"c":18,"portion":"小根一根，約80克","n":1}
+- {"id":"xmsetplhkwfrz","name":"氣炸雞胸肉","kcal":225,"p":42,"f":6,"portion":"1顆拳頭大小（約150g，去皮雞胸肉）","n":1}
 - {"id":"xms33i0zvs3yi","name":"烤地瓜","kcal":190,"p":3,"c":44,"portion":"中型一條，約200克","n":1}
 - {"id":"xms4rmubd4hhv","name":"脆腸串","kcal":90,"p":4,"c":1,"f":8,"portion":"半串，約30g","n":1}
+- {"id":"xmsetplhgd1ta","name":"茶豆（毛豆）","kcal":218,"p":22,"c":14,"f":9,"portion":"1顆拳頭（約180g）","n":1}
 - {"id":"xmsalycqbjh2n","name":"茶碗蒸","kcal":90,"p":6,"c":4,"f":5,"portion":"一般小碗約150ml，一份","n":1}
 - {"id":"xms96uf39553m","name":"草莓優格飲","kcal":250,"p":5,"c":45,"f":6,"portion":"小杯約350ml，全糖","n":1}
 - {"id":"xms4ih9vaosfz","name":"迷你銅鑼燒","kcal":114,"p":2.1,"c":19.8,"f":3,"n":1}
