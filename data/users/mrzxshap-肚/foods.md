@@ -47,6 +47,7 @@
 - {"id":"xms7ff8j73ml2","name":"花菇燉雞粥","kcal":420,"p":22,"c":58,"f":9,"portion":"一般碗，約450-500ml","n":1}
 - {"id":"xms1izpsc744j","name":"炸麻糬","kcal":420,"p":6,"c":66,"f":16,"portion":"手掌大小2片，約每片60克含裹粉油炸","n":1}
 - {"id":"xms607zkjaqwy","name":"為力炸醬麵","kcal":418,"p":9.6,"c":49.1,"f":20.4,"n":1}
+- {"id":"xmse5ajg2t9ko","name":"悟饕 炭火烤肉便當（半飯）","kcal":640,"p":29,"c":102,"f":13.4,"portion":"一個","n":1}
 - {"id":"xmsbrk7wldw7b","name":"核桃軟法","kcal":566,"p":17.1,"c":101.3,"f":10.3,"n":1}
 - {"id":"xmsam76qh8jnj","name":"海苔片","kcal":5,"p":1,"c":1,"portion":"一大片作為容器用海苔","n":1}
 - {"id":"xms1i7sgyd0g1","name":"烤鴨肉","kcal":180,"p":20,"c":2,"f":10,"portion":"約3-4塊，去皮估算","n":1}
