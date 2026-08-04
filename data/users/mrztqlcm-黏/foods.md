@@ -7,6 +7,7 @@
 - {"id":"xms2pgsffun8t","name":"冷凍毛豆(茶豆)","kcal":180,"p":15,"c":13,"f":8,"portion":"150克，去殼後淨重約估算，含殼帶皮秤重","star":true,"n":4}
 - {"id":"xms3c39qv0iud","name":"芒果","kcal":180,"p":2,"c":45,"f":1,"portion":"約兩個拳頭大小，約300克果肉","star":true,"n":4}
 - {"id":"xmscmgxcp5bih","name":"芭樂","kcal":51,"p":1,"c":12,"portion":"約3/4個拳頭大（約135g）","star":true,"n":2}
+- {"id":"xmseghx8d5ytp","name":"堅果","kcal":70,"p":2,"c":3,"f":6,"portion":"6顆，以腰果大小估算，每顆約2g，共約12g","star":true,"n":1}
 - {"id":"xms08qs8ecwxz","name":"炒空心菜","kcal":60,"p":2,"c":5,"f":4,"portion":"約一碗，清炒","n":3}
 - {"id":"xms08qs8bajwi","name":"糙米飯","kcal":130,"p":3,"c":28,"f":1,"portion":"約半碗（100g）","n":3}
 - {"id":"xms1k9j1735nj","name":"羊肉片","kcal":420,"p":34,"f":30,"portion":"中份約200-250g生肉片，火鍋涮煮","n":2}
@@ -76,7 +77,6 @@
 - {"id":"xmsdw3bzqtu0c","name":"配菜（豆芽、洋蔥、九層塔、蔥花）","kcal":30,"p":1,"c":6,"portion":"生菜配料一大把（約80g）","n":1}
 - {"id":"xms96rl6kansw","name":"培根","kcal":180,"p":10,"c":1,"f":15,"portion":"約4-5片培根，3/4份量","n":1}
 - {"id":"xmsameowgtvyj","name":"培根總匯三明治","kcal":525,"p":22,"c":45,"f":26,"portion":"約3/4份總匯三明治（整份含培根、火腿、蛋、生菜、番茄、三片吐司，估700大卡）","n":1}
-- {"id":"xmseghx8d5ytp","name":"堅果","kcal":70,"p":2,"c":3,"f":6,"portion":"6顆，以腰果大小估算，每顆約2g，共約12g","n":1}
 - {"id":"xms05gf4qcob3","name":"清蒸魚","kcal":320,"p":48,"c":2,"f":13,"portion":"整條約600克(含骨頭)，可食用魚肉約250克","n":1}
 - {"id":"xmsalxqp0y5mn","name":"甜牛肉握壽司(炙燒淋醬)","kcal":150,"p":9,"c":16,"f":6,"portion":"迴轉壽司1盤，2貫","n":1}
 - {"id":"xmrzvy2cso7iq","name":"甜椒配料","kcal":3,"c":1,"portion":"少量點綴，約10g","n":1}
