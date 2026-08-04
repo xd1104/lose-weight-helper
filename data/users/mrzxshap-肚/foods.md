@@ -27,6 +27,7 @@
 - {"id":"xms4rsmigol3g","name":"四季豆串（半串）","kcal":30,"p":1,"c":4,"f":1,"portion":"約半串，含烤油","n":1}
 - {"id":"xms6072n2f1uk","name":"巧克力鬆餅","kcal":480,"p":8,"c":68,"f":18,"portion":"170克，無奶油，僅淋巧克力醬","n":1}
 - {"id":"xms7fmghn0tvh","name":"巧克力麵包","kcal":140,"p":4,"c":20,"f":3.5,"n":1}
+- {"id":"xmse5mahonh6u","name":"生春捲（蝦）","kcal":180,"p":10,"c":26,"f":3,"portion":"2條切成4塊，每條約含蝦2-3隻、米皮、生菜冬粉，每條約60g，共約120g","n":1}
 - {"id":"xmsbxvrp8oirx","name":"生蛋（涮煮用）","kcal":70,"p":6,"c":1,"f":5,"portion":"1顆","n":1}
 - {"id":"xmsd45131pest","name":"生菓子","kcal":144,"p":2.9,"c":20.7,"f":5.5,"portion":"50g","n":1}
 - {"id":"xmsam76qcqxe4","name":"生鮭魚丁","kcal":90,"p":10,"f":5,"portion":"約一貫壽司份量的生鮭魚丁，約50g","n":1}
@@ -46,6 +47,7 @@
 - {"id":"xms4rsmihmftj","name":"豆包（一口）","kcal":40,"p":3,"c":1,"f":3,"portion":"約20克","n":1}
 - {"id":"xmse5j2gz2cxn","name":"乳酪片","kcal":65,"p":4,"c":1,"f":5,"portion":"1片，約一片吐司大小的正方形（約20g）","n":1}
 - {"id":"xms08zonpdvn9","name":"油雞腿肉（去皮）","kcal":140,"p":20,"c":3,"f":6,"portion":"約1隻腿肉份量，80克","n":1}
+- {"id":"xmse5mahqul2a","name":"沾醬（甜酸辣醬）","kcal":40,"c":9,"portion":"約2大匙（約30g）","n":1}
 - {"id":"xmsbxvrp22ycn","name":"花枝漿","kcal":80,"p":8,"c":4,"f":3,"portion":"2顆，約60g","n":1}
 - {"id":"xms7ff8j73ml2","name":"花菇燉雞粥","kcal":420,"p":22,"c":58,"f":9,"portion":"一般碗，約450-500ml","n":1}
 - {"id":"xms1izpsc744j","name":"炸麻糬","kcal":420,"p":6,"c":66,"f":16,"portion":"手掌大小2片，約每片60克含裹粉油炸","n":1}
@@ -94,6 +96,7 @@
 - {"id":"xms3ccpsakgpv","name":"雞肉飯（白飯）","kcal":320,"p":6,"c":60,"f":6,"portion":"便當盒約1碗白飯，淋雞汁","n":1}
 - {"id":"xms4rsmii0gmp","name":"雞屁股串燒","kcal":90,"p":4,"c":1,"f":8,"portion":"一支，約20克/顆","n":1}
 - {"id":"xms1ii7ebpzf5","name":"雞柳","kcal":90,"p":18,"f":2,"portion":"一些，估80克","n":1}
+- {"id":"xmse5mahm4fr1","name":"雞胸肉河粉","kcal":450,"p":30,"c":60,"f":8,"portion":"一般碗，湯約400ml、河粉約1.5碗（約270g）、雞胸肉約一掌心（約100g）、蔥花香菜少許","n":1}
 - {"id":"xmsamd5bg8z0t","name":"雞蛋","kcal":90,"p":6,"c":1,"f":6,"portion":"1顆打散","n":1}
 - {"id":"xms5q7thbo0ox","name":"雞湯","kcal":120,"p":14,"c":3,"f":6,"portion":"1碗湯，含1塊雞肉、2朵香菇","n":1}
 - {"id":"xms3ccpsc5uj0","name":"雞絲","kcal":90,"p":14,"f":4,"portion":"約50克手撕雞肉","n":1}
