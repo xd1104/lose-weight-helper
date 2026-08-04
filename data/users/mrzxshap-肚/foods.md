@@ -5,6 +5,7 @@
 - {"id":"xms474i6245tc","name":"水煮蛋","kcal":78,"p":6,"c":1,"f":5,"portion":"1顆，約一顆雞蛋大小（約50g）","n":5}
 - {"id":"xms3cawqebeag","name":"全麥吐司","kcal":80,"p":3,"c":15,"f":1,"portion":"1片，約一片吐司大小（約30g）","n":3}
 - {"id":"xmsbxyox2kfs9","name":"芭樂","kcal":18,"c":4,"portion":"約1/4拳頭大小（約45g）","n":3}
+- {"id":"xmse5damc2n4m","name":"綜合堅果","kcal":120,"p":4,"c":4,"f":11,"portion":"約20g（一小把，約一個高爾夫球體積的一半）","n":3}
 - {"id":"xms1i7sgy4bi2","name":"叉燒肉","kcal":180,"p":15,"c":8,"f":10,"portion":"約70克","n":2}
 - {"id":"xms1iqck4o6ni","name":"水餃","kcal":320,"p":12,"c":40,"f":12,"portion":"8顆（豬肉高麗菜餡）","n":2}
 - {"id":"xms1ijk5nrvux","name":"巧克力厚片吐司","kcal":280,"p":6,"c":38,"f":12,"portion":"整份約1片厚片吐司抹巧克力醬，此次吃3/4份","n":2}
@@ -13,7 +14,6 @@
 - {"id":"xms1ijk5o2lb5","name":"無糖豆漿","kcal":40,"p":4,"c":2,"f":2,"portion":"半杯，約200ml","n":2}
 - {"id":"xmsbxvrpabtrq","name":"黑糖奶茶冰沙","kcal":140,"p":1,"c":28,"f":4,"portion":"約120ml小杯，全糖冰沙","n":2}
 - {"id":"xms4767ksclx9","name":"蒸蛋湯","kcal":163,"p":17.9,"c":4.5,"f":8.3,"n":2}
-- {"id":"xmse5damc2n4m","name":"綜合堅果","kcal":216,"p":7,"c":7,"f":18,"portion":"約1/5個拳頭大小（約36g）","n":2}
 - {"id":"xms1ii7ectyd6","name":"蔬菜盤","kcal":80,"p":4,"c":14,"f":1,"portion":"一大盤，約200g","n":2}
 - {"id":"xms08zonpy23i","name":"燙青菜（高麗菜、地瓜葉等）","kcal":60,"p":2,"c":8,"f":2,"portion":"約1份，附醬油蔥花","n":2}
 - {"id":"xms4ronzyu63g","name":"鴨肉","kcal":180,"p":18,"c":2,"f":11,"portion":"約80克，鋪滿飯面","n":2}
