@@ -27,6 +27,7 @@
 - {"id":"xms4rsmicfv11","name":"大腸（肥腸）","kcal":150,"p":4,"c":1,"f":14,"portion":"兩小塊，約40克","n":1}
 - {"id":"xmscptz9w18cz","name":"大腸頭","kcal":110,"p":6,"f":9,"portion":"約1/4手掌大小（約40g）","n":1}
 - {"id":"xmsbxvrp7ugy6","name":"手工蛋餃","kcal":160,"p":8,"c":6,"f":12,"portion":"2個","n":1}
+- {"id":"xmsg727obzm5d","name":"木耳炒青江菜","kcal":150,"p":3,"c":10,"f":10,"portion":"1個拳頭大（約180g），自助餐炒青菜含烹調用油","n":1}
 - {"id":"xmsbxvrpbc492","name":"火鍋湯底（奶香湯＋牛髓湯，飲用部分）","kcal":150,"p":5,"c":5,"f":12,"portion":"約1碗，200ml","n":1}
 - {"id":"xms1ii7edhh0y","name":"冬瓜檸檬冰沙","kcal":130,"c":33,"portion":"半杯約300ml（原份量700ml的一半）","n":1}
 - {"id":"xmsfmdexp1jpn","name":"北寄貝壽司","kcal":50,"p":3,"c":9,"f":1,"portion":"1貫，醋飯約20g＋北寄貝約15g，共約35g","n":1}
@@ -77,6 +78,7 @@
 - {"id":"xmsam4irgyc28","name":"甜蝦美乃滋軍艦（2貫）","kcal":180,"p":6,"c":22,"f":7,"portion":"2貫，蝦肉約20g+美乃滋一球+醋飯約80g","n":1}
 - {"id":"xms96wuclgvzi","name":"荷包蛋","kcal":90,"p":6,"c":1,"f":7,"portion":"1顆，煎於蔥油餅上","n":1}
 - {"id":"xms3ccpsd746t","name":"荷包蛋（一顆）","kcal":90,"p":6,"c":1,"f":7,"portion":"一顆蛋，油煎","n":1}
+- {"id":"xmsg727odu5zk","name":"魚丸炒小白菜","kcal":280,"p":10,"c":15,"f":18,"portion":"1.3個拳頭大（約230g），內含魚丸約3-4顆，每顆約22g，共約85g，其餘為小白菜與炒油","n":1}
 - {"id":"xms1ii7eck6tj","name":"魚肉","kcal":60,"p":11,"f":2,"portion":"三小塊，約60克","n":1}
 - {"id":"xms1ii7ecuf5d","name":"無糖麥茶","kcal":0,"portion":"半杯約200ml","n":1}
 - {"id":"xms7flaa517xo","name":"蜂蜜麵包","kcal":100,"p":2,"c":15,"f":2,"n":1}
@@ -89,6 +91,7 @@
 - {"id":"xmsam76qizaj0","name":"蒔蘿與檸檬調味","kcal":5,"c":1,"portion":"少許蒔蘿碎與一片檸檬點綴","n":1}
 - {"id":"xmsfmdexklrdw","name":"蒲燒鰻壽司","kcal":75,"p":4,"c":10,"f":3,"portion":"1貫，醋飯約20g＋鰻魚約20g，共約40g","n":1}
 - {"id":"xms1iqck4djw1","name":"酸辣湯","kcal":80,"p":5,"c":8,"f":3,"portion":"半碗（約200ml）","n":1}
+- {"id":"xmsg727ofiyq8","name":"銀耳豆花","kcal":200,"p":5,"c":40,"f":3,"portion":"350ml，含豆花與糖水，糖水約占1/3體積","n":1}
 - {"id":"xmsfmdexszbbv","name":"熟鮭魚壽司","kcal":55,"p":3,"c":9,"f":2,"portion":"1貫，醋飯約20g＋熟鮭魚約15g，共約35g","n":1}
 - {"id":"xms4rsmiai2w7","name":"熱狗串（半串）","kcal":80,"p":3,"c":2,"f":7,"portion":"約半根熱狗","n":1}
 - {"id":"xmsambuj1alh1","name":"蔥抓餅加蛋","kcal":230,"p":9,"c":26,"f":11,"portion":"整份約1.5張蛋餅份量，此次吃2/3份，約1張蛋餅份量","n":1}
