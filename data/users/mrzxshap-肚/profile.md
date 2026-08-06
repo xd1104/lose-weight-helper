@@ -10,5 +10,5 @@ goal: -300
 proteinPerKg: 1.6
 fatPct: 25
 model: "claude-sonnet-5"
-updatedAt: "2026-08-06T04:55:47.241Z"
+updatedAt: "2026-08-06T04:55:48.220Z"
 ---
