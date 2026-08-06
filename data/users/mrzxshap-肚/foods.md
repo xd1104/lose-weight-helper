@@ -92,6 +92,7 @@
 - {"id":"xms605ln837y3","name":"綜合滷味（小白菜、蕃薯葉、高麗菜、豆芽菜、海帶、花椰菜、玉米筍）","kcal":60,"p":3,"c":9,"f":1,"portion":"蔬菜類約120克，瀝乾不含湯汁","n":1}
 - {"id":"xmsam76qizaj0","name":"蒔蘿與檸檬調味","kcal":5,"c":1,"portion":"少許蒔蘿碎與一片檸檬點綴","n":1}
 - {"id":"xmsfmdexklrdw","name":"蒲燒鰻壽司","kcal":75,"p":4,"c":10,"f":3,"portion":"1貫，醋飯約20g＋鰻魚約20g，共約40g","n":1}
+- {"id":"xmshflryaigac","name":"酸菜白肉冬粉","kcal":163,"p":12.2,"c":22.4,"f":2.7,"portion":"一碗","n":1}
 - {"id":"xmsg727ofiyq8","name":"銀耳豆花","kcal":200,"p":5,"c":40,"f":3,"portion":"350ml，含豆花與糖水，糖水約占1/3體積","n":1}
 - {"id":"xmsfmdexszbbv","name":"熟鮭魚壽司","kcal":55,"p":3,"c":9,"f":2,"portion":"1貫，醋飯約20g＋熟鮭魚約15g，共約35g","n":1}
 - {"id":"xms4rsmiai2w7","name":"熱狗串（半串）","kcal":80,"p":3,"c":2,"f":7,"portion":"約半根熱狗","n":1}
