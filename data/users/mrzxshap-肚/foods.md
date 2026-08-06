@@ -27,6 +27,7 @@
 - {"id":"xms08zonodsk7","name":"叉燒肉（去皮）","kcal":150,"p":18,"c":6,"f":6,"portion":"約3-4片，共80克","n":1}
 - {"id":"xms4rsmicfv11","name":"大腸（肥腸）","kcal":150,"p":4,"c":1,"f":14,"portion":"兩小塊，約40克","n":1}
 - {"id":"xmscptz9w18cz","name":"大腸頭","kcal":110,"p":6,"f":9,"portion":"約1/4手掌大小（約40g）","n":1}
+- {"id":"xmshfnf3oz6v5","name":"天使紅蝦飯糰","kcal":214,"p":5.3,"c":32.4,"f":7,"portion":"一個","n":1}
 - {"id":"xmsbxvrp7ugy6","name":"手工蛋餃","kcal":160,"p":8,"c":6,"f":12,"portion":"2個","n":1}
 - {"id":"xmsg727obzm5d","name":"木耳炒青江菜","kcal":150,"p":3,"c":10,"f":10,"portion":"1個拳頭大（約180g），自助餐炒青菜含烹調用油","n":1}
 - {"id":"xmsbxvrpbc492","name":"火鍋湯底（奶香湯＋牛髓湯，飲用部分）","kcal":150,"p":5,"c":5,"f":12,"portion":"約1碗，200ml","n":1}
