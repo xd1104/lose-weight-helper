@@ -1,7 +1,7 @@
 ---
 sex: "female"
-age: 26
-birth: ""
+age: 1
+birth: "2026-08-06"
 height: 154
 weight: 59.3
 activity: 1.375
@@ -10,5 +10,5 @@ goal: -300
 proteinPerKg: 1.6
 fatPct: 25
 model: "claude-sonnet-5"
-updatedAt: "2026-08-06T04:17:09.975Z"
+updatedAt: "2026-08-06T04:55:37.340Z"
 ---
