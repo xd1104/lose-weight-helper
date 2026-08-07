@@ -45,6 +45,7 @@
 - {"id":"xms7fflxbtnmy","name":"皮蛋豆腐","kcal":110,"p":7,"c":4,"f":8,"portion":"半份，約1顆皮蛋+半盒嫩豆腐，含醬油膏與柴魚","n":1}
 - {"id":"xms33q6zy2764","name":"地瓜、茶豆、滷菜、香菇雞湯","kcal":800,"n":1}
 - {"id":"xms4rsmid4fiz","name":"米血糕","kcal":70,"p":2,"c":15,"portion":"一塊，約50克","n":1}
+- {"id":"xmsif9nkdqdsz","name":"米苔目（粗米條）","kcal":330,"p":6,"c":72,"f":2,"portion":"約700cc紙碗8分滿，乾麵形式，估約300g","n":1}
 - {"id":"xmsam9c2snp89","name":"肉粽","kcal":350,"p":9,"c":45,"f":14,"portion":"小顆肉粽一顆，約150g","n":1}
 - {"id":"xmsbxvrp9ctji","name":"肉燥飯","kcal":250,"p":6,"c":45,"f":6,"portion":"半碗白飯＋少許肉燥","n":1}
 - {"id":"xmsbxvrowr5hd","name":"低脂牛肉片","kcal":300,"p":40,"f":15,"portion":"一盤，約200g生重","n":1}
@@ -54,7 +55,9 @@
 - {"id":"xms5q5x68zxgt","name":"芒果","kcal":150,"p":2,"c":38,"f":1,"portion":"約兩拳頭大小，切塊約250克","n":1}
 - {"id":"xms4rsmihmftj","name":"豆包（一口）","kcal":40,"p":3,"c":1,"f":3,"portion":"約20克","n":1}
 - {"id":"xmsfmdexfzh1r","name":"豆皮壽司","kcal":60,"p":2,"c":9,"f":2,"portion":"1貫，醋飯約20g＋豆皮約15g，共約35g","n":1}
+- {"id":"xmsif9nkiactn","name":"豆芽菜與韭黃配菜","kcal":15,"p":1,"c":2,"portion":"約一小把，共約40g","n":1}
 - {"id":"xmse5j2gz2cxn","name":"乳酪片","kcal":65,"p":4,"c":1,"f":5,"portion":"1片，約一片吐司大小的正方形（約20g）","n":1}
+- {"id":"xmsif9nkkgi43","name":"拌炒油與醬汁","kcal":80,"c":3,"f":8,"portion":"乾拌麵常見用油與醬料，估約1茶匙半","n":1}
 - {"id":"xms08zonpdvn9","name":"油雞腿肉（去皮）","kcal":140,"p":20,"c":3,"f":6,"portion":"約1隻腿肉份量，80克","n":1}
 - {"id":"xmse5mahqul2a","name":"沾醬（甜酸辣醬）","kcal":40,"c":9,"portion":"約2大匙（約30g）","n":1}
 - {"id":"xmsfej0cp2tz9","name":"炒空心菜","kcal":230,"p":5,"c":10,"f":14,"portion":"約1.5顆拳頭（約270g），快炒加少許油","n":1}
@@ -104,6 +107,7 @@
 - {"id":"xms08zonqv4zd","name":"蔥薑醬料","kcal":40,"c":1,"f":4,"portion":"約2湯匙淋醬","n":1}
 - {"id":"xmsamd5bi5fop","name":"蔬菜(地瓜葉等)","kcal":30,"p":2,"c":5,"portion":"約一小把","n":1}
 - {"id":"xmsamd5bfnbbi","name":"蝦子","kcal":60,"p":10,"c":1,"f":1,"portion":"2尾中蝦","n":1}
+- {"id":"xmsif9nkgc3rf","name":"豬肉片","kcal":120,"p":13,"f":7,"portion":"約6-7片，覆蓋麵條表層，共約60g","n":1}
 - {"id":"xms08zonp4ily","name":"燒鴨肉（去皮）","kcal":110,"p":15,"c":2,"f":5,"portion":"約60克","n":1}
 - {"id":"xms1i7sgyxjon","name":"燙青菜（高麗菜、空心菜等）","kcal":60,"p":2,"c":8,"f":2,"portion":"約1份配菜，含少許油蔥","n":1}
 - {"id":"xms4rq5ugh0c7","name":"燙蕃薯葉佐蒜末醬油(1/3盤)","kcal":70,"p":2,"c":6,"f":4,"portion":"整盤約一般自助餐大份，實際食用約1/3盤，帶少許油蔥醬汁","n":1}
