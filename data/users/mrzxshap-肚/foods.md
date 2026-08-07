@@ -44,6 +44,7 @@
 - {"id":"xmsfmdexml5kx","name":"生鮭魚壽司","kcal":55,"p":3,"c":9,"f":2,"portion":"1貫，醋飯約20g＋生鮭魚約15g，共約35g","n":1}
 - {"id":"xms7fflxbtnmy","name":"皮蛋豆腐","kcal":110,"p":7,"c":4,"f":8,"portion":"半份，約1顆皮蛋+半盒嫩豆腐，含醬油膏與柴魚","n":1}
 - {"id":"xms33q6zy2764","name":"地瓜、茶豆、滷菜、香菇雞湯","kcal":800,"n":1}
+- {"id":"xmsizrxbatfpp","name":"竹筍湯","kcal":60,"p":2,"c":8,"f":2,"portion":"一般碗（約300ml，含竹筍與少量湯料）","n":1}
 - {"id":"xms4rsmid4fiz","name":"米血糕","kcal":70,"p":2,"c":15,"portion":"一塊，約50克","n":1}
 - {"id":"xmsif9nkdqdsz","name":"米苔目（粗米條）","kcal":330,"p":6,"c":72,"f":2,"portion":"約700cc紙碗8分滿，乾麵形式，估約300g","n":1}
 - {"id":"xmsam9c2snp89","name":"肉粽","kcal":350,"p":9,"c":45,"f":14,"portion":"小顆肉粽一顆，約150g","n":1}
@@ -107,6 +108,7 @@
 - {"id":"xms08zonqv4zd","name":"蔥薑醬料","kcal":40,"c":1,"f":4,"portion":"約2湯匙淋醬","n":1}
 - {"id":"xmsamd5bi5fop","name":"蔬菜(地瓜葉等)","kcal":30,"p":2,"c":5,"portion":"約一小把","n":1}
 - {"id":"xmsamd5bfnbbi","name":"蝦子","kcal":60,"p":10,"c":1,"f":1,"portion":"2尾中蝦","n":1}
+- {"id":"xmsizrxb6hmzr","name":"蝦仁煎（蚵仔煎類，蝦仁版）","kcal":450,"p":15,"c":40,"f":25,"portion":"一份約一個手掌大小的圓餅（約200g，含蛋、粉漿、蝦仁與醬汁）","n":1}
 - {"id":"xmsif9nkgc3rf","name":"豬肉片","kcal":120,"p":13,"f":7,"portion":"約6-7片，覆蓋麵條表層，共約60g","n":1}
 - {"id":"xms08zonp4ily","name":"燒鴨肉（去皮）","kcal":110,"p":15,"c":2,"f":5,"portion":"約60克","n":1}
 - {"id":"xms1i7sgyxjon","name":"燙青菜（高麗菜、空心菜等）","kcal":60,"p":2,"c":8,"f":2,"portion":"約1份配菜，含少許油蔥","n":1}
