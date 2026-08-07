@@ -60,6 +60,7 @@
 - {"id":"xmsbra5a7zooj","name":"花枝漿／麻吉魚漿糰","kcal":280,"p":18,"c":20,"f":14,"portion":"兩盤合計約7顆，每顆約30g","n":1}
 - {"id":"xms1qj1ucoz44","name":"青江菜炒菇","kcal":80,"p":3,"c":6,"f":5,"portion":"約一人份，一小盤","n":1}
 - {"id":"xms1qj1ualy9d","name":"青椒炒肉絲","kcal":180,"p":13,"c":8,"f":11,"portion":"約一人份，肉絲約60克","n":1}
+- {"id":"xmsirwbjdf5rz","name":"南瓜玉米濃湯","kcal":400,"p":8,"c":50,"f":16,"portion":"1碗，約400ml（約400g）","n":1}
 - {"id":"xmrzy5yk1ytpk","name":"南瓜濃湯","kcal":90,"p":2,"c":12,"f":4,"portion":"半碗，約120ml","n":1}
 - {"id":"xmsirvr8kx2l8","name":"厚切牛排","kcal":450,"p":40,"f":32,"portion":"約一個掌心兩倍大的肉排（約200g）","n":1}
 - {"id":"xmsalxqot8y64","name":"炸物握壽司(天婦羅風，附美乃滋醬汁)","kcal":260,"p":8,"c":30,"f":12,"portion":"迴轉壽司1盤，2貫","n":1}
