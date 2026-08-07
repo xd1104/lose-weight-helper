@@ -61,6 +61,7 @@
 - {"id":"xms1qj1ucoz44","name":"青江菜炒菇","kcal":80,"p":3,"c":6,"f":5,"portion":"約一人份，一小盤","n":1}
 - {"id":"xms1qj1ualy9d","name":"青椒炒肉絲","kcal":180,"p":13,"c":8,"f":11,"portion":"約一人份，肉絲約60克","n":1}
 - {"id":"xmrzy5yk1ytpk","name":"南瓜濃湯","kcal":90,"p":2,"c":12,"f":4,"portion":"半碗，約120ml","n":1}
+- {"id":"xmsirvr8kx2l8","name":"厚切牛排","kcal":450,"p":40,"f":32,"portion":"約一個掌心兩倍大的肉排（約200g）","n":1}
 - {"id":"xmsalxqot8y64","name":"炸物握壽司(天婦羅風，附美乃滋醬汁)","kcal":260,"p":8,"c":30,"f":12,"portion":"迴轉壽司1盤，2貫","n":1}
 - {"id":"xmsbra5aha349","name":"紅蘿蔔片","kcal":8,"c":2,"portion":"2片，約20g","n":1}
 - {"id":"xms46nxj47kfe","name":"紅蘿蔔炒蛋","kcal":90,"p":4,"c":6,"f":6,"portion":"約半碗，含少許油","n":1}
@@ -106,6 +107,7 @@
 - {"id":"xms33mroscx1r","name":"滷豬皮","kcal":90,"p":8,"c":2,"f":6,"portion":"約1/2碗","n":1}
 - {"id":"xms603xh4c6mu","name":"滷蕃薯葉","kcal":25,"p":2,"c":3,"f":1,"portion":"約80克","n":1}
 - {"id":"xms96u0tb746w","name":"綜合蔬菜（青江菜、玉米筍、番茄、黑木耳）","kcal":60,"p":2,"c":10,"f":1,"portion":"約1碗份量蔬菜","n":1}
+- {"id":"xmsirvr8ojsq1","name":"綜合醬汁（黑胡椒／蘑菇醬）","kcal":80,"p":1,"c":8,"f":6,"portion":"約2大匙，約30ml","n":1}
 - {"id":"xmsdw4vm3ppam","name":"綠豆湯","kcal":340,"p":6,"c":68,"f":3,"portion":"約400ml，等於一般碗（約280ml）的1.4碗，含綠豆與糖水","n":1}
 - {"id":"xms4rmubagdxq","name":"熱狗串","kcal":90,"p":3,"c":2,"f":8,"portion":"半串，約30g","n":1}
 - {"id":"xms96sz95l79f","name":"蔥抓餅加蛋","kcal":150,"p":6,"c":15,"f":8,"portion":"整份約市售一片蔥抓餅加一顆蛋，取其1/3份量","n":1}
@@ -125,3 +127,4 @@
 - {"id":"xms4rmubcxhrn","name":"雞心串","kcal":80,"p":9,"f":5,"portion":"1串，約50g","n":1}
 - {"id":"xmsajyeot493f","name":"雞肉蛋沙拉三明治","kcal":240,"p":12,"c":23,"f":11,"portion":"1份，100公克，包裝標示","n":1}
 - {"id":"xmsbra5a9cyy6","name":"蟹肉棒","kcal":50,"p":4,"c":6,"f":1,"portion":"約2-3根，合計約50g","n":1}
+- {"id":"xmsirvr8nzftx","name":"鐵板麵","kcal":350,"p":8,"c":50,"f":12,"portion":"一份約200g（含奶油拌炒）","n":1}
