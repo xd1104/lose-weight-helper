@@ -87,11 +87,13 @@
 - {"id":"xms1id61ysrqt","name":"烤雞肉（去皮）","kcal":130,"p":24,"f":4,"portion":"約80克","n":1}
 - {"id":"xmsam4irj8cc4","name":"真鯛生魚片握壽司（2貫）","kcal":130,"p":8,"c":22,"f":1,"portion":"2貫，真鯛生魚片約30g+醋飯約80g","n":1}
 - {"id":"xmsfej0cob6vz","name":"茶豆(毛豆)","kcal":200,"p":18,"c":15,"f":9,"portion":"約一顆拳頭大（約150g，含莢重量已扣除，僅計可食部分）","n":1}
+- {"id":"xmsku0uem6r8p","name":"荊州公安鍋盔餅皮（油酥發麵）","kcal":480,"p":10,"c":60,"f":20,"portion":"約三個手掌長、厚約1公分，估計餅皮部分約150g","n":1}
 - {"id":"xmsamd5bdqd5j","name":"起司","kcal":150,"p":9,"c":2,"f":12,"portion":"融化起司片約1.5片","n":1}
 - {"id":"xms4iibycaaeq","name":"迷你銅鑼燒","kcal":114,"p":2.1,"c":19.8,"f":3,"n":1}
 - {"id":"xms3ccpsecber","name":"配菜（醃蘿蔔/高麗菜）","kcal":30,"p":1,"c":5,"f":1,"portion":"少量配菜","n":1}
 - {"id":"xmsh082exghg5","name":"高麗菜韭黃水餃","kcal":400,"p":12,"c":55,"f":12,"portion":"10顆，每顆約40g，共約400g","n":1}
 - {"id":"xmshfpni8lyin","name":"得正金焙烏龍奶","kcal":220,"c":37.2,"f":8,"portion":"一份","n":1}
+- {"id":"xmsku0ueqp675","name":"梅干扣肉內餡","kcal":260,"p":10,"c":5,"f":22,"portion":"包在餅內的肥瘦肉餡，估計約100g（約一個掌心大小的量）","n":1}
 - {"id":"xms1iqck6mwnk","name":"涼拌小黃瓜","kcal":60,"p":1,"c":8,"f":3,"portion":"約半盤，含醬汁","n":1}
 - {"id":"xmsam4irgyc28","name":"甜蝦美乃滋軍艦（2貫）","kcal":180,"p":6,"c":22,"f":7,"portion":"2貫，蝦肉約20g+美乃滋一球+醋飯約80g","n":1}
 - {"id":"xms96wuclgvzi","name":"荷包蛋","kcal":90,"p":6,"c":1,"f":7,"portion":"1顆，煎於蔥油餅上","n":1}
