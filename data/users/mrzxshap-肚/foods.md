@@ -65,6 +65,7 @@
 - {"id":"xmsfmdexfzh1r","name":"豆皮壽司","kcal":60,"p":2,"c":9,"f":2,"portion":"1貫，醋飯約20g＋豆皮約15g，共約35g","n":1}
 - {"id":"xmsif9nkiactn","name":"豆芽菜與韭黃配菜","kcal":15,"p":1,"c":2,"portion":"約一小把，共約40g","n":1}
 - {"id":"xmse5j2gz2cxn","name":"乳酪片","kcal":65,"p":4,"c":1,"f":5,"portion":"1片，約一片吐司大小的正方形（約20g）","n":1}
+- {"id":"xmslg5bq8g1tn","name":"奇異果","kcal":42,"p":1,"c":10,"portion":"1顆，去皮去籽後果肉約一顆雞蛋大小（約70g）","n":1}
 - {"id":"xmsif9nkkgi43","name":"拌炒油與醬汁","kcal":80,"c":3,"f":8,"portion":"乾拌麵常見用油與醬料，估約1茶匙半","n":1}
 - {"id":"xms08zonpdvn9","name":"油雞腿肉（去皮）","kcal":140,"p":20,"c":3,"f":6,"portion":"約1隻腿肉份量，80克","n":1}
 - {"id":"xmse5mahqul2a","name":"沾醬（甜酸辣醬）","kcal":40,"c":9,"portion":"約2大匙（約30g）","n":1}
@@ -76,6 +77,7 @@
 - {"id":"xmsfmdexxui79","name":"哇沙米","kcal":5,"c":1,"portion":"約1小球，約5g","n":1}
 - {"id":"xms1izpsc744j","name":"炸麻糬","kcal":420,"p":6,"c":66,"f":16,"portion":"手掌大小2片，約每片60克含裹粉油炸","n":1}
 - {"id":"xms607zkjaqwy","name":"為力炸醬麵","kcal":418,"p":9.6,"c":49.1,"f":20.4,"n":1}
+- {"id":"xmslg5bqbcbz0","name":"紅毛丹","kcal":45,"p":1,"c":11,"portion":"6顆，每顆去殼去籽後果肉約12g，共約72g","n":1}
 - {"id":"xmse5ajg2t9ko","name":"悟饕 炭火烤肉便當（半飯）","kcal":640,"p":29,"c":102,"f":13.4,"portion":"一個","n":1}
 - {"id":"xmsbrk7wldw7b","name":"核桃軟法","kcal":566,"p":17.1,"c":101.3,"f":10.3,"n":1}
 - {"id":"xmsfej0crk817","name":"氣炸雞胸肉","kcal":245,"p":46,"f":5,"portion":"約1顆拳頭大（約150g），少油氣炸調理","n":1}
