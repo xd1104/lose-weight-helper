@@ -29,6 +29,7 @@
 - {"id":"xmsktyk3uzab0","name":"大腸包小腸(四分之一份)","kcal":125,"p":4,"c":15,"f":5,"portion":"整份約一根糯米腸＋一根香腸（約200g），取其1/4（約50g）","n":1}
 - {"id":"xmscptz9w18cz","name":"大腸頭","kcal":110,"p":6,"f":9,"portion":"約1/4手掌大小（約40g）","n":1}
 - {"id":"xmshfnf3oz6v5","name":"天使紅蝦飯糰","kcal":214,"p":5.3,"c":32.4,"f":7,"portion":"一個","n":1}
+- {"id":"xmsl7f8f6p5uq","name":"太陽餅","kcal":240,"p":2.1,"c":30.1,"f":12.3,"portion":"一份","n":1}
 - {"id":"xmsbxvrp7ugy6","name":"手工蛋餃","kcal":160,"p":8,"c":6,"f":12,"portion":"2個","n":1}
 - {"id":"xmsg727obzm5d","name":"木耳炒青江菜","kcal":150,"p":3,"c":10,"f":10,"portion":"1個拳頭大（約180g），自助餐炒青菜含烹調用油","n":1}
 - {"id":"xmsbxvrpbc492","name":"火鍋湯底（奶香湯＋牛髓湯，飲用部分）","kcal":150,"p":5,"c":5,"f":12,"portion":"約1碗，200ml","n":1}
