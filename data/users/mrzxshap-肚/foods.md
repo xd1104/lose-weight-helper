@@ -43,6 +43,7 @@
 - {"id":"xmse5mahonh6u","name":"生春捲（蝦）","kcal":180,"p":10,"c":26,"f":3,"portion":"2條切成4塊，每條約含蝦2-3隻、米皮、生菜冬粉，每條約60g，共約120g","n":1}
 - {"id":"xmsbxvrp8oirx","name":"生蛋（涮煮用）","kcal":70,"p":6,"c":1,"f":5,"portion":"1顆","n":1}
 - {"id":"xmsktv8xitnxg","name":"生菜沙拉佐胡麻醬","kcal":250,"p":5,"c":15,"f":18,"portion":"約兩個拳頭大的生菜(約300g)+胡麻醬2份(約60ml)","n":1}
+- {"id":"xmslgberqu9v7","name":"生菜配菜","kcal":5,"c":1,"portion":"約2-3片萵苣，約20g","n":1}
 - {"id":"xmsam76qcqxe4","name":"生鮭魚丁","kcal":90,"p":10,"f":5,"portion":"約一貫壽司份量的生鮭魚丁，約50g","n":1}
 - {"id":"xmsam4iri78pu","name":"生鮭魚握壽司（迷你醋飯，2貫）","kcal":150,"p":8,"c":22,"f":4,"portion":"2貫，鮭魚生魚片約30g+迷你醋飯約60g","n":1}
 - {"id":"xmsfmdexml5kx","name":"生鮭魚壽司","kcal":55,"p":3,"c":9,"f":2,"portion":"1貫，醋飯約20g＋生鮭魚約15g，共約35g","n":1}
@@ -75,6 +76,7 @@
 - {"id":"xms7ff8j73ml2","name":"花菇燉雞粥","kcal":420,"p":22,"c":58,"f":9,"portion":"一般碗，約450-500ml","n":1}
 - {"id":"xmsktv8xnn7tc","name":"南瓜片","kcal":30,"p":1,"c":7,"portion":"一小片，約30g","n":1}
 - {"id":"xmsfmdexxui79","name":"哇沙米","kcal":5,"c":1,"portion":"約1小球，約5g","n":1}
+- {"id":"xmslgbern9j4j","name":"炸春捲（越式炸春捲）","kcal":450,"p":15,"c":40,"f":30,"portion":"5塊，每塊約35g，共約175g（照片可見5塊，非您所述的3塊，取實際可見數量估算）","n":1}
 - {"id":"xms1izpsc744j","name":"炸麻糬","kcal":420,"p":6,"c":66,"f":16,"portion":"手掌大小2片，約每片60克含裹粉油炸","n":1}
 - {"id":"xms607zkjaqwy","name":"為力炸醬麵","kcal":418,"p":9.6,"c":49.1,"f":20.4,"n":1}
 - {"id":"xmslg5bqbcbz0","name":"紅毛丹","kcal":45,"p":1,"c":11,"portion":"6顆，每顆去殼去籽後果肉約12g，共約72g","n":1}
@@ -98,6 +100,7 @@
 - {"id":"xmshfpni8lyin","name":"得正金焙烏龍奶","kcal":220,"c":37.2,"f":8,"portion":"一份","n":1}
 - {"id":"xmsku0ueqp675","name":"梅干扣肉內餡","kcal":260,"p":10,"c":5,"f":22,"portion":"包在餅內的肥瘦肉餡，估計約100g（約一個掌心大小的量）","n":1}
 - {"id":"xms1iqck6mwnk","name":"涼拌小黃瓜","kcal":60,"p":1,"c":8,"f":3,"portion":"約半盤，含醬汁","n":1}
+- {"id":"xmslgberkipzg","name":"清燉牛肉河粉","kcal":600,"p":30,"c":70,"f":15,"portion":"一般麵店碗，河粉約1.5碗（約300g）＋牛肉片約100g＋清湯","n":1}
 - {"id":"xmsam4irgyc28","name":"甜蝦美乃滋軍艦（2貫）","kcal":180,"p":6,"c":22,"f":7,"portion":"2貫，蝦肉約20g+美乃滋一球+醋飯約80g","n":1}
 - {"id":"xms96wuclgvzi","name":"荷包蛋","kcal":90,"p":6,"c":1,"f":7,"portion":"1顆，煎於蔥油餅上","n":1}
 - {"id":"xms3ccpsd746t","name":"荷包蛋（一顆）","kcal":90,"p":6,"c":1,"f":7,"portion":"一顆蛋，油煎","n":1}
