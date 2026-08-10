@@ -125,6 +125,7 @@
 - {"id":"xmsbrbfv3s4gz","name":"薯條","kcal":180,"p":2,"c":24,"f":9,"portion":"中份薯條的一半，約中薯半份","n":1}
 - {"id":"xms96s169x9jq","name":"鮮奶茶","kcal":250,"p":6,"c":38,"f":9,"portion":"700ml小杯，全糖假設(未特別說明糖量)","n":1}
 - {"id":"xmsalxqp1badn","name":"鮮蝦握壽司","kcal":100,"p":8,"c":16,"f":1,"portion":"迴轉壽司1盤，2貫","n":1}
+- {"id":"xmsn2r31701vl","name":"檸檬蛋糕","kcal":161,"p":3.2,"c":16,"f":9.4,"n":1}
 - {"id":"xmsfy4ng17ob1","name":"藍莓果醬","kcal":50,"c":13,"portion":"約1湯匙（約20g）","n":1}
 - {"id":"xms4rmubcxhrn","name":"雞心串","kcal":80,"p":9,"f":5,"portion":"1串，約50g","n":1}
 - {"id":"xmsajyeot493f","name":"雞肉蛋沙拉三明治","kcal":240,"p":12,"c":23,"f":11,"portion":"1份，100公克，包裝標示","n":1}
