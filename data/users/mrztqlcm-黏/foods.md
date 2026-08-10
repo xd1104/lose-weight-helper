@@ -10,6 +10,7 @@
 - {"id":"xmseghx8d5ytp","name":"堅果","kcal":70,"p":2,"c":3,"f":6,"portion":"6顆，以腰果大小估算，每顆約2g，共約12g","star":true,"n":4}
 - {"id":"xms08qs8ecwxz","name":"炒空心菜","kcal":216,"p":4,"c":9,"f":16,"portion":"1.5顆拳頭（約270g，含炒油）","n":4}
 - {"id":"xms08qs8bajwi","name":"糙米飯","kcal":130,"p":3,"c":28,"f":1,"portion":"約半碗（100g）","n":3}
+- {"id":"xms1k9j196fuo","name":"白飯","kcal":420,"p":8,"c":90,"f":1,"portion":"便當盒份量，約1.5碗（約320g）","n":2}
 - {"id":"xms1k9j1735nj","name":"羊肉片","kcal":420,"p":34,"f":30,"portion":"中份約200-250g生肉片，火鍋涮煮","n":2}
 - {"id":"xmsam01aplz46","name":"冷凍地瓜","kcal":90,"p":1,"c":21,"portion":"1條，約一根手指長（約100g）","n":2}
 - {"id":"xms08qs8es0ij","name":"洋蔥炒魷魚","kcal":180,"p":15,"c":10,"f":8,"portion":"約一小盤，魷魚約80克、洋蔥約50克","n":2}
@@ -24,6 +25,7 @@
 - {"id":"xms14b5m31ttj","name":"燒餅","kcal":280,"p":6,"c":40,"f":10,"portion":"一份約1個，普通厚燒餅","n":2}
 - {"id":"xms08qs8egfxf","name":"燙秋葵佐芝麻醬","kcal":90,"p":3,"c":8,"f":5,"portion":"約一小盤，含少量芝麻醬淋醬","n":2}
 - {"id":"xmsbra5akzelh","name":"三棵西北麻糬燒","kcal":180,"p":6,"c":20,"f":8,"portion":"3顆，火鍋料","n":1}
+- {"id":"xmsn2tg5yoeav","name":"大陸妹（燙青菜）","kcal":50,"p":1,"c":4,"f":3,"portion":"約半碗（約50g）","n":1}
 - {"id":"xms1qj1uc1fk1","name":"木耳炒蛋","kcal":150,"p":7,"c":6,"f":11,"portion":"約一人份，含一顆蛋","n":1}
 - {"id":"xms96rl6mftqz","name":"火腿","kcal":90,"p":9,"c":2,"f":5,"portion":"約3-4片火腿，3/4份量","n":1}
 - {"id":"xms1k9j18ck6q","name":"火鍋料(如魚餃、貢丸等)","kcal":100,"p":5,"c":8,"f":6,"portion":"少許，約2-3顆綜合火鍋料","n":1}
@@ -42,7 +44,6 @@
 - {"id":"xmsdw3bznowtn","name":"生牛肉片／燙牛肉","kcal":180,"p":20,"f":11,"portion":"約一個掌心大小的量，切片鋪滿碗面（約100g）","n":1}
 - {"id":"xmsbra5a3vfii","name":"生高麗菜(涮煮用)","kcal":40,"p":2,"c":8,"portion":"三盤合計約2大片，煮熟後約200g","n":1}
 - {"id":"xms04sq500kft","name":"白木耳蓮子甜湯","kcal":150,"p":2,"c":35,"portion":"馬克杯一杯，約250ml，含白木耳、蓮子、糖水","n":1}
-- {"id":"xms1k9j196fuo","name":"白飯","kcal":280,"p":5,"c":62,"portion":"一般碗白飯約1碗(210克)","n":1}
 - {"id":"xmsbr67hyi0zv","name":"白飯拌滷肉燥","kcal":220,"p":6,"c":32,"f":8,"portion":"半碗白飯（約140大卡）＋肉燥少許","n":1}
 - {"id":"xms7fekz4klqt","name":"皮蛋豆腐","kcal":95,"p":6,"c":4,"f":6,"portion":"半份，約半盤（皮蛋1顆、嫩豆腐半盒，含醬油膏與柴魚）","n":1}
 - {"id":"xms4rmub7sfn0","name":"米血串","kcal":90,"p":2,"c":19,"f":1,"portion":"1串，約60g","n":1}
@@ -103,6 +104,7 @@
 - {"id":"xms603xh7nt1v","name":"滷豆芽菜","kcal":20,"p":2,"c":3,"f":1,"portion":"約80克","n":1}
 - {"id":"xms603xhd6zvk","name":"滷花椰菜","kcal":15,"p":1,"c":2,"portion":"約50克","n":1}
 - {"id":"xms603xh68h7t","name":"滷高麗菜","kcal":25,"p":1,"c":4,"f":1,"portion":"約80克","n":1}
+- {"id":"xmsn2tg63mi78","name":"滷蛋","kcal":75,"p":6,"c":1,"f":5,"portion":"1顆，約一顆雞蛋大小（約50g）","n":1}
 - {"id":"xms33mronx8de","name":"滷菜頭","kcal":40,"p":1,"c":8,"portion":"約1/2碗，切塊","n":1}
 - {"id":"xms603xhao3bu","name":"滷菜頭（白蘿蔔）","kcal":15,"c":3,"portion":"約70克","n":1}
 - {"id":"xms46nxj11eh3","name":"滷腿庫","kcal":280,"p":18,"c":3,"f":22,"portion":"約一塊，掌心大小含皮","n":1}
@@ -115,6 +117,7 @@
 - {"id":"xms96sz95l79f","name":"蔥抓餅加蛋","kcal":150,"p":6,"c":15,"f":8,"portion":"整份約市售一片蔥抓餅加一顆蛋，取其1/3份量","n":1}
 - {"id":"xmsameoweqsln","name":"蔥油餅加蛋","kcal":133,"p":4,"c":15,"f":7,"portion":"約1/3份蔥油餅加蛋（整份約400大卡，含蛋與煎油）","n":1}
 - {"id":"xmsamfmt24xq0","name":"蔬菜（青江菜、玉米筍、番茄等）","kcal":80,"p":3,"c":15,"f":1,"portion":"綜合蔬菜約1.5碗份量","n":1}
+- {"id":"xmsn2tg605gv3","name":"燙白菜","kcal":40,"p":1,"c":4,"f":2,"portion":"約半碗（約50g）","n":1}
 - {"id":"xmscu5za94soq","name":"燙地瓜葉","kcal":50,"p":2,"c":6,"f":1,"portion":"約半碗（約80g）","n":1}
 - {"id":"xms4rkngg8k0n","name":"燙地瓜葉佐蒜末醬油","kcal":110,"p":3,"c":9,"f":7,"portion":"自助餐一般盤裝，估全盤約250克，實際食用2/3份約170克","n":1}
 - {"id":"xmrzvy2cobh9k","name":"蕈菇燉飯","kcal":520,"p":14,"c":72,"f":18,"portion":"約一碗份量(含飯約200g熟重、綜合菇類、起司醬汁)","n":1}
@@ -129,5 +132,6 @@
 - {"id":"xmsfy4ng17ob1","name":"藍莓果醬","kcal":50,"c":13,"portion":"約1湯匙（約20g）","n":1}
 - {"id":"xms4rmubcxhrn","name":"雞心串","kcal":80,"p":9,"f":5,"portion":"1串，約50g","n":1}
 - {"id":"xmsajyeot493f","name":"雞肉蛋沙拉三明治","kcal":240,"p":12,"c":23,"f":11,"portion":"1份，100公克，包裝標示","n":1}
+- {"id":"xmsn2tg5v3jdz","name":"雞肉絲（雞肉飯用，含醬汁）","kcal":220,"p":20,"c":5,"f":13,"portion":"約一個掌心大小的雞肉絲量，約100g","n":1}
 - {"id":"xmsbra5a9cyy6","name":"蟹肉棒","kcal":50,"p":4,"c":6,"f":1,"portion":"約2-3根，合計約50g","n":1}
 - {"id":"xmsirvr8nzftx","name":"鐵板麵","kcal":350,"p":8,"c":50,"f":12,"portion":"一份約200g（含奶油拌炒）","n":1}
