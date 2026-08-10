@@ -75,11 +75,14 @@
 - {"id":"xmsbxvrp22ycn","name":"花枝漿","kcal":80,"p":8,"c":4,"f":3,"portion":"2顆，約60g","n":1}
 - {"id":"xms7ff8j73ml2","name":"花菇燉雞粥","kcal":420,"p":22,"c":58,"f":9,"portion":"一般碗，約450-500ml","n":1}
 - {"id":"xmsktv8xnn7tc","name":"南瓜片","kcal":30,"p":1,"c":7,"portion":"一小片，約30g","n":1}
+- {"id":"xmsn2l29zpsjq","name":"南瓜炒米粉","kcal":320,"p":6,"c":50,"f":10,"portion":"約一碗（拳頭大小），約200g，含南瓜、米粉、香菇絲","n":1}
 - {"id":"xmsfmdexxui79","name":"哇沙米","kcal":5,"c":1,"portion":"約1小球，約5g","n":1}
 - {"id":"xmslgbern9j4j","name":"炸春捲（越式炸春捲）","kcal":450,"p":15,"c":40,"f":30,"portion":"5塊，每塊約35g，共約175g（照片可見5塊，非您所述的3塊，取實際可見數量估算）","n":1}
 - {"id":"xms1izpsc744j","name":"炸麻糬","kcal":420,"p":6,"c":66,"f":16,"portion":"手掌大小2片，約每片60克含裹粉油炸","n":1}
 - {"id":"xms607zkjaqwy","name":"為力炸醬麵","kcal":418,"p":9.6,"c":49.1,"f":20.4,"n":1}
 - {"id":"xmslg5bqbcbz0","name":"紅毛丹","kcal":45,"p":1,"c":11,"portion":"6顆，每顆去殼去籽後果肉約12g，共約72g","n":1}
+- {"id":"xmsn2l2a3ybs8","name":"香菇雞湯（雞腿肉2塊＋香菇3朵）","kcal":220,"p":24,"c":5,"f":12,"portion":"雞腿肉2塊約掌心大小共約120g，香菇3朵每朵約10g共30g，湯少量","n":1}
+- {"id":"xmsn2l2a9hp7c","name":"香蕉","kcal":90,"p":1,"c":23,"portion":"1根，約100g","n":1}
 - {"id":"xmse5ajg2t9ko","name":"悟饕 炭火烤肉便當（半飯）","kcal":640,"p":29,"c":102,"f":13.4,"portion":"一個","n":1}
 - {"id":"xmsbrk7wldw7b","name":"核桃軟法","kcal":566,"p":17.1,"c":101.3,"f":10.3,"n":1}
 - {"id":"xmsfej0crk817","name":"氣炸雞胸肉","kcal":245,"p":46,"f":5,"portion":"約1顆拳頭大（約150g），少油氣炸調理","n":1}
@@ -133,6 +136,7 @@
 - {"id":"xmsizrxb6hmzr","name":"蝦仁煎（蚵仔煎類，蝦仁版）","kcal":450,"p":15,"c":40,"f":25,"portion":"一份約一個手掌大小的圓餅（約200g，含蛋、粉漿、蝦仁與醬汁）","n":1}
 - {"id":"xmsif9nkgc3rf","name":"豬肉片","kcal":120,"p":13,"f":7,"portion":"約6-7片，覆蓋麵條表層，共約60g","n":1}
 - {"id":"xms08zonp4ily","name":"燒鴨肉（去皮）","kcal":110,"p":15,"c":2,"f":5,"portion":"約60克","n":1}
+- {"id":"xmsn2l2a6kukd","name":"燙花椰菜","kcal":35,"p":3,"c":6,"portion":"5小塊，約半碗（約100g）","n":1}
 - {"id":"xms1i7sgyxjon","name":"燙青菜（高麗菜、空心菜等）","kcal":60,"p":2,"c":8,"f":2,"portion":"約1份配菜，含少許油蔥","n":1}
 - {"id":"xms4rq5ugh0c7","name":"燙蕃薯葉佐蒜末醬油(1/3盤)","kcal":70,"p":2,"c":6,"f":4,"portion":"整盤約一般自助餐大份，實際食用約1/3盤，帶少許油蔥醬汁","n":1}
 - {"id":"xmsbxvrp6bddb","name":"鴨血","kcal":60,"p":6,"c":2,"f":2,"portion":"2塊，約80g","n":1}
