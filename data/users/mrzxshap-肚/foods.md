@@ -101,6 +101,8 @@
 - {"id":"xms4iibycaaeq","name":"迷你銅鑼燒","kcal":114,"p":2.1,"c":19.8,"f":3,"n":1}
 - {"id":"xms3ccpsecber","name":"配菜（醃蘿蔔/高麗菜）","kcal":30,"p":1,"c":5,"f":1,"portion":"少量配菜","n":1}
 - {"id":"xmsh082exghg5","name":"高麗菜韭黃水餃","kcal":400,"p":12,"c":55,"f":12,"portion":"10顆，每顆約40g，共約400g","n":1}
+- {"id":"xmsn2tbd0f1a6","name":"乾麵（熟麵）","kcal":200,"p":5,"c":40,"f":2,"portion":"850cc紙碗裝半碗，約半碗熟麵（約150g，相當於正常一碗的一半）","n":1}
+- {"id":"xmsn2tbd9a0np","name":"乾麵拌油／醬料（豬油、醬油、蔥花等）","kcal":50,"f":5,"portion":"半碗份量約半份醬料（約1茶匙油＋醬油）","n":1}
 - {"id":"xmshfpni8lyin","name":"得正金焙烏龍奶","kcal":220,"c":37.2,"f":8,"portion":"一份","n":1}
 - {"id":"xmsku0ueqp675","name":"梅干扣肉內餡","kcal":260,"p":10,"c":5,"f":22,"portion":"包在餅內的肥瘦肉餡，估計約100g（約一個掌心大小的量）","n":1}
 - {"id":"xms1iqck6mwnk","name":"涼拌小黃瓜","kcal":60,"p":1,"c":8,"f":3,"portion":"約半盤，含醬汁","n":1}
@@ -115,6 +117,8 @@
 - {"id":"xmsn2lqbg3pqf","name":"新鮮龍眼（去殼去籽）","kcal":52,"p":1,"c":13,"portion":"10顆，每顆果肉約8-9g，共約85g","n":1}
 - {"id":"xms7flaa517xo","name":"蜂蜜麵包","kcal":100,"p":2,"c":15,"f":2,"n":1}
 - {"id":"xmsam76qekzpi","name":"壽司醋飯","kcal":35,"p":1,"c":8,"portion":"藏於海苔下方，約半貫壽司飯量，約20g","n":1}
+- {"id":"xmsn2tbd7r4ih","name":"榨菜","kcal":15,"p":1,"c":2,"portion":"約2小撮（約20g）","n":1}
+- {"id":"xmsn2tbd4hkxi","name":"榨菜肉絲配料—肉絲","kcal":70,"p":7,"f":5,"portion":"約一個乒乓球大小的肉絲量（約30g）","n":1}
 - {"id":"xmsktyk3yp3rx","name":"滷大雞爪","kcal":90,"p":6,"c":2,"f":6,"portion":"1支，約一個掌心大小（約35g）","n":1}
 - {"id":"xms1iqck69uzj","name":"滷牛腱片","kcal":140,"p":18,"c":2,"f":7,"portion":"約半盤，總重估80克","n":1}
 - {"id":"xms4rpirrq33u","name":"滷汁與油蔥酥調味","kcal":50,"p":1,"c":3,"f":4,"portion":"淋在飯上的滷汁與油蔥，約1湯匙","n":1}
