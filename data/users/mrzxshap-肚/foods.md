@@ -1,7 +1,7 @@
 ## 食物
 
+- {"id":"xmslg4cgbeecv","name":"檸檬蛋糕","kcal":161,"p":3.2,"c":16,"f":9.4,"portion":"一顆","star":true,"n":2}
 - {"id":"xmsbxvrp17zif","name":"麻吉燒（花生口味）","kcal":60,"p":1,"c":10,"f":2,"portion":"1顆，約28g（西北麻糬燒市售規格：一包 200g 裝 7-8 顆）","star":true,"n":1}
-- {"id":"xmslg4cgbeecv","name":"檸檬蛋糕","kcal":161,"p":3.2,"c":16,"f":9.4,"portion":"一顆","star":true,"n":1}
 - {"id":"xms474i6245tc","name":"水煮蛋","kcal":78,"p":6,"c":1,"f":5,"portion":"1顆，約一顆雞蛋大小（約50g）","n":9}
 - {"id":"xmse5damc2n4m","name":"綜合堅果","kcal":90,"p":3,"c":3,"f":8,"portion":"6顆，綜合堅果（杏仁、腰果、核桃等）平均每顆約2.5g，共約15g","n":7}
 - {"id":"xms08zonowf7c","name":"白飯","kcal":130,"p":2,"c":29,"portion":"小碗約0.7碗（約100克飯量，被鴨肉覆蓋）","n":6}
