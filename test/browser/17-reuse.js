@@ -6,6 +6,7 @@
  *   D. 差很少（5% 以內）不提示 —— 差幾大卡還跳出來問只是版面雜訊
  *   E. 名稱寫法不同也要認得（「白飯」vs「白飯（便當盒）」），不然常吃清單會長出近似重複
  *   F. 加了星的常吃項目，AI 不准用新的估算蓋掉他手動改過的數字
+ *   G. 沿用只借「數字」，份量文字要留今天這一次的（v6.0 的真 bug）
  *
  * ⚠️ 會清掉本機 server 上的所有使用者資料（_setup.js 的 clearAll），跑之前先備份 data/。
  */
@@ -18,6 +19,10 @@ function check(n, c, g) {
   else { console.log('  FAIL ' + n + (g !== undefined ? '  got=' + JSON.stringify(g) : '')); fail.push(n); }
 }
 const txt = async (p, sel) => (await p.textContent(sel).catch(() => '')) || '';
+const today = () => {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+};
 
 /* 這一批就是「AI 每次估出來的數字」——測試裡由我們決定它這次回什麼 */
 let NEXT = [];
@@ -144,6 +149,34 @@ let NEXT = [];
   check('常吃的白飯還是 400，沒被 AI 的 700 蓋掉', rice.kcal === 400, rice);
   check('星號還在', rice.star === true, rice);
   check('次數有累加', rice.n >= 2, rice.n);
+
+  console.log('\n[G] 沿用只借數字，不要把上一餐的情境搬過來');
+  /* 真的踩到：常吃清單裡的「荷包蛋」份量寫著「1顆，煎於蔥油餅上」（好幾天前配蔥油餅
+     那次留下的），今天吃自助餐按了沿用，紀錄就變成今天也有蔥油餅。
+     沿用的用意是「熱量跟上次一致」，不是「連那一餐的畫面一起複製」。 */
+  await p.evaluate(() => {
+    db.foods.push({ id: 'egg', name: '荷包蛋', kcal: 90, p: 6, c: 1, f: 7,
+      portion: '1顆，煎於蔥油餅上', n: 2 });
+    persistFoods();
+  });
+  await p.waitForTimeout(900);
+  NEXT = [{ name: '荷包蛋', portion: '1顆（約50g）', kcal: 130, protein: 7, carbs: 1, fat: 11,
+    confidence: 'medium' }];
+  await estimate('荷包蛋');
+  check('有沿用鈕（130 vs 90 差很多）', !!(await p.$('.ai-last')));
+  await p.click('.ai-last');
+  await p.waitForTimeout(700);
+  const por = await txt(p, '.ai-item .por');
+  check('份量用今天這一次的', /1顆（約50g）/.test(por), por);
+  check('沒有把「煎於蔥油餅上」搬過來 ← 今天根本沒吃蔥油餅', !/蔥油餅/.test(por), por);
+  check('數字還是沿用上次的 90', /90/.test(await txt(p, '[data-ai="save"]')),
+    await txt(p, '[data-ai="save"]'));
+  await p.click('[data-ai="save"]');
+  await p.waitForTimeout(1800);
+  const day = await (await fetch(BASE + '/api/days?u=' + u + '&dates=' + today())).json();
+  const eggRow = ((day.days[0] || {}).entries || []).filter((e) => e.name === '荷包蛋').pop() || {};
+  check('存進去的份量也沒有蔥油餅', !/蔥油餅/.test(eggRow.portion || ''), eggRow);
+  check('存進去的熱量是沿用的 90', eggRow.kcal === 90, eggRow);
 
   console.log('\npageerrors:', errs.length ? errs : 'none');
   console.log(fail.length ? '\n❌ ' + fail.length + ' 項未過：\n  - ' + fail.join('\n  - ') : '\n✅ 全部通過');

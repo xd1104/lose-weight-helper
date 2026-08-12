@@ -1,7 +1,7 @@
 "use strict";
 
 /* 版本號。改前端時跟 sw.js 的 cache 版本號一起 +1。 */
-var APP_VER="5.9";
+var APP_VER="6.0";
 /*
  * 減重助手 — 前端主程式
  * 資料層在 store.js（LocalStore / GitHubStore 自動切）、AI 在 ai.js。
@@ -2662,7 +2662,13 @@ function useLastFood(idx){
   if(!f || !num(f.kcal)) return;
   it.name=f.name;
   it.kcal=round(f.kcal); it.p=round1(f.p); it.c=round1(f.c); it.f=round1(f.f);
-  if(f.portion) it.portion=f.portion;
+  /* ⚠️ 份量文字要留「今天這一次」的，只借數字。
+   * 以前這裡無條件套上次那筆的 portion，結果把上一餐的情境一起搬過來——
+   * 真的踩到：常吃清單裡的「荷包蛋」份量寫著「1顆，煎於蔥油餅上」（那是好幾天前
+   * 配蔥油餅那次留下的），今天吃自助餐按了沿用，紀錄就變成今天也有蔥油餅。
+   * 沿用的用意是「熱量跟上次一致」，不是「連那一餐的畫面一起複製」。
+   * AI 這次沒給份量才退回上次的。 */
+  if(!it.portion && f.portion) it.portion=f.portion;
   it.confidence="high";   /* 這已經不是估的了，是上次記下來的 */
   it.reused=true;
 }
