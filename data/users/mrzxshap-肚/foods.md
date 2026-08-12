@@ -19,6 +19,7 @@
 - {"id":"xmsam86tbb4hl","name":"冷凍地瓜","kcal":90,"p":1,"c":22,"portion":"1條，約100g","n":2}
 - {"id":"xmsfmdexqxwfl","name":"炙燒鮭魚壽司（明太子）","kcal":75,"p":3,"c":9,"f":4,"portion":"1貫，醋飯約20g＋鮭魚約15g＋起司少許，共約38g","n":2}
 - {"id":"xms1ii7eboqes","name":"烏龍麵","kcal":280,"p":7,"c":58,"f":1,"portion":"一份約1.5份量，濕麵約200g","n":2}
+- {"id":"xmsfej0cob6vz","name":"茶豆(毛豆)","kcal":120,"p":12,"c":8,"f":5,"portion":"約半個拳頭（約90g)","n":2}
 - {"id":"xms96vj675jl6","name":"培根總匯三明治(全份的1/4)","kcal":210,"p":10,"c":20,"f":10,"portion":"整份約3份三明治吐司（培根、火腿、蛋、生菜、番茄），此次吃1/4份","n":2}
 - {"id":"xmsbxvrpabtrq","name":"黑糖奶茶冰沙","kcal":140,"p":1,"c":28,"f":4,"portion":"約120ml小杯，全糖冰沙","n":2}
 - {"id":"xms4767ksclx9","name":"蒸蛋湯","kcal":163,"p":17.9,"c":4.5,"f":8.3,"n":2}
@@ -27,6 +28,7 @@
 - {"id":"xms1ii7ectyd6","name":"蔬菜盤","kcal":80,"p":4,"c":14,"f":1,"portion":"一大盤，約200g","n":2}
 - {"id":"xms4ronzyu63g","name":"鴨肉","kcal":180,"p":18,"c":2,"f":11,"portion":"約80克，鋪滿飯面","n":2}
 - {"id":"xms1ii7ebg7jh","name":"上肩牛肉片","kcal":220,"p":17,"f":16,"portion":"一份火鍋肉片，約100克","n":1}
+- {"id":"xmspfjfuhpztn","name":"丸子炒竹筍","kcal":270,"p":12,"c":15,"f":15,"portion":"約一個半拳頭（約270g，其中魚丸/貢丸約90g、竹筍約180g，含炒油)","n":1}
 - {"id":"xms08zonodsk7","name":"叉燒肉（去皮）","kcal":150,"p":18,"c":6,"f":6,"portion":"約3-4片，共80克","n":1}
 - {"id":"xmspfgx675xea","name":"叉燒肉片","kcal":90,"p":8,"c":1,"f":6,"portion":"兩片，每片約20g，共約40g","n":1}
 - {"id":"xms4rsmicfv11","name":"大腸（肥腸）","kcal":150,"p":4,"c":1,"f":14,"portion":"兩小塊，約40克","n":1}
@@ -82,6 +84,7 @@
 - {"id":"xmsktv8xnn7tc","name":"南瓜片","kcal":30,"p":1,"c":7,"portion":"一小片，約30g","n":1}
 - {"id":"xmsn2l29zpsjq","name":"南瓜炒米粉","kcal":320,"p":6,"c":50,"f":10,"portion":"約一碗（拳頭大小），約200g，含南瓜、米粉、香菇絲","n":1}
 - {"id":"xmsfmdexxui79","name":"哇沙米","kcal":5,"c":1,"portion":"約1小球，約5g","n":1}
+- {"id":"xmspfjfukxcs3","name":"洋蔥菜脯蛋","kcal":340,"p":18,"c":8,"f":26,"portion":"約一個拳頭大（約180g，約3顆蛋＋洋蔥、菜脯、煎油)","n":1}
 - {"id":"xmslgbern9j4j","name":"炸春捲（越式炸春捲）","kcal":450,"p":15,"c":40,"f":30,"portion":"5塊，每塊約35g，共約175g（照片可見5塊，非您所述的3塊，取實際可見數量估算）","n":1}
 - {"id":"xms1izpsc744j","name":"炸麻糬","kcal":420,"p":6,"c":66,"f":16,"portion":"手掌大小2片，約每片60克含裹粉油炸","n":1}
 - {"id":"xms607zkjaqwy","name":"為力炸醬麵","kcal":418,"p":9.6,"c":49.1,"f":20.4,"n":1}
@@ -99,7 +102,6 @@
 - {"id":"xms1i7sgymof7","name":"烤雞肉","kcal":150,"p":22,"c":1,"f":6,"portion":"約3-4塊，去皮估算","n":1}
 - {"id":"xms1id61ysrqt","name":"烤雞肉（去皮）","kcal":130,"p":24,"f":4,"portion":"約80克","n":1}
 - {"id":"xmsam4irj8cc4","name":"真鯛生魚片握壽司（2貫）","kcal":130,"p":8,"c":22,"f":1,"portion":"2貫，真鯛生魚片約30g+醋飯約80g","n":1}
-- {"id":"xmsfej0cob6vz","name":"茶豆(毛豆)","kcal":200,"p":18,"c":15,"f":9,"portion":"約一顆拳頭大（約150g，含莢重量已扣除，僅計可食部分）","n":1}
 - {"id":"xmsku0uem6r8p","name":"荊州公安鍋盔餅皮（油酥發麵）","kcal":480,"p":10,"c":60,"f":20,"portion":"約三個手掌長、厚約1公分，估計餅皮部分約150g","n":1}
 - {"id":"xmsamd5bdqd5j","name":"起司","kcal":150,"p":9,"c":2,"f":12,"portion":"融化起司片約1.5片","n":1}
 - {"id":"xms4iibycaaeq","name":"迷你銅鑼燒","kcal":114,"p":2.1,"c":19.8,"f":3,"n":1}
@@ -109,6 +111,7 @@
 - {"id":"xmsn2tbd9a0np","name":"乾麵拌油／醬料（豬油、醬油、蔥花等）","kcal":50,"f":5,"portion":"半碗份量約半份醬料（約1茶匙油＋醬油）","n":1}
 - {"id":"xmshfpni8lyin","name":"得正金焙烏龍奶","kcal":220,"c":37.2,"f":8,"portion":"一份","n":1}
 - {"id":"xmsku0ueqp675","name":"梅干扣肉內餡","kcal":260,"p":10,"c":5,"f":22,"portion":"包在餅內的肥瘦肉餡，估計約100g（約一個掌心大小的量）","n":1}
+- {"id":"xmspfjfuqw4zn","name":"梨子","kcal":90,"c":22,"portion":"約一個拳頭大（約180g)","n":1}
 - {"id":"xms1iqck6mwnk","name":"涼拌小黃瓜","kcal":60,"p":1,"c":8,"f":3,"portion":"約半盤，含醬汁","n":1}
 - {"id":"xmslgberkipzg","name":"清燉牛肉河粉","kcal":600,"p":30,"c":70,"f":15,"portion":"一般麵店碗，河粉約1.5碗（約300g）＋牛肉片約100g＋清湯","n":1}
 - {"id":"xmsam4irgyc28","name":"甜蝦美乃滋軍艦（2貫）","kcal":180,"p":6,"c":22,"f":7,"portion":"2貫，蝦肉約20g+美乃滋一球+醋飯約80g","n":1}
