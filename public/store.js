@@ -191,7 +191,25 @@ function cleanFood(f){
    * 真正天天吃的那幾樣會被淹掉。釘選的排最上面，才找得到。 */
   if(f&&f.star) o.star=true;
   o.n=Math.max(1, round(f&&f.n)||1);
+  /* 每一餐各吃過幾次。用來把常吃清單自動分成「早餐常吃／午餐常吃…」——
+   * 刻意不做成讓使用者手動選的分類欄：大冰奶算早餐還是點心？手動分類一定會爛掉，
+   * 而「他實際都在哪一餐吃」這件事記錄裡本來就有。
+   * key 順序固定走 MEALS，兩邊序列化才會逐字相同。 */
+  if(f&&f.mc){
+    var mc={}, any=false;
+    MEALS.forEach(function(k){ var v=round(f.mc[k]); if(v>0){ mc[k]=v; any=true; } });
+    if(any) o.mc=mc;
+  }
   return o;
+}
+
+/* 這一筆最常在哪一餐吃。平手時照 MEALS 的順序，沒資料回 ""（歸到「其他」）。 */
+function topMeal(f){
+  var mc=(f&&f.mc)||null;
+  if(!mc) return "";
+  var best="", n=0;
+  MEALS.forEach(function(k){ if(num(mc[k])>n){ n=num(mc[k]); best=k; } });
+  return best;
 }
 
 function emptyDay(date){

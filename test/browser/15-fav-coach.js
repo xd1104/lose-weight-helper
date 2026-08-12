@@ -170,13 +170,15 @@ const getFoods = (u) => fetch(BASE + '/api/core?u=' + encodeURIComponent(u)).the
   await p.click('[data-sheet="close"]');
   await p.waitForTimeout(500);
 
-  console.log('\n[A4c] 釘選的排在最上面，並且分成兩區');
+  console.log('\n[A4c] 釘選的排在該組最上面');
+  /* v5.8 起清單是照「都在哪一餐吃」分組的（不再有「★ 常吃／吃過的」兩區），
+     釘選改成在自己那一組裡排第一。分組本身由 27-fav.js 專門守著。 */
   await p.click('.fab');
   await p.waitForTimeout(400);
   await p.click('[data-tab="fav"]');
   await p.waitForTimeout(500);
-  const grps = await p.$$eval('.fav-grp', (e) => e.map((x) => x.textContent.trim()));
-  check('出現「★ 常吃」與「吃過的」兩個分區', grps.length === 2 && /常吃/.test(grps[0]) && /吃過/.test(grps[1]), grps);
+  await p.evaluate(() => { favAll = true; MEALS.concat(['other']).forEach((k) => { favOpen[k] = true; }); drawAddSheet(false); });
+  await p.waitForTimeout(400);
   const order = await p.$$eval('.food-row b', (e) => e.map((x) => x.childNodes[0].textContent.trim()));
   check('釘選的排第一個', order[0] === '燒餅', order);
   await p.screenshot({ path: '/tmp/fav-star.png' });

@@ -353,6 +353,16 @@ t('store.js 與 server.js 的區段標題／欄位順序一致', () => {
   }
 });
 
+t('常吃：每一餐的次數（mc）round-trip，key 順序固定', () => {
+  const f = { id: 'f1', name: '水煮蛋', kcal: 78, n: 9, mc: { snack: 1, breakfast: 6, dinner: 2 } };
+  const back = S.parseFoods(S.serializeFoods([f]))[0];
+  assert.deepStrictEqual(back.mc, { breakfast: 6, dinner: 2, snack: 1 }, '要照 MEALS 的順序寫');
+  // 0 次的餐別不要寫進檔案，不然每一筆都拖著四個 0
+  assert.ok(!/"lunch"/.test(S.serializeFoods([f])));
+  // 完全沒有 mc 的舊資料不要硬生一個空物件出來
+  assert.strictEqual(S.parseFoods(S.serializeFoods([{ id: 'f2', name: '芭樂', kcal: 51, n: 1 }]))[0].mc, undefined);
+});
+
 console.log('每日提醒（push.md）');
 
 const SUB = { id: 'p1', u: 'mabc-benson', time: '07:30', tz: -480,
@@ -455,7 +465,8 @@ t('前端 store.js 的 serializeDay 產出與 server.js 逐字相同', () => {
   };
   assert.strictEqual(front.serializeDay(day), S.serializeDay(day), 'day 序列化兩邊必須逐字相同');
 
-  const foods = [{ id: 'f1', name: '滷肉飯', kcal: 480, p: 12, c: 62, f: 19, portion: '小碗', n: 7 }];
+  const foods = [{ id: 'f1', name: '滷肉飯', kcal: 480, p: 12, c: 62, f: 19, portion: '小碗', n: 7,
+    mc: { lunch: 5, dinner: 2 } }];
   assert.strictEqual(front.serializeFoods(foods), S.serializeFoods(foods), 'foods 序列化兩邊必須逐字相同');
 
   const roster = [{ id: 'mabc-benson', name: 'Benson', emoji: '🐻', color: '#2fa86a', createdAt: '2026-07-25T00:00:00.000Z' }];

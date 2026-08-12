@@ -1,7 +1,7 @@
 "use strict";
 
 /* 版本號。改前端時跟 sw.js 的 cache 版本號一起 +1。 */
-var APP_VER="5.7";
+var APP_VER="5.8";
 /*
  * 減重助手 — 前端主程式
  * 資料層在 store.js（LocalStore / GitHubStore 自動切）、AI 在 ai.js。
@@ -272,12 +272,18 @@ function findFood(name){
   return null;
 }
 
-function rememberFood(item){
+function rememberFood(item, meal){
   var key=String(item.name||"").trim();
   if(!key) return;
+  var bump=function(f){
+    if(MEALS.indexOf(meal)<0) return;
+    f.mc=f.mc||{};
+    f.mc[meal]=(num(f.mc[meal])||0)+1;
+  };
   var hit=findFood(key);
   if(hit){
     hit.n=(num(hit.n)||1)+1;
+    bump(hit);
     /* 加了星的是「他自己認定的固定值」（可能還手動改過數字），AI 不准蓋掉——
      * 不然每吃一次就被新的估算覆寫，常吃清單永遠不會變成穩定的常數。
      * 沒加星的只是「最近吃過」的快照，照舊更新。 */
@@ -286,8 +292,10 @@ function rememberFood(item){
       if(item.portion) hit.portion=item.portion;
     }
   }else{
-    db.foods.push({ id:uid(), name:key, kcal:round(item.kcal), p:round1(item.p), c:round1(item.c),
-                    f:round1(item.f), portion:item.portion||"", n:1 });
+    var nf={ id:uid(), name:key, kcal:round(item.kcal), p:round1(item.p), c:round1(item.c),
+             f:round1(item.f), portion:item.portion||"", n:1 };
+    bump(nf);
+    db.foods.push(nf);
   }
   db.foods.sort(sortFoods);
   if(db.foods.length>200) db.foods.length=200; /* 清單無限長對手機沒好處 */
@@ -1992,6 +2000,17 @@ function guessMeal(){
 }
 var addTab="text";
 var addMeal=null;
+/* 常吃清單的兩個顯示狀態。
+ * favAll：預設只列「吃過 2 次以上」的。實測他的清單 114 筆裡有 94 筆只吃過一次
+ * （甜椒配料 3 大卡、蒔蘿與檸檬調味 5 大卡…都是 AI 拆出來的碎片自動存進來的），
+ * 真正會用到的只有 20 筆。分類跟折疊解決不了這個，要先把雜訊收起來。
+ * favOpen：哪幾組是展開的。預設只展開「你現在要記的那一餐」。 */
+var favAll=false;
+var favOpen={};
+/* 幾筆以下就不分組、不過濾：清單短的時候長度從來不是問題，
+ * 硬要分組只會讓「三筆東西」變成「三個要點開的標題」。 */
+var FAV_GROUP_MIN=12;
+function favIsLong(){ return db.foods.length>FAV_GROUP_MIN; }
 var favPick={};                 /* 常吃分頁的勾選（可一次加好幾樣） */
 var favQ="";                    /* 常吃分頁的搜尋字串：sheet 會重畫好幾次，得撐得住 */
 
@@ -1999,6 +2018,10 @@ function openAddSheet(meal){
   addMeal=meal||guessMeal();
   addTab=hasAiKey()?"text":"manual";
   favPick={}; favQ="";
+  /* 預設只展開「現在要記的那一餐」——早餐要記的時候，晚餐那組收起來就好。
+   * 清單還短、或還沒有任何「吃過兩次以上」的東西時不要濾，不然會看到一片空白。 */
+  favAll=!favIsLong() || !db.foods.filter(isRegular).length;
+  favOpen={}; favOpen[addMeal]=true;
   drawAddSheet(true);
 }
 function drawAddSheet(isNew){
@@ -2067,9 +2090,10 @@ function addTabBody(){
       ? '<div class="field"><label>搜尋</label>'+
         '<input type="text" id="i-fav-q" placeholder="輸入食物名稱" autocomplete="off"></div>'
       : '')+
-      '<button class="btn ghost" type="button" data-fav-new="1" style="margin-top:8px">＋ 新增常吃項目</button>'+
+      favScopeHtml()+
       '<div id="fav-list">'+favListHtml(favQ)+'</div>'+
       '<div id="fav-go">'+favGoHtml()+'</div>'+
+      '<button class="btn ghost" type="button" data-fav-new="1">＋ 新增常吃項目</button>'+
       '<p class="hint" style="padding:2px 4px 0">點項目＝勾選，可以一次勾好幾樣；右邊的 ✎ 可以改內容或刪掉。</p>';
   }
   /* manual */
@@ -2141,19 +2165,53 @@ function favRowHtml(f){
 /* 分成「★ 常吃」與「吃過的」兩區：記過的東西都會自動進這份清單，
  * 很快就幾十筆、大半只吃過一次，不分區的話真正天天吃的那幾樣會被淹掉。
  * 版面成本只有一條分區標題。 */
+/* 「真的常吃」＝ 自己釘選的，或吃過 2 次以上。只吃過一次的多半是 AI 拆出來的碎片。 */
+function isRegular(f){ return !!f.star || num(f.n)>=2; }
+
 function favListHtml(q){
   q=String(q||"").trim().toLowerCase();
-  var list=db.foods.filter(function(f){ return !q || f.name.toLowerCase().indexOf(q)>=0; });
-  if(!list.length) return '<p class="empty">找不到符合的項目</p>';
-  var star=list.filter(function(f){ return f.star; }).slice(0,40);
-  var rest=list.filter(function(f){ return !f.star; }).slice(0,60);
-  var h="";
-  if(star.length){
-    h+='<div class="fav-grp">★ 常吃</div>'+star.map(favRowHtml).join("");
-    if(rest.length) h+='<div class="fav-grp">吃過的</div>';
+  /* 搜尋一律搜全部：要找的東西剛好只吃過一次是很常見的情況，
+   * 這時候還套「只顯示常吃」的濾鏡，就會變成「明明有卻找不到」。 */
+  if(q){
+    var hit=db.foods.filter(function(f){ return f.name.toLowerCase().indexOf(q)>=0; }).slice(0,60);
+    return hit.length ? hit.map(favRowHtml).join("") : '<p class="empty">找不到符合的項目</p>';
   }
-  h+=rest.map(favRowHtml).join("");
+
+  var list=db.foods.filter(function(f){ return favAll || isRegular(f); });
+  if(!list.length) return '<p class="empty">還沒有吃過兩次以上的東西，先切到「全部」看看。</p>';
+  /* 短清單：直接列完，不要為了三筆東西擺三個要點開的標題 */
+  if(!favIsLong()){ list.sort(sortFoods); return list.slice(0,60).map(favRowHtml).join(""); }
+
+  /* 分組：早餐／午餐／晚餐／點心／其他。組別是從「他實際都在哪一餐吃」算出來的，
+   * 不是讓他手動標的——手動分類一定會爛掉，而且沒人想維護 100 筆的分類。 */
+  var groups={}, order=MEALS.concat([""]);
+  order.forEach(function(k){ groups[k]=[]; });
+  list.forEach(function(f){ groups[topMeal(f)].push(f); });
+
+  var h="";
+  order.forEach(function(k){
+    var g=groups[k];
+    if(!g.length) return;
+    g.sort(sortFoods);
+    var open=favOpen[k||"other"];
+    var info=k?MEAL_INFO[k]:{emoji:"🍽", label:"其他"};
+    h+='<button type="button" class="fav-grp fold'+(open?" on":"")+'" data-fav-fold="'+(k||"other")+'">'+
+        '<i>'+info.emoji+'</i><b>'+esc(info.label)+'</b><span>'+g.length+'</span>'+
+        '<em>'+(open?"▾":"▸")+'</em></button>';
+    if(open) h+=g.slice(0,60).map(favRowHtml).join("");
+  });
   return h;
+}
+
+/* 「常吃 / 全部」切換。只有真的有被藏起來的東西時才出現。 */
+function favScopeHtml(){
+  if(!favIsLong()) return "";
+  var reg=db.foods.filter(isRegular).length;
+  if(reg===db.foods.length) return "";
+  return '<div class="seg">'+
+      '<button type="button" class="'+(favAll?"":"on")+'" data-fav-scope="0">常吃 '+reg+'</button>'+
+      '<button type="button" class="'+(favAll?"on":"")+'" data-fav-scope="1">全部 '+db.foods.length+'</button>'+
+    '</div>';
 }
 function favGoHtml(){
   var picked=db.foods.filter(function(f){ return favPick[f.id]; });
@@ -2260,7 +2318,12 @@ function wireAddSheet(root){
     b.onclick=function(){ addTab=b.getAttribute("data-tab"); drawAddSheet(false); };
   });
   root.querySelectorAll("[data-meal-pick]").forEach(function(b){
-    b.onclick=function(){ addMeal=b.getAttribute("data-meal-pick"); drawAddSheet(false); };
+    b.onclick=function(){
+      addMeal=b.getAttribute("data-meal-pick");
+      /* 換餐別時把新的那一組打開（沒動過折疊的話），舊的收起來 */
+      if(!favQ){ favOpen={}; favOpen[addMeal]=true; }
+      drawAddSheet(false);
+    };
   });
   root.querySelectorAll('[data-act2="go-settings"]').forEach(function(b){
     b.onclick=function(){ closeAllSheets(); view="settings"; render(); window.scrollTo(0,0); };
@@ -2382,6 +2445,21 @@ function wireFav(root){
       var id=b.getAttribute("data-fav");
       if(favPick[id]) delete favPick[id]; else favPick[id]=true;
       redrawList();
+    };
+  });
+  root.querySelectorAll("[data-fav-fold]").forEach(function(b){
+    b.onclick=function(){
+      var k=b.getAttribute("data-fav-fold");
+      favOpen[k]=!favOpen[k];
+      redrawList();
+    };
+  });
+  root.querySelectorAll("[data-fav-scope]").forEach(function(b){
+    b.onclick=function(){
+      favAll=b.getAttribute("data-fav-scope")==="1";
+      /* 切到「全部」時把該餐那組打開，不然只看到一排收起來的標題 */
+      if(favAll) favOpen[addMeal||"other"]=true;
+      drawAddSheet(false);
     };
   });
   root.querySelectorAll("[data-fav-edit]").forEach(function(b){
@@ -2785,7 +2863,7 @@ function addEntries(items){
       id:it.id||uid(), time:t, meal:addMeal, name:it.name, kcal:it.kcal,
       p:it.p, c:it.c, f:it.f, portion:it.portion, src:it.src||"ai"
     }));
-    rememberFood(it);
+    rememberFood(it, addMeal);
   });
   persistFoods();      /* 整批只寫一次（rememberFood 不自己寫檔） */
   persistDay(curDate);

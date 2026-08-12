@@ -364,6 +364,18 @@ function cleanFood(f) {
   // ⚠️ 與 public/store.js 的 cleanFood 是鏡像。
   if (f && f.star) o.star = true;
   o.n = Math.max(1, round(f && f.n) || 1); // 用過次數：常吃清單的排序依據
+  // 每一餐各吃過幾次（mirror：public/store.js）。常吃清單靠它自動分組，
+  // 刻意不做成手動分類欄——「他實際都在哪一餐吃」記錄裡本來就有。
+  // key 順序固定走 MEALS，兩邊序列化才會逐字相同。
+  if (f && f.mc) {
+    const mc = {};
+    let any = false;
+    for (const k of MEALS) {
+      const v = round(f.mc[k]);
+      if (v > 0) { mc[k] = v; any = true; }
+    }
+    if (any) o.mc = mc;
+  }
   return o;
 }
 
