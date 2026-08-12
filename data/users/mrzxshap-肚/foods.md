@@ -42,6 +42,7 @@
 - {"id":"xms1ii7edhh0y","name":"冬瓜檸檬冰沙","kcal":130,"c":33,"portion":"半杯約300ml（原份量700ml的一半）","n":1,"mc":{"dinner":1}}
 - {"id":"xmsfmdexp1jpn","name":"北寄貝壽司","kcal":50,"p":3,"c":9,"f":1,"portion":"1貫，醋飯約20g＋北寄貝約15g，共約35g","n":1,"mc":{"lunch":1}}
 - {"id":"xms4rsmigol3g","name":"四季豆串（半串）","kcal":30,"p":1,"c":4,"f":1,"portion":"約半串，含烤油","n":1,"mc":{"snack":1}}
+- {"id":"xmsphhgj1jgoc","name":"巧克力脆皮冰","kcal":96,"p":0.7,"c":6.5,"f":7.4,"portion":"一個","n":1,"mc":{"snack":1}}
 - {"id":"xms6072n2f1uk","name":"巧克力鬆餅","kcal":480,"p":8,"c":68,"f":18,"portion":"170克，無奶油，僅淋巧克力醬","n":1,"mc":{"dinner":1}}
 - {"id":"xms7fmghn0tvh","name":"巧克力麵包","kcal":140,"p":4,"c":20,"f":3.5,"n":1,"mc":{"lunch":1}}
 - {"id":"xmsfmdexnp58i","name":"生干貝壽司","kcal":50,"p":3,"c":9,"f":1,"portion":"1貫，醋飯約20g＋干貝約15g，共約35g","n":1,"mc":{"lunch":1}}
