@@ -60,6 +60,7 @@
 - {"id":"xmsizrxbatfpp","name":"竹筍湯","kcal":60,"p":2,"c":8,"f":2,"portion":"一般碗（約300ml，含竹筍與少量湯料）","n":1,"mc":{"dinner":1}}
 - {"id":"xms4rsmid4fiz","name":"米血糕","kcal":70,"p":2,"c":15,"portion":"一塊，約50克","n":1,"mc":{"snack":1}}
 - {"id":"xmsif9nkdqdsz","name":"米苔目（粗米條）","kcal":330,"p":6,"c":72,"f":2,"portion":"約700cc紙碗8分滿，乾麵形式，估約300g","n":1,"mc":{"lunch":1}}
+- {"id":"xmsphgg9aqbuj","name":"老婆餅","kcal":274,"p":5.5,"c":35,"f":12.4,"portion":"一個","n":1,"mc":{"snack":1}}
 - {"id":"xmsam9c2snp89","name":"肉粽","kcal":350,"p":9,"c":45,"f":14,"portion":"小顆肉粽一顆，約150g","n":1,"mc":{"dinner":1}}
 - {"id":"xmsbxvrp9ctji","name":"肉燥飯","kcal":250,"p":6,"c":45,"f":6,"portion":"半碗白飯＋少許肉燥","n":1,"mc":{"lunch":1}}
 - {"id":"xmsbxvrowr5hd","name":"低脂牛肉片","kcal":300,"p":40,"f":15,"portion":"一盤，約200g生重","n":1,"mc":{"lunch":1}}
