@@ -3,12 +3,12 @@ sex: "male"
 age: 27
 birth: "1998-11-04"
 height: 168
-weight: 80
+weight: 80.25
 activity: 1.2
 tdee: 0
 goal: -300
 proteinPerKg: 1.6
 fatPct: 25
 model: "claude-sonnet-5"
-updatedAt: "2026-08-02T04:26:04.445Z"
+updatedAt: "2026-08-12T02:03:23.956Z"
 ---
