@@ -1,7 +1,7 @@
 "use strict";
 
 /* 版本號。改前端時跟 sw.js 的 cache 版本號一起 +1。 */
-var APP_VER="5.8";
+var APP_VER="5.9";
 /*
  * 減重助手 — 前端主程式
  * 資料層在 store.js（LocalStore / GitHubStore 自動切）、AI 在 ai.js。
@@ -2004,7 +2004,8 @@ var addMeal=null;
  * favAll：預設只列「吃過 2 次以上」的。實測他的清單 114 筆裡有 94 筆只吃過一次
  * （甜椒配料 3 大卡、蒔蘿與檸檬調味 5 大卡…都是 AI 拆出來的碎片自動存進來的），
  * 真正會用到的只有 20 筆。分類跟折疊解決不了這個，要先把雜訊收起來。
- * favOpen：哪幾組是展開的。預設只展開「你現在要記的那一餐」。 */
+ * favOpen：哪幾組是展開的。**預設全部收起來**——原本會自動展開「現在要記的那一餐」，
+ * 但那是照時間猜的，猜錯的時候反而要多做一次收合。全收起來的畫面也比較穩定。 */
 var favAll=false;
 var favOpen={};
 /* 幾筆以下就不分組、不過濾：清單短的時候長度從來不是問題，
@@ -2018,10 +2019,10 @@ function openAddSheet(meal){
   addMeal=meal||guessMeal();
   addTab=hasAiKey()?"text":"manual";
   favPick={}; favQ="";
-  /* 預設只展開「現在要記的那一餐」——早餐要記的時候，晚餐那組收起來就好。
+  /* 分組一律收起來，要看哪一組自己點。
    * 清單還短、或還沒有任何「吃過兩次以上」的東西時不要濾，不然會看到一片空白。 */
   favAll=!favIsLong() || !db.foods.filter(isRegular).length;
-  favOpen={}; favOpen[addMeal]=true;
+  favOpen={};
   drawAddSheet(true);
 }
 function drawAddSheet(isNew){
@@ -2320,8 +2321,7 @@ function wireAddSheet(root){
   root.querySelectorAll("[data-meal-pick]").forEach(function(b){
     b.onclick=function(){
       addMeal=b.getAttribute("data-meal-pick");
-      /* 換餐別時把新的那一組打開（沒動過折疊的話），舊的收起來 */
-      if(!favQ){ favOpen={}; favOpen[addMeal]=true; }
+      /* 換餐別不動折疊狀態：他自己點開的那幾組要留著 */
       drawAddSheet(false);
     };
   });
@@ -2457,8 +2457,6 @@ function wireFav(root){
   root.querySelectorAll("[data-fav-scope]").forEach(function(b){
     b.onclick=function(){
       favAll=b.getAttribute("data-fav-scope")==="1";
-      /* 切到「全部」時把該餐那組打開，不然只看到一排收起來的標題 */
-      if(favAll) favOpen[addMeal||"other"]=true;
       drawAddSheet(false);
     };
   });

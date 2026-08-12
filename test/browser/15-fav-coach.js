@@ -251,6 +251,10 @@ const getFoods = (u) => fetch(BASE + '/api/core?u=' + encodeURIComponent(u)).the
     for (var i = 0; i < 8; i++) {
       db.foods.push({ id: 'pad' + i, name: '湊數' + i, kcal: 100, p: 1, c: 1, f: 1, n: 1 });
     }
+    /* 湊到 12 筆以上就會進入分組模式，而分組預設全部收起來（v5.9）。
+       這一段測的是搜尋與勾選，不是折疊，所以先全部攤開。 */
+    favAll = true;
+    MEALS.concat(['other']).forEach((k) => { favOpen[k] = true; });
     drawAddSheet(false);
   });
   await p.waitForTimeout(500);

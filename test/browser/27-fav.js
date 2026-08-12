@@ -7,8 +7,9 @@
  * 蒔蘿與檸檬調味 5 大卡…）。只做分組等於把垃圾摺起來，所以三件事一起做：
  *
  *   A. 分組是「算」出來的，不是讓他手動標的（大冰奶算早餐還是點心？手動分類一定會爛）
- *   B. 預設只展開「現在要記的那一餐」
- *   C. 換餐別，展開的那一組跟著換
+ *   B. 預設全部收起來（v5.9 改的：原本會自動展開「現在要記的那一餐」，
+ *      但那是照時間猜的，猜錯反而要多做一次收合）
+ *   C. 換餐別不會把他自己點開的那幾組關掉
  *   D. 預設只列「吃過 2 次以上」，一次性的碎片收在「全部」裡
  *   E. 搜尋一律搜全部 —— 要找的東西剛好只吃過一次是很常見的情況
  *   F. 記一筆之後次數會累加，新東西第一次記就分好組
@@ -87,31 +88,35 @@ for (let i = 0; i < 20; i++) {
     (g.filter((x) => x.key === 'other')[0] || {}).n === 1, g);
   check('分組用的是餐別名稱', g.some((x) => x.label === '早餐') && g.some((x) => x.label === '午餐'), g);
 
-  console.log('\n[B] 預設只展開現在要記的那一餐');
-  check('早餐那組是開的', (g.filter((x) => x.key === 'breakfast')[0] || {}).open === true, g);
-  check('其他組是收起來的', g.filter((x) => x.key !== 'breakfast').every((x) => !x.open), g);
+  console.log('\n[B] 預設全部收起來');
+  check('沒有任何一組是開的', g.every((x) => !x.open), g);
   let r = await rows();
-  check('只看得到早餐那三樣', r.length === 3 && r.indexOf('無糖豆漿') >= 0 && r.indexOf('意麵') < 0, r);
+  check('一開始看不到任何項目，只有標題', r.length === 0, r);
   await p.screenshot({ path: '/tmp/fav-grouped.png', clip: { x: 0, y: 300, width: 390, height: 544 } });
 
-  console.log('\n[C] 換餐別，展開的那一組跟著換');
-  await p.click('[data-meal-pick="dinner"]');
-  await p.waitForTimeout(500);
-  const g2 = await groups();
-  check('晚餐那組換成開的', (g2.filter((x) => x.key === 'dinner')[0] || {}).open === true, g2);
-  check('早餐收起來了', (g2.filter((x) => x.key === 'breakfast')[0] || {}).open === false, g2);
-  r = await rows();
-  check('看到的是晚餐那兩樣', r.length === 2 && r.indexOf('意麵') >= 0, r);
-
-  console.log('\n[C2] 手動點標題可以自己開合');
+  console.log('\n[C] 自己點開、點收，換餐別不會把它關掉');
   await p.click('[data-fav-fold="breakfast"]');
   await p.waitForTimeout(400);
   r = await rows();
-  check('早餐點開之後兩組都看得到', r.length === 5, r);
+  check('點開早餐看到那三樣', r.length === 3 && r.indexOf('無糖豆漿') >= 0, r);
+  await p.click('[data-meal-pick="dinner"]');
+  await p.waitForTimeout(500);
+  check('換到晚餐之後，早餐那組還是開著 ← 他自己點開的不要被收掉',
+    (await groups()).filter((x) => x.key === 'breakfast')[0].open === true);
+  check('也沒有自作主張把晚餐打開',
+    (await groups()).filter((x) => x.key === 'dinner')[0].open === false);
   await p.click('[data-fav-fold="dinner"]');
   await p.waitForTimeout(400);
   r = await rows();
-  check('晚餐收起來只剩早餐', r.length === 3, r);
+  check('兩組都開就兩組都看得到', r.length === 5, r);
+  await p.click('[data-fav-fold="breakfast"]');
+  await p.waitForTimeout(400);
+  r = await rows();
+  check('收掉早餐只剩晚餐', r.length === 2, r);
+
+  console.log('\n[C2] 重開「記一筆」會回到全部收起來');
+  await openFav('breakfast');
+  check('重開之後沒有任何一組是開的', (await groups()).every((x) => !x.open));
 
   console.log('\n[D] 預設只列「吃過 2 次以上」，碎片收在「全部」');
   const seg = await p.$$eval('[data-fav-scope]', (e) => e.map((x) => x.textContent.trim()));
