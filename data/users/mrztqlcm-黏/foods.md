@@ -77,6 +77,7 @@
 - {"id":"xmsq3w1r6wby3","name":"娃娃菜","kcal":15,"p":1,"c":3,"portion":"半株，約80g","n":1,"mc":{"dinner":1}}
 - {"id":"xmspg50e2sbdr","name":"洋蔥炒蛋","kcal":230,"p":13,"c":6,"f":17,"portion":"2顆蛋（每顆約50g，共約100g）＋洋蔥約50g，炒油約1小匙","n":1,"mc":{"dinner":1}}
 - {"id":"xmsalxqot8y64","name":"炸物握壽司(天婦羅風，附美乃滋醬汁)","kcal":260,"p":8,"c":30,"f":12,"portion":"迴轉壽司1盤，2貫","n":1,"mc":{"lunch":1}}
+- {"id":"xmsq3y3o1m32l","name":"紅心粉圓","kcal":220,"p":1,"c":52,"f":1,"portion":"260cc 小杯（含粉圓與糖水，粉圓約占1/3杯）","n":1,"mc":{"snack":1}}
 - {"id":"xmsbra5aha349","name":"紅蘿蔔片","kcal":8,"c":2,"portion":"2片，約20g","n":1,"mc":{"lunch":1}}
 - {"id":"xms46nxj47kfe","name":"紅蘿蔔炒蛋","kcal":90,"p":4,"c":6,"f":6,"portion":"約半碗，含少許油","n":1,"mc":{"lunch":1}}
 - {"id":"xmsq3xjlj95ad","name":"美乃滋淋醬","kcal":75,"f":8.3,"portion":"表面一條約1大匙（約15g）（實際約0.75倍）","n":1,"mc":{"dinner":1}}
