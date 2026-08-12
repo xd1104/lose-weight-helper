@@ -179,5 +179,6 @@
 - {"id":"xmsktv8xvdvmn","name":"藜麥毛豆","kcal":40,"p":3,"c":4,"f":1,"portion":"一小撮，約30g","n":1,"mc":{"lunch":1}}
 - {"id":"xms1ii7e9qnvr","name":"藥膳鍋湯底","kcal":80,"p":2,"c":6,"f":5,"portion":"約400ml湯，含中藥材與少量油脂","n":1,"mc":{"dinner":1}}
 - {"id":"xms4rsmibyrbm","name":"糯米腸","kcal":120,"p":2,"c":22,"f":3,"portion":"一顆，約60克","n":1,"mc":{"snack":1}}
+- {"id":"xmspv07c1w6uz","name":"鹹蛋黃方塊酥","kcal":103,"p":1.6,"c":12.8,"f":5.1,"portion":"一塊","n":1,"mc":{"snack":1}}
 - {"id":"xmscptz9uuh2b","name":"麵線","kcal":220,"p":5,"c":45,"f":2,"portion":"約1碗份量，紙杯裝約510cc湯麵線中的麵線部分（約100g乾麵線煮熟）","n":1,"mc":{"lunch":1}}
 - {"id":"xmscptz9zrslr","name":"麵線糊湯汁（含芡粉、醬油調味）","kcal":150,"p":2,"c":25,"f":4,"portion":"約510cc湯底，含勾芡澱粉與油脂","n":1,"mc":{"lunch":1}}
