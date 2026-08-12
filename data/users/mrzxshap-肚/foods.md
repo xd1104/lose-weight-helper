@@ -2,6 +2,7 @@
 
 - {"id":"xmslg4cgbeecv","name":"檸檬蛋糕","kcal":161,"p":3.2,"c":16,"f":9.4,"portion":"一顆","star":true,"n":2}
 - {"id":"xmsbxvrp17zif","name":"麻吉燒（花生口味）","kcal":60,"p":1,"c":10,"f":2,"portion":"1顆，約28g（西北麻糬燒市售規格：一包 200g 裝 7-8 顆）","star":true,"n":1}
+- {"id":"xmspevuid9xog","name":"壽桃","kcal":127,"p":2.6,"c":19.9,"f":6.5,"portion":"半顆","star":true,"n":1}
 - {"id":"xms474i6245tc","name":"水煮蛋","kcal":78,"p":6,"c":1,"f":5,"portion":"1顆，約一顆雞蛋大小（約50g）","n":9}
 - {"id":"xmse5damc2n4m","name":"綜合堅果","kcal":90,"p":3,"c":3,"f":8,"portion":"6顆，綜合堅果（杏仁、腰果、核桃等）平均每顆約2.5g，共約15g","n":7}
 - {"id":"xms08zonowf7c","name":"白飯","kcal":130,"p":2,"c":29,"portion":"小碗約0.7碗（約100克飯量，被鴨肉覆蓋）","n":6}
@@ -117,7 +118,6 @@
 - {"id":"xmsn2lqbg3pqf","name":"新鮮龍眼（去殼去籽）","kcal":52,"p":1,"c":13,"portion":"10顆，每顆果肉約8-9g，共約85g","n":1}
 - {"id":"xms7flaa517xo","name":"蜂蜜麵包","kcal":100,"p":2,"c":15,"f":2,"n":1}
 - {"id":"xmsam76qekzpi","name":"壽司醋飯","kcal":35,"p":1,"c":8,"portion":"藏於海苔下方，約半貫壽司飯量，約20g","n":1}
-- {"id":"xmspevuid9xog","name":"壽桃","kcal":127,"p":2.6,"c":19.9,"f":6.5,"portion":"半顆","n":1}
 - {"id":"xmsn2tbd7r4ih","name":"榨菜","kcal":15,"p":1,"c":2,"portion":"約2小撮（約20g）","n":1}
 - {"id":"xmsn2tbd4hkxi","name":"榨菜肉絲配料—肉絲","kcal":70,"p":7,"f":5,"portion":"約一個乒乓球大小的肉絲量（約30g）","n":1}
 - {"id":"xmsktyk3yp3rx","name":"滷大雞爪","kcal":90,"p":6,"c":2,"f":6,"portion":"1支，約一個掌心大小（約35g）","n":1}
