@@ -116,6 +116,7 @@
 - {"id":"xms1i7sgymof7","name":"烤雞肉","kcal":150,"p":22,"c":1,"f":6,"portion":"約3-4塊，去皮估算","n":1,"mc":{"lunch":1}}
 - {"id":"xms1id61ysrqt","name":"烤雞肉（去皮）","kcal":130,"p":24,"f":4,"portion":"約80克","n":1,"mc":{"lunch":1}}
 - {"id":"xmsam4irj8cc4","name":"真鯛生魚片握壽司（2貫）","kcal":130,"p":8,"c":22,"f":1,"portion":"2貫，真鯛生魚片約30g+醋飯約80g","n":1,"mc":{"lunch":1}}
+- {"id":"xmsq3w3ymvv3d","name":"粉圓冰","kcal":200,"p":1,"c":48,"portion":"小杯，約260cc（含粉圓約60g、糖水與冰）","n":1,"mc":{"snack":1}}
 - {"id":"xmsku0uem6r8p","name":"荊州公安鍋盔餅皮（油酥發麵）","kcal":480,"p":10,"c":60,"f":20,"portion":"約三個手掌長、厚約1公分，估計餅皮部分約150g","n":1,"mc":{"dinner":1}}
 - {"id":"xmsamd5bdqd5j","name":"起司","kcal":150,"p":9,"c":2,"f":12,"portion":"融化起司片約1.5片","n":1,"mc":{"dinner":1}}
 - {"id":"xms4iibycaaeq","name":"迷你銅鑼燒","kcal":114,"p":2.1,"c":19.8,"f":3,"n":1,"mc":{"snack":1}}
