@@ -50,6 +50,7 @@
 - {"id":"xmsbr67hyi0zv","name":"白飯拌滷肉燥","kcal":220,"p":6,"c":32,"f":8,"portion":"半碗白飯（約140大卡）＋肉燥少許","n":1,"mc":{"lunch":1}}
 - {"id":"xms7fekz4klqt","name":"皮蛋豆腐","kcal":95,"p":6,"c":4,"f":6,"portion":"半份，約半盤（皮蛋1顆、嫩豆腐半盒，含醬油膏與柴魚）","n":1,"mc":{"dinner":1}}
 - {"id":"xms4rmub7sfn0","name":"米血串","kcal":90,"p":2,"c":19,"f":1,"portion":"1串，約60g","n":1,"mc":{"snack":1}}
+- {"id":"xmsphqmdsvwir","name":"老婆餅","kcal":273,"p":5.5,"c":35,"f":12.4,"portion":"一個","n":1,"mc":{"snack":1}}
 - {"id":"xms2pb1x7w36i","name":"肉鬆蛋捲","kcal":103,"p":2,"c":11,"f":5,"n":1,"mc":{"snack":1}}
 - {"id":"xms5q6vl6011q","name":"冷凍豬肉水餃","kcal":760,"p":24,"c":95,"f":28,"portion":"19顆，一般市售冷凍水餃(約每顆20-25g)","n":1,"mc":{"lunch":1}}
 - {"id":"xmsohgtqm0rdb","name":"李子","kcal":60,"p":1,"c":15,"portion":"1顆，中等大小（約150g）","n":1,"mc":{"breakfast":1}}
