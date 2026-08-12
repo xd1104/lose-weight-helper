@@ -9,7 +9,7 @@
 - {"id":"xms3c39qv0iud","name":"芒果","kcal":180,"p":2,"c":45,"f":1,"portion":"約兩個拳頭大小，約300克果肉","star":true,"n":4,"mc":{"breakfast":3,"dinner":1}}
 - {"id":"xmscmgxcp5bih","name":"芭樂","kcal":51,"p":1,"c":12,"portion":"約3/4個拳頭大（約135g）","star":true,"n":4,"mc":{"breakfast":3,"lunch":1}}
 - {"id":"xms08qs8ecwxz","name":"炒空心菜","kcal":216,"p":4,"c":9,"f":16,"portion":"1.5顆拳頭（約270g，含炒油）","n":4,"mc":{"lunch":1,"dinner":2}}
-- {"id":"xms08qs8bajwi","name":"糙米飯","kcal":130,"p":3,"c":28,"f":1,"portion":"約半碗（100g）","n":3,"mc":{"lunch":1,"dinner":1}}
+- {"id":"xms08qs8bajwi","name":"糙米飯","kcal":180,"p":4,"c":38,"f":1,"portion":"約半碗到一碗之間（約120g）","n":4,"mc":{"lunch":2,"dinner":1}}
 - {"id":"xms1k9j196fuo","name":"白飯","kcal":420,"p":8,"c":90,"f":1,"portion":"便當盒份量，約1.5碗（約320g）","n":2,"mc":{"lunch":2}}
 - {"id":"xms1k9j1735nj","name":"羊肉片","kcal":420,"p":34,"f":30,"portion":"中份約200-250g生肉片，火鍋涮煮","n":2,"mc":{"lunch":2}}
 - {"id":"xmsam01aplz46","name":"冷凍地瓜","kcal":90,"p":1,"c":21,"portion":"1條，約一根手指長（約100g）","n":2,"mc":{"dinner":2}}
@@ -60,6 +60,7 @@
 - {"id":"xms4rmub9kxt5","name":"豆乾串","kcal":100,"p":9,"c":3,"f":6,"portion":"1串，約50g","n":1,"mc":{"snack":1}}
 - {"id":"xmscu5zad93os","name":"味噌湯","kcal":50,"p":3,"c":5,"f":2,"portion":"小馬克杯一杯（約200ml）","n":1,"mc":{"lunch":1}}
 - {"id":"xms1k9j181x2h","name":"昆布鍋底食材(高麗菜、豆腐、菇類等)","kcal":120,"p":8,"c":12,"f":5,"portion":"什錦火鍋料一份，約200克蔬菜豆腐類","n":1,"mc":{"lunch":1}}
+- {"id":"xmsq3uikuckpj","name":"炒紅蘿蔔蛋絲","kcal":130,"p":3,"c":10,"f":8,"portion":"約半碗（約100g，含少量蛋絲與烹調用油）","n":1,"mc":{"lunch":1}}
 - {"id":"xmscu5zabsa2j","name":"炒高麗菜筍絲","kcal":110,"p":2,"c":8,"f":7,"portion":"約半碗（約100g，含炒油）","n":1,"mc":{"lunch":1}}
 - {"id":"xms46nxj5auh6","name":"炒筍絲","kcal":50,"p":1,"c":6,"f":2,"portion":"約半碗，清炒","n":1,"mc":{"lunch":1}}
 - {"id":"xmsohigkpxpjo","name":"炒飯（含蛋、蔥花、油）","kcal":650,"p":12,"c":90,"f":22,"portion":"一般餐盤一份，約1.5碗飯量（約300g熟飯）＋少許蛋、蔥花","n":1,"mc":{"lunch":1}}
@@ -94,6 +95,7 @@
 - {"id":"xmsalxqp0y5mn","name":"甜牛肉握壽司(炙燒淋醬)","kcal":150,"p":9,"c":16,"f":6,"portion":"迴轉壽司1盤，2貫","n":1,"mc":{"lunch":1}}
 - {"id":"xmrzvy2cso7iq","name":"甜椒配料","kcal":3,"c":1,"portion":"少量點綴，約10g","n":1,"mc":{"lunch":1}}
 - {"id":"xms14aifk0m9t","name":"甜燒餅","kcal":350,"p":7,"c":45,"f":16,"portion":"傳統早餐店燒餅一份，約120克","n":1,"mc":{"breakfast":1}}
+- {"id":"xmsq3uikzurvf","name":"荷包蛋（豬腳旁隱約可見）","kcal":50,"p":3,"f":4,"portion":"約半顆，煎蛋一角（約25g）","n":1,"mc":{"lunch":1}}
 - {"id":"xms96rl6n1yqt","name":"荷包蛋/水煮蛋","kcal":120,"p":9,"c":1,"f":9,"portion":"約1.5顆蛋量","n":1}
 - {"id":"xmspg50dxtx6o","name":"魚丸炒竹筍","kcal":300,"p":13,"c":16,"f":16,"portion":"半盤，約5顆魚丸（每顆約22g，共約110g）＋竹筍片約60g，炒油約1小匙","n":1,"mc":{"dinner":1}}
 - {"id":"xmsfy36dzaj1k","name":"番茄湯頭麵疙瘩","kcal":550,"p":15,"c":85,"f":15,"portion":"一般麵碗份量，湯底+麵疙瘩約400-450g（麵疙瘩約占150-180g，其餘為番茄湯底與少許配料如高麗菜、肉末）","n":1,"mc":{"lunch":1}}
@@ -117,6 +119,7 @@
 - {"id":"xms603xhao3bu","name":"滷菜頭（白蘿蔔）","kcal":15,"c":3,"portion":"約70克","n":1,"mc":{"dinner":2}}
 - {"id":"xms46nxj11eh3","name":"滷腿庫","kcal":280,"p":18,"c":3,"f":22,"portion":"約一塊，掌心大小含皮","n":1,"mc":{"lunch":1}}
 - {"id":"xms33mroscx1r","name":"滷豬皮","kcal":90,"p":8,"c":2,"f":6,"portion":"約1/2碗","n":1,"mc":{"dinner":1}}
+- {"id":"xmsq3uikq0yv6","name":"滷豬腳","kcal":250,"p":18,"c":3,"f":18,"portion":"一塊，約掌心大小（約100g）","n":1,"mc":{"lunch":1}}
 - {"id":"xms603xh4c6mu","name":"滷蕃薯葉","kcal":25,"p":2,"c":3,"f":1,"portion":"約80克","n":1,"mc":{"dinner":1}}
 - {"id":"xms96u0tb746w","name":"綜合蔬菜（青江菜、玉米筍、番茄、黑木耳）","kcal":60,"p":2,"c":10,"f":1,"portion":"約1碗份量蔬菜","n":1}
 - {"id":"xmsirvr8ojsq1","name":"綜合醬汁（黑胡椒／蘑菇醬）","kcal":80,"p":1,"c":8,"f":6,"portion":"約2大匙，約30ml","n":1,"mc":{"lunch":1}}
@@ -128,6 +131,7 @@
 - {"id":"xmsn2tg605gv3","name":"燙白菜","kcal":40,"p":1,"c":4,"f":2,"portion":"約半碗（約50g）","n":1,"mc":{"lunch":1}}
 - {"id":"xmscu5za94soq","name":"燙地瓜葉","kcal":50,"p":2,"c":6,"f":1,"portion":"約半碗（約80g）","n":1,"mc":{"lunch":1}}
 - {"id":"xms4rkngg8k0n","name":"燙地瓜葉佐蒜末醬油","kcal":110,"p":3,"c":9,"f":7,"portion":"自助餐一般盤裝，估全盤約250克，實際食用2/3份約170克","n":1,"mc":{"dinner":1}}
+- {"id":"xmsq3uikwh515","name":"燙青菜（地瓜葉、油菜等）","kcal":60,"p":3,"c":8,"f":1,"portion":"約一碗（約150g）","n":1,"mc":{"lunch":1}}
 - {"id":"xmrzvy2cobh9k","name":"蕈菇燉飯","kcal":520,"p":14,"c":72,"f":18,"portion":"約一碗份量(含飯約200g熟重、綜合菇類、起司醬汁)","n":1,"mc":{"lunch":1}}
 - {"id":"xmsegj8ur1bkc","name":"餛飩麻醬乾麵","kcal":640,"p":21,"c":82,"f":25,"portion":"共 3 樣：乾麵（麵條）、麻醬醬料、餛飩","n":1,"mc":{"lunch":1}}
 - {"id":"xms4rjrmxq2ve","name":"鴨心湯麵（麵條與鴨心料，小碗）","kcal":320,"p":18,"c":40,"f":8,"portion":"小碗約0.7份，油麵約1碗，鴨心5-6片","n":1,"mc":{"dinner":1}}
