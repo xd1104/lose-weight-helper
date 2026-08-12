@@ -61,6 +61,7 @@
 - {"id":"xmsbxvrp9ctji","name":"肉燥飯","kcal":250,"p":6,"c":45,"f":6,"portion":"半碗白飯＋少許肉燥","n":1}
 - {"id":"xmsbxvrowr5hd","name":"低脂牛肉片","kcal":300,"p":40,"f":15,"portion":"一盤，約200g生重","n":1}
 - {"id":"xms3cawqff79y","name":"低脂起司片","kcal":50,"p":5,"c":1,"f":3,"portion":"1片（約20克）","n":1}
+- {"id":"xmspfee16xzds","name":"李子","kcal":65,"p":1,"c":16,"portion":"1顆，中等大小（約150g，含果核淨果肉約140g）","n":1}
 - {"id":"xmsbxvrp31rpu","name":"秀珍菇與木耳","kcal":40,"p":2,"c":6,"f":1,"portion":"一小份，約80g","n":1}
 - {"id":"xmscptz9xp85o","name":"肝連肉","kcal":80,"p":8,"f":5,"portion":"約1/4手掌大小（約40g）","n":1}
 - {"id":"xms5q5x68zxgt","name":"芒果","kcal":150,"p":2,"c":38,"f":1,"portion":"約兩拳頭大小，切塊約250克","n":1}
