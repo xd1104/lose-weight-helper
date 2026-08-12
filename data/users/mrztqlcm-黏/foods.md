@@ -16,6 +16,7 @@
 - {"id":"xms08qs8es0ij","name":"洋蔥炒魷魚","kcal":180,"p":15,"c":10,"f":8,"portion":"約一小盤，魷魚約80克、洋蔥約50克","n":2}
 - {"id":"xms04tjkxap09","name":"紅心芭樂","kcal":120,"p":2,"c":28,"f":1,"portion":"約兩顆拳頭大小，共約300g","n":2}
 - {"id":"xms96u0t29qas","name":"意麵","kcal":300,"p":8,"c":55,"f":5,"portion":"一份燴煮意麵，約1份乾麵量","n":2}
+- {"id":"xmsohhtkowace","name":"壽桃","kcal":255,"p":5.2,"c":39.8,"f":13.1,"portion":"一顆","n":2}
 - {"id":"xms33mrorijgv","name":"滷豆乾","kcal":140,"p":15,"c":5,"f":9,"portion":"約100克","n":2}
 - {"id":"xms33mroqfzbt","name":"滷海帶","kcal":15,"p":1,"c":2,"portion":"約50克","n":2}
 - {"id":"xms14b5m418gv","name":"蔥蛋","kcal":120,"p":7,"c":2,"f":9,"portion":"約1顆蛋量的蔥蛋","n":2}
@@ -105,7 +106,6 @@
 - {"id":"xms46nxj321rg","name":"煎荷包蛋","kcal":110,"p":6,"c":1,"f":9,"portion":"一顆全蛋煎至焦邊","n":1}
 - {"id":"xmrzvwpid4f6t","name":"碗粿","kcal":320,"p":8,"c":50,"f":10,"portion":"一碗，約350g，含花生粉與醬汁","n":1}
 - {"id":"xms7fhlbw0nzv","name":"蜂蜜麵包","kcal":180,"p":4,"c":30,"f":4,"n":1}
-- {"id":"xmsohhtkowace","name":"壽桃","kcal":127,"p":2.6,"c":20,"f":6.5,"portion":"一半","n":1}
 - {"id":"xms603xh17bu7","name":"滷小白菜","kcal":20,"p":2,"c":3,"f":1,"portion":"約80克","n":1}
 - {"id":"xms603xheyu2q","name":"滷玉米筍","kcal":15,"p":1,"c":3,"portion":"約40克","n":1}
 - {"id":"xms603xh7nt1v","name":"滷豆芽菜","kcal":20,"p":2,"c":3,"f":1,"portion":"約80克","n":1}
