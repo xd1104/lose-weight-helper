@@ -117,6 +117,7 @@
 - {"id":"xmsn2lqbg3pqf","name":"新鮮龍眼（去殼去籽）","kcal":52,"p":1,"c":13,"portion":"10顆，每顆果肉約8-9g，共約85g","n":1}
 - {"id":"xms7flaa517xo","name":"蜂蜜麵包","kcal":100,"p":2,"c":15,"f":2,"n":1}
 - {"id":"xmsam76qekzpi","name":"壽司醋飯","kcal":35,"p":1,"c":8,"portion":"藏於海苔下方，約半貫壽司飯量，約20g","n":1}
+- {"id":"xmspevuid9xog","name":"壽桃","kcal":127,"p":2.6,"c":19.9,"f":6.5,"portion":"半顆","n":1}
 - {"id":"xmsn2tbd7r4ih","name":"榨菜","kcal":15,"p":1,"c":2,"portion":"約2小撮（約20g）","n":1}
 - {"id":"xmsn2tbd4hkxi","name":"榨菜肉絲配料—肉絲","kcal":70,"p":7,"f":5,"portion":"約一個乒乓球大小的肉絲量（約30g）","n":1}
 - {"id":"xmsktyk3yp3rx","name":"滷大雞爪","kcal":90,"p":6,"c":2,"f":6,"portion":"1支，約一個掌心大小（約35g）","n":1}
