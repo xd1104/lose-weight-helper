@@ -72,6 +72,7 @@
 - {"id":"xms46nxj5auh6","name":"炒筍絲","kcal":50,"p":1,"c":6,"f":2,"portion":"約半碗，清炒","n":1,"mc":{"lunch":1}}
 - {"id":"xmsohigkpxpjo","name":"炒飯（含蛋、蔥花、油）","kcal":650,"p":12,"c":90,"f":22,"portion":"一般餐盤一份，約1.5碗飯量（約300g熟飯）＋少許蛋、蔥花","n":1,"mc":{"lunch":1}}
 - {"id":"xms1qj1ub7gp4","name":"炒蕃薯葉","kcal":90,"p":3,"c":6,"f":6,"portion":"約一人份，一小盤","n":1,"mc":{"dinner":1}}
+- {"id":"xmsrodlcfjyan","name":"空心菜","kcal":150,"p":4,"c":10,"f":10,"portion":"一大把燙青菜或炒青菜，約200g","n":1,"mc":{"dinner":1}}
 - {"id":"xmsalxqoz7xv3","name":"花枝握壽司","kcal":110,"p":8,"c":18,"f":1,"portion":"迴轉壽司1盤，2貫","n":1,"mc":{"lunch":1}}
 - {"id":"xmsbra5a7zooj","name":"花枝漿／麻吉魚漿糰","kcal":280,"p":18,"c":20,"f":14,"portion":"兩盤合計約7顆，每顆約30g","n":1,"mc":{"lunch":1}}
 - {"id":"xms1qj1ucoz44","name":"青江菜炒菇","kcal":80,"p":3,"c":6,"f":5,"portion":"約一人份，一小盤","n":1,"mc":{"dinner":1}}
@@ -110,6 +111,7 @@
 - {"id":"xmsq3uikzurvf","name":"荷包蛋（豬腳旁隱約可見）","kcal":50,"p":3,"f":4,"portion":"約半顆，煎蛋一角（約25g）","n":1,"mc":{"lunch":1}}
 - {"id":"xms96rl6n1yqt","name":"荷包蛋/水煮蛋","kcal":120,"p":9,"c":1,"f":9,"portion":"約1.5顆蛋量","n":1}
 - {"id":"xmsq3w1qv0w39","name":"豚骨湯底","kcal":350,"p":8,"c":6,"f":30,"portion":"一碗湯，約400-500ml，含豬油與骨湯乳化","n":1,"mc":{"dinner":1}}
+- {"id":"xmsrodlcko0rp","name":"魚丸","kcal":90,"p":4,"c":6,"f":4,"portion":"2顆，每顆約22g，共約44g","n":1,"mc":{"dinner":1}}
 - {"id":"xmspg50dxtx6o","name":"魚丸炒竹筍","kcal":300,"p":13,"c":16,"f":16,"portion":"半盤，約5顆魚丸（每顆約22g，共約110g）＋竹筍片約60g，炒油約1小匙","n":1,"mc":{"dinner":1}}
 - {"id":"xmsfy36dzaj1k","name":"番茄湯頭麵疙瘩","kcal":550,"p":15,"c":85,"f":15,"portion":"一般麵碗份量，湯底+麵疙瘩約400-450g（麵疙瘩約占150-180g，其餘為番茄湯底與少許配料如高麗菜、肉末）","n":1,"mc":{"lunch":1}}
 - {"id":"xms96u0t5m6yq","name":"番茄鍋燒湯底","kcal":120,"p":2,"c":10,"f":7,"portion":"約500ml湯，含番茄與油脂調味","n":1}
@@ -138,6 +140,7 @@
 - {"id":"xms96u0tb746w","name":"綜合蔬菜（青江菜、玉米筍、番茄、黑木耳）","kcal":60,"p":2,"c":10,"f":1,"portion":"約1碗份量蔬菜","n":1}
 - {"id":"xmsirvr8ojsq1","name":"綜合醬汁（黑胡椒／蘑菇醬）","kcal":80,"p":1,"c":8,"f":6,"portion":"約2大匙，約30ml","n":1,"mc":{"lunch":1}}
 - {"id":"xmsdw4vm3ppam","name":"綠豆湯","kcal":340,"p":6,"c":68,"f":3,"portion":"約400ml，等於一般碗（約280ml）的1.4碗，含綠豆與糖水","n":1,"mc":{"snack":1}}
+- {"id":"xmsrodlcot3z5","name":"酸白菜","kcal":35,"p":1,"c":6,"portion":"一拳頭大小（約150g）","n":1,"mc":{"dinner":1}}
 - {"id":"xms4rmubagdxq","name":"熱狗串","kcal":90,"p":3,"c":2,"f":8,"portion":"半串，約30g","n":1,"mc":{"snack":1}}
 - {"id":"xms96sz95l79f","name":"蔥抓餅加蛋","kcal":150,"p":6,"c":15,"f":8,"portion":"整份約市售一片蔥抓餅加一顆蛋，取其1/3份量","n":1}
 - {"id":"xmsameoweqsln","name":"蔥油餅加蛋","kcal":133,"p":4,"c":15,"f":7,"portion":"約1/3份蔥油餅加蛋（整份約400大卡，含蛋與煎油）","n":1,"mc":{"breakfast":1}}
