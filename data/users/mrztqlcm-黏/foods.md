@@ -12,6 +12,7 @@
 - {"id":"xms08qs8bajwi","name":"糙米飯","kcal":180,"p":4,"c":38,"f":1,"portion":"約半碗到一碗之間（約120g）","n":4,"mc":{"lunch":2,"dinner":1}}
 - {"id":"xms1k9j196fuo","name":"白飯","kcal":140,"p":3,"c":31,"portion":"約半碗（約100g熟飯）","n":3,"mc":{"lunch":2,"dinner":1}}
 - {"id":"xmsohhtkowace","name":"壽桃","kcal":255,"p":5.2,"c":39.8,"f":13.1,"portion":"一顆","n":3,"mc":{"breakfast":3}}
+- {"id":"xmspg5x5hmbye","name":"水梨","kcal":50,"c":13,"portion":"約半個拳頭大（約90g）","n":2,"mc":{"lunch":1,"dinner":1}}
 - {"id":"xms1k9j1735nj","name":"羊肉片","kcal":420,"p":34,"f":30,"portion":"中份約200-250g生肉片，火鍋涮煮","n":2,"mc":{"lunch":2}}
 - {"id":"xmsam01aplz46","name":"冷凍地瓜","kcal":90,"p":1,"c":21,"portion":"1條，約一根手指長（約100g）","n":2,"mc":{"dinner":2}}
 - {"id":"xms08qs8es0ij","name":"洋蔥炒魷魚","kcal":180,"p":15,"c":10,"f":8,"portion":"約一小盤，魷魚約80克、洋蔥約50克","n":2,"mc":{"dinner":1}}
@@ -30,7 +31,6 @@
 - {"id":"xmsq3xjle0uuw","name":"叉燒（半份）","kcal":150,"p":13,"c":2,"f":10,"portion":"約半個掌心大小的肉片，共約6-7片（約60g）","n":1,"mc":{"dinner":1}}
 - {"id":"xmsn2tg5yoeav","name":"大陸妹（燙青菜）","kcal":50,"p":1,"c":4,"f":3,"portion":"約半碗（約50g）","n":1,"mc":{"lunch":1}}
 - {"id":"xms1qj1uc1fk1","name":"木耳炒蛋","kcal":150,"p":7,"c":6,"f":11,"portion":"約一人份，含一顆蛋","n":1,"mc":{"dinner":1}}
-- {"id":"xmspg5x5hmbye","name":"水梨","kcal":90,"p":1,"c":23,"portion":"約一個拳頭大（約180g）","n":1,"mc":{"dinner":1}}
 - {"id":"xms96rl6mftqz","name":"火腿","kcal":90,"p":9,"c":2,"f":5,"portion":"約3-4片火腿，3/4份量","n":1}
 - {"id":"xms1k9j18ck6q","name":"火鍋料(如魚餃、貢丸等)","kcal":100,"p":5,"c":8,"f":6,"portion":"少許，約2-3顆綜合火鍋料","n":1,"mc":{"lunch":1}}
 - {"id":"xmscu5za6m8q5","name":"火雞肉絲","kcal":110,"p":20,"f":3,"portion":"約一掌心量（約80g）","n":1,"mc":{"lunch":1}}
