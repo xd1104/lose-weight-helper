@@ -61,6 +61,9 @@
 - {"id":"xms4rmubba57p","name":"豆皮串","kcal":60,"p":5,"c":1,"f":4,"portion":"半串，約25g","n":1,"mc":{"snack":1}}
 - {"id":"xms4rmub9kxt5","name":"豆乾串","kcal":100,"p":9,"c":3,"f":6,"portion":"1串，約50g","n":1,"mc":{"snack":1}}
 - {"id":"xmscu5zad93os","name":"味噌湯","kcal":50,"p":3,"c":5,"f":2,"portion":"小馬克杯一杯（約200ml）","n":1,"mc":{"lunch":1}}
+- {"id":"xmsroa7gu7pz5","name":"咖哩牛肉塊","kcal":220,"p":18,"c":3,"f":15,"portion":"約一個掌心大小的肉量（約100g）","n":1,"mc":{"lunch":1}}
+- {"id":"xmsroa7gnjlye","name":"咖哩炒飯（米飯與炒油）","kcal":480,"p":8,"c":80,"f":14,"portion":"約1.5碗白飯量的米飯（約300g），加炒製用油","n":1,"mc":{"lunch":1}}
+- {"id":"xmsroa7gx99rm","name":"咖哩醬汁與配料（洋蔥、紅蘿蔔等）","kcal":100,"p":2,"c":12,"f":5,"portion":"約一份附著在飯上的醬料與蔬菜（約80g）","n":1,"mc":{"lunch":1}}
 - {"id":"xmsq3w1qqwgby","name":"拉麵麵條","kcal":400,"p":12,"c":80,"f":3,"portion":"約一般拉麵一份（約150g乾麵重量，煮熟後約350g）","n":1,"mc":{"dinner":1}}
 - {"id":"xms1k9j181x2h","name":"昆布鍋底食材(高麗菜、豆腐、菇類等)","kcal":120,"p":8,"c":12,"f":5,"portion":"什錦火鍋料一份，約200克蔬菜豆腐類","n":1,"mc":{"lunch":1}}
 - {"id":"xmsq3uikuckpj","name":"炒紅蘿蔔蛋絲","kcal":130,"p":3,"c":10,"f":8,"portion":"約半碗（約100g，含少量蛋絲與烹調用油）","n":1,"mc":{"lunch":1}}
