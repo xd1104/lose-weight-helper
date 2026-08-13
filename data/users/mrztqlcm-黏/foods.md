@@ -61,6 +61,7 @@
 - {"id":"xms4rmubba57p","name":"豆皮串","kcal":60,"p":5,"c":1,"f":4,"portion":"半串，約25g","n":1,"mc":{"snack":1}}
 - {"id":"xms4rmub9kxt5","name":"豆乾串","kcal":100,"p":9,"c":3,"f":6,"portion":"1串，約50g","n":1,"mc":{"snack":1}}
 - {"id":"xmscu5zad93os","name":"味噌湯","kcal":50,"p":3,"c":5,"f":2,"portion":"小馬克杯一杯（約200ml）","n":1,"mc":{"lunch":1}}
+- {"id":"xmsrob60wje3f","name":"咖哩牛肉炒飯","kcal":800,"p":25,"c":95,"f":32,"portion":"一般炒飯店大盤約1盤（飯約2碗，含牛肉片、蛋、少許蔬菜，共約450g）","n":1,"mc":{"lunch":1}}
 - {"id":"xmsroa7gu7pz5","name":"咖哩牛肉塊","kcal":220,"p":18,"c":3,"f":15,"portion":"約一個掌心大小的肉量（約100g）","n":1,"mc":{"lunch":1}}
 - {"id":"xmsroa7gnjlye","name":"咖哩炒飯（米飯與炒油）","kcal":480,"p":8,"c":80,"f":14,"portion":"約1.5碗白飯量的米飯（約300g），加炒製用油","n":1,"mc":{"lunch":1}}
 - {"id":"xmsroa7gx99rm","name":"咖哩醬汁與配料（洋蔥、紅蘿蔔等）","kcal":100,"p":2,"c":12,"f":5,"portion":"約一份附著在飯上的醬料與蔬菜（約80g）","n":1,"mc":{"lunch":1}}
