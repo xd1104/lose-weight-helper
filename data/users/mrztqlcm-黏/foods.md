@@ -55,6 +55,7 @@
 - {"id":"xmsphqmdsvwir","name":"老婆餅","kcal":273,"p":5.5,"c":35,"f":12.4,"portion":"一個","n":1,"mc":{"snack":1}}
 - {"id":"xms2pb1x7w36i","name":"肉鬆蛋捲","kcal":103,"p":2,"c":11,"f":5,"n":1,"mc":{"snack":1}}
 - {"id":"xms5q6vl6011q","name":"冷凍豬肉水餃","kcal":760,"p":24,"c":95,"f":28,"portion":"19顆，一般市售冷凍水餃(約每顆20-25g)","n":1,"mc":{"lunch":1}}
+- {"id":"xmsroednss7oo","name":"即食雞胸肉","kcal":119,"p":23.3,"c":2.2,"f":1.9,"n":1,"mc":{"snack":1}}
 - {"id":"xmsohgtqm0rdb","name":"李子","kcal":60,"p":1,"c":15,"portion":"1顆，中等大小（約150g）","n":1,"mc":{"breakfast":1}}
 - {"id":"xmsbra5ab5aa3","name":"秀珍菇","kcal":10,"p":1,"c":2,"portion":"一小把，約30g","n":1,"mc":{"lunch":1}}
 - {"id":"xmsby00lobxv1","name":"芒果冰沙","kcal":90,"p":1,"c":22,"portion":"120ml，小杯份量","n":1,"mc":{"lunch":1}}
