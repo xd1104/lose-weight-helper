@@ -25,6 +25,7 @@
 - {"id":"xms149v34zqbe","name":"豬肉餡餅","kcal":320,"p":11,"c":32,"f":17,"portion":"單顆，約7-8公分直徑，早餐店常見尺寸","n":2,"mc":{"breakfast":1,"lunch":1}}
 - {"id":"xms14b5m31ttj","name":"燒餅","kcal":280,"p":6,"c":40,"f":10,"portion":"一份約1個，普通厚燒餅","n":2,"mc":{"breakfast":1}}
 - {"id":"xms08qs8egfxf","name":"燙秋葵佐芝麻醬","kcal":90,"p":3,"c":8,"f":5,"portion":"約一小盤，含少量芝麻醬淋醬","n":2,"mc":{"dinner":1}}
+- {"id":"xmspga1bdpoeg","name":"蘋果","kcal":52,"c":14,"portion":"半顆，中型蘋果約一個拳頭大（整顆約200g，此次約100g）","n":2,"mc":{"breakfast":2}}
 - {"id":"xmsbra5akzelh","name":"三棵西北麻糬燒","kcal":180,"p":6,"c":20,"f":8,"portion":"3顆，火鍋料","n":1,"mc":{"lunch":1}}
 - {"id":"xmsq3xjle0uuw","name":"叉燒（半份）","kcal":150,"p":13,"c":2,"f":10,"portion":"約半個掌心大小的肉片，共約6-7片（約60g）","n":1,"mc":{"dinner":1}}
 - {"id":"xmsn2tg5yoeav","name":"大陸妹（燙青菜）","kcal":50,"p":1,"c":4,"f":3,"portion":"約半碗（約50g）","n":1,"mc":{"lunch":1}}
@@ -158,6 +159,5 @@
 - {"id":"xmsajyeot493f","name":"雞肉蛋沙拉三明治","kcal":240,"p":12,"c":23,"f":11,"portion":"1份，100公克，包裝標示","n":1,"mc":{"breakfast":1}}
 - {"id":"xmsn2tg5v3jdz","name":"雞肉絲（雞肉飯用，含醬汁）","kcal":220,"p":20,"c":5,"f":13,"portion":"約一個掌心大小的雞肉絲量，約100g","n":1,"mc":{"lunch":1}}
 - {"id":"xmsbra5a9cyy6","name":"蟹肉棒","kcal":50,"p":4,"c":6,"f":1,"portion":"約2-3根，合計約50g","n":1,"mc":{"lunch":1}}
-- {"id":"xmspga1bdpoeg","name":"蘋果","kcal":95,"c":25,"portion":"約一個拳頭大（約180g，中型蘋果一顆）","n":1,"mc":{"breakfast":1}}
 - {"id":"xmsohigktb99l","name":"鹹豬肉（切片拌炒）","kcal":250,"p":12,"c":2,"f":20,"portion":"約半個掌心大小、肥瘦相間（約80g）","n":1,"mc":{"lunch":1}}
 - {"id":"xmsirvr8nzftx","name":"鐵板麵","kcal":350,"p":8,"c":50,"f":12,"portion":"一份約200g（含奶油拌炒）","n":1,"mc":{"lunch":1}}
