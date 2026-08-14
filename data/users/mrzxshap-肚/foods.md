@@ -5,8 +5,8 @@
 - {"id":"xmsbxvrp17zif","name":"麻吉燒（花生口味）","kcal":60,"p":1,"c":10,"f":2,"portion":"1顆，約28g（西北麻糬燒市售規格：一包 200g 裝 7-8 顆）","star":true,"n":1,"mc":{"lunch":1}}
 - {"id":"xms474i6245tc","name":"水煮蛋","kcal":78,"p":6,"c":1,"f":5,"portion":"1顆，約一顆雞蛋大小（約50g）","n":11,"mc":{"breakfast":9,"lunch":2}}
 - {"id":"xmse5damc2n4m","name":"綜合堅果","kcal":90,"p":3,"c":3,"f":8,"portion":"6顆，綜合堅果（杏仁、腰果、核桃等）平均每顆約2.5g，共約15g","n":11,"mc":{"breakfast":10}}
+- {"id":"xms08zonowf7c","name":"白飯","kcal":130,"p":2,"c":29,"portion":"半碗（約140g）","n":7,"mc":{"lunch":2,"dinner":1,"snack":1}}
 - {"id":"xms1ijk5o2lb5","name":"無糖豆漿","kcal":90,"p":8,"c":4,"f":5,"portion":"1杯，300ml","n":7,"mc":{"breakfast":7}}
-- {"id":"xms08zonowf7c","name":"白飯","kcal":130,"p":2,"c":29,"portion":"小碗約0.7碗（約100克飯量，被鴨肉覆蓋）","n":6,"mc":{"lunch":1,"dinner":1,"snack":1}}
 - {"id":"xms3cawqebeag","name":"全麥吐司","kcal":80,"p":3,"c":15,"f":1,"portion":"1片，約一片吐司大小（約30g）","n":6,"mc":{"breakfast":6}}
 - {"id":"xmsbxyox2kfs9","name":"芭樂","kcal":30,"c":7,"portion":"半顆，約一個拳頭一半大小（約75g）","n":6,"mc":{"breakfast":4,"dinner":1,"snack":1}}
 - {"id":"xmse5dam9fa2n","name":"低脂乳酪片","kcal":50,"p":4,"c":1,"f":3,"portion":"1片，約一片乳酪片大小（約20g）","n":4,"mc":{"breakfast":4}}
@@ -49,6 +49,7 @@
 - {"id":"xmsphhgj1jgoc","name":"巧克力脆皮冰","kcal":96,"p":0.7,"c":6.5,"f":7.4,"portion":"一個","n":1,"mc":{"snack":1}}
 - {"id":"xms6072n2f1uk","name":"巧克力鬆餅","kcal":480,"p":8,"c":68,"f":18,"portion":"170克，無奶油，僅淋巧克力醬","n":1,"mc":{"dinner":1}}
 - {"id":"xms7fmghn0tvh","name":"巧克力麵包","kcal":140,"p":4,"c":20,"f":3.5,"n":1,"mc":{"lunch":1}}
+- {"id":"xmssa91w2fyye","name":"玉米筍炒荷蘭豆","kcal":100,"p":2,"c":8,"f":6,"portion":"一格炒青菜（約100g）","n":1,"mc":{"lunch":1}}
 - {"id":"xmsfmdexnp58i","name":"生干貝壽司","kcal":50,"p":3,"c":9,"f":1,"portion":"1貫，醋飯約20g＋干貝約15g，共約35g","n":1,"mc":{"lunch":1}}
 - {"id":"xmse5mahonh6u","name":"生春捲（蝦）","kcal":180,"p":10,"c":26,"f":3,"portion":"2條切成4塊，每條約含蝦2-3隻、米皮、生菜冬粉，每條約60g，共約120g","n":1,"mc":{"dinner":1}}
 - {"id":"xmsbxvrp8oirx","name":"生蛋（涮煮用）","kcal":70,"p":6,"c":1,"f":5,"portion":"1顆","n":1,"mc":{"lunch":1}}
@@ -61,6 +62,7 @@
 - {"id":"xmsktyk41dobf","name":"全脂鮮奶","kcal":126,"p":6,"c":9,"f":7,"portion":"200ml（約一個小玻璃杯）","n":1,"mc":{"dinner":1}}
 - {"id":"xms33q6zy2764","name":"地瓜、茶豆、滷菜、香菇雞湯","kcal":800,"n":1,"mc":{"dinner":1}}
 - {"id":"xmsktv8xsx17f","name":"地瓜球","kcal":90,"p":1,"c":14,"f":3,"portion":"2顆，每顆約20g，共約40g","n":1,"mc":{"lunch":1}}
+- {"id":"xmssa91vznior","name":"地瓜葉","kcal":80,"p":2,"c":6,"f":5,"portion":"一格燙青菜（約100g）","n":1,"mc":{"lunch":1}}
 - {"id":"xmsktv8xqnutn","name":"百香果","kcal":20,"c":5,"portion":"半顆果肉，約30g","n":1,"mc":{"lunch":1}}
 - {"id":"xmsizrxbatfpp","name":"竹筍湯","kcal":60,"p":2,"c":8,"f":2,"portion":"一般碗（約300ml，含竹筍與少量湯料）","n":1,"mc":{"dinner":1}}
 - {"id":"xms4rsmid4fiz","name":"米血糕","kcal":70,"p":2,"c":15,"portion":"一塊，約50克","n":1,"mc":{"snack":1}}
@@ -86,6 +88,7 @@
 - {"id":"xmsktv8y2rebd","name":"法式吐司（含蜂蜜）","kcal":430,"p":10,"c":53,"f":18,"portion":"2片，每片約80g，共約160g，淋蜂蜜約10g","n":1,"mc":{"lunch":1}}
 - {"id":"xmspldfqy2p3x","name":"炒油菜","kcal":100,"p":2,"c":6,"f":7,"portion":"約一個拳頭份量（約150g）","n":1,"mc":{"lunch":1}}
 - {"id":"xmsfej0cp2tz9","name":"炒空心菜","kcal":230,"p":5,"c":10,"f":14,"portion":"約1.5顆拳頭（約270g），快炒加少許油","n":1,"mc":{"dinner":1}}
+- {"id":"xmssa91w4177l","name":"炒絲瓜","kcal":80,"p":1,"c":6,"f":5,"portion":"一格炒青菜（約100g）","n":1,"mc":{"lunch":1}}
 - {"id":"xmsbxvrp22ycn","name":"花枝漿","kcal":80,"p":8,"c":4,"f":3,"portion":"2顆，約60g","n":1,"mc":{"lunch":1}}
 - {"id":"xms7ff8j73ml2","name":"花菇燉雞粥","kcal":420,"p":22,"c":58,"f":9,"portion":"一般碗，約450-500ml","n":1,"mc":{"dinner":1}}
 - {"id":"xmspfgx6epi48","name":"花椰菜","kcal":10,"p":1,"c":2,"portion":"一小朵，約30g（燙熟）","n":1,"mc":{"lunch":1}}
@@ -139,6 +142,7 @@
 - {"id":"xms1ii7ecuf5d","name":"無糖麥茶","kcal":0,"portion":"半杯約200ml","n":1,"mc":{"dinner":1}}
 - {"id":"xmsktv8y3lted","name":"無糖綠茶","kcal":0,"portion":"600ml，無糖","n":1,"mc":{"lunch":1}}
 - {"id":"xmspfgx6cjodn","name":"筍乾","kcal":15,"p":1,"c":2,"portion":"三四片，共約20g","n":1,"mc":{"lunch":1}}
+- {"id":"xmssa91vwskm4","name":"菜脯蛋","kcal":180,"p":7,"c":3,"f":15,"portion":"一份，約半個手掌大（約80g）","n":1,"mc":{"lunch":1}}
 - {"id":"xmsn2lqbg3pqf","name":"新鮮龍眼（去殼去籽）","kcal":52,"p":1,"c":13,"portion":"10顆，每顆果肉約8-9g，共約85g","n":1,"mc":{"snack":1}}
 - {"id":"xmspfgx693wqp","name":"溏心蛋","kcal":40,"p":3,"f":3,"portion":"半顆，約一顆雞蛋一半大小（約25g）","n":1,"mc":{"lunch":1}}
 - {"id":"xms7flaa517xo","name":"蜂蜜麵包","kcal":100,"p":2,"c":15,"f":2,"n":1,"mc":{"lunch":1}}
@@ -152,6 +156,7 @@
 - {"id":"xms605lnb4sce","name":"滷豆乾","kcal":70,"p":6,"c":3,"f":4,"portion":"約40克","n":1,"mc":{"dinner":1}}
 - {"id":"xms1iqck53t0f","name":"滷味拼盤（豆干、海帶、豬耳朵、蛋）","kcal":180,"p":14,"c":6,"f":11,"portion":"約半盤，總重估120克","n":1,"mc":{"lunch":1}}
 - {"id":"xmsktyk3wx3j2","name":"滷鳥蛋(鵪鶉蛋)","kcal":216,"p":12,"c":1,"f":10,"portion":"9顆，每顆約15g（約一顆花生大小），共約135g","n":1,"mc":{"dinner":1}}
+- {"id":"xmssa91vto3yw","name":"滷雞肉","kcal":220,"p":20,"c":3,"f":14,"portion":"兩塊雞骨肉，約掌心大小（共約120g）","n":1,"mc":{"lunch":1}}
 - {"id":"xmsktv8y0rpmo","name":"漢堡排（含起司）","kcal":320,"p":24,"c":2,"f":24,"portion":"一塊約120g牛肉排＋一片起司約20g，共約140g","n":1,"mc":{"lunch":1}}
 - {"id":"xms605ln837y3","name":"綜合滷味（小白菜、蕃薯葉、高麗菜、豆芽菜、海帶、花椰菜、玉米筍）","kcal":60,"p":3,"c":9,"f":1,"portion":"蔬菜類約120克，瀝乾不含湯汁","n":1,"mc":{"dinner":1}}
 - {"id":"xmsam76qizaj0","name":"蒔蘿與檸檬調味","kcal":5,"c":1,"portion":"少許蒔蘿碎與一片檸檬點綴","n":1,"mc":{"lunch":1}}
