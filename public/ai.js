@@ -356,8 +356,28 @@ function parseAiResult(j){
       confidence: ({high:"high",medium:"medium",low:"low"})[it.confidence] || "medium",
       src: "ai"
     };
-  });
+  }).filter(isRealFood);
+  if(!items.length){
+    throw aiError("AI 這次沒認出食物，換個講法或補一張清楚的照片試試。","empty");
+  }
   return { items:items, note:String(data.note||"").slice(0,200) };
+}
+
+/* AI 偶爾會多吐一筆「填充用」的空項目——實際看到的是 name 叫 "note_placeholder"、
+ * 四個數字全 0、連份量都沒有。它不是食物，不該端到使用者面前還要他自己按 ✕ 刪掉。
+ *
+ * ⚠️ 判準不能只看「熱量 0」：無糖麥茶、無糖茶這種真的就是 0 大卡、0 營養素。
+ * 真的食物一定有份量（schema 把 portion 列為 required，而且規則 4c 要求寫得具體），
+ * 所以「四個數字全 0 而且連份量都沒有」才是空殼。
+ * 另外擋掉「看起來像程式變數名」的名稱（有底線、整串英數）——真的食物名稱不會長這樣，
+ * 而 Oreo、Subway 這種純英文但沒底線的照樣留著。 */
+function isRealFood(it){
+  var name=String(it.name||"").trim();
+  if(!name) return false;
+  if(/^[a-z][a-z0-9]*_[a-z0-9_]*$/i.test(name)) return false;
+  var empty=!it.kcal && !it.p && !it.c && !it.f;
+  if(empty && !it.portion) return false;
+  return true;
 }
 
 /* ---- 對外：文字 ---- */

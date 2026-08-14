@@ -1,7 +1,7 @@
 "use strict";
 
 /* 版本號。改前端時跟 sw.js 的 cache 版本號一起 +1。 */
-var APP_VER="6.1";
+var APP_VER="6.2";
 /*
  * 減重助手 — 前端主程式
  * 資料層在 store.js（LocalStore / GitHubStore 自動切）、AI 在 ai.js。

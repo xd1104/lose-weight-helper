@@ -6,6 +6,7 @@
  *   C. 「重新估這一項」會帶著原本那張照片，而且只換掉那一項
  *   D. 「只改名稱」不打 AI
  *   E. 「＋ 補一項」可以補 AI 漏掉的東西
+ *   G. AI 多吐的空殼項目要擋掉（v6.2，實機截圖抓到的）
  *
  * ⚠️ 會清掉本機 server 上的所有使用者資料（_setup.js 的 clearAll），跑之前先備份 data/。
  */
@@ -29,9 +30,21 @@ const SIX = ['白飯', '叉燒肉', '油雞腿肉', '燒鴨肉', '燙青菜', '�
   p.on('pageerror', (e) => errs.push(e.message));
 
   const reqs = [];
+  /* 設了就直接回這一包（[G] 段要自己指定 AI 這次吐什麼） */
+  let OVERRIDE = null;
   await p.route('https://api.anthropic.com/**', (r) => {
     const body = JSON.parse(r.request().postData());
     reqs.push(body);
+    if (OVERRIDE) {
+      return r.fulfill({
+        status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' },
+        body: JSON.stringify({
+          id: 'm', type: 'message', role: 'assistant', stop_reason: 'end_turn',
+          content: [{ type: 'text', text: JSON.stringify(OVERRIDE) }],
+          usage: { input_tokens: 900, output_tokens: 150 },
+        }),
+      });
+    }
     const blocks = body.messages[0].content;
     const txt = (blocks.filter((x) => x.type === 'text')[0] || {}).text || '';
     // 「只重估一項」的請求 -> 只回一項；第一次的照片請求 -> 回六項
@@ -161,6 +174,50 @@ const SIX = ['白飯', '叉燒肉', '油雞腿肉', '燒鴨肉', '燙青菜', '�
   const eaten = (await p.textContent('.kv.eat b')).trim();
   // 100(糙米飯) + 110 + 120 + 260(叉燒重估) + 140 + 150 + 60(例湯) = 940
   check('總熱量用重估後的數字（940）', eaten === '940', eaten);
+
+  console.log('\n[G] AI 多吐的空殼項目要擋掉');
+  /* 真的發生過（實機截圖）：AI 回了「紫米素粽子 270 大卡」之外，還多一筆
+     name 是 note_placeholder、四個數字全 0、沒有份量的東西，畫面上就多一張
+     卡片要使用者自己按 ✕。⚠️ 不能單看「熱量 0」——無糖麥茶那種真的就是 0 大卡。 */
+  const estimate = async (text) => {
+    await p.evaluate(() => closeAllSheets());
+    await p.waitForTimeout(300);
+    await p.click('[data-nav="today"]'); await p.waitForTimeout(400);
+    await p.click('.fab'); await p.waitForTimeout(400);
+    await p.click('[data-tab="text"]'); await p.waitForTimeout(400);
+    await p.fill('#i-text', text);
+    await p.click('#f-text button[type="submit"]');
+    await p.waitForTimeout(1800);
+  };
+  const aiNames = () => p.$$eval('.ai-name', (e) => e.map((x) => x.textContent.trim()));
+
+  OVERRIDE = { items: [
+    { name: '紫米素粽子', portion: '1顆，145g', kcal: 270, protein: 6, carbs: 48, fat: 7, confidence: 'medium' },
+    { name: 'note_placeholder', portion: '', kcal: 0, protein: 0, carbs: 0, fat: 0, confidence: 'low' },
+  ], note: '紫米素粽以糯米、紫米與少量花生估算。' };
+  await estimate('紫米素粽子');
+  let names = await aiNames();
+  check('空殼沒有被端出來', !names.some((n) => /note_placeholder/.test(n)), names);
+  check('真的那筆還在', names.length === 1 && /紫米素粽子/.test(names[0]), names);
+  check('加入鈕算的是 1 筆 270 大卡',
+    /加入 1 筆 · 共 270 大卡/.test(await p.textContent('[data-ai="save"]')),
+    await p.textContent('[data-ai="save"]'));
+
+  OVERRIDE = { items: [
+    { name: '無糖麥茶', portion: '半杯約200ml', kcal: 0, protein: 0, carbs: 0, fat: 0, confidence: 'high' },
+    { name: '滷肉飯', portion: '一碗', kcal: 500, protein: 12, carbs: 70, fat: 18, confidence: 'medium' },
+  ], note: 'x' };
+  await estimate('無糖麥茶跟滷肉飯');
+  names = await aiNames();
+  check('0 大卡但有份量的飲料要留著 ← 只看熱量 0 就砍會把它一起砍掉',
+    names.length === 2 && names.some((n) => /無糖麥茶/.test(n)), names);
+
+  OVERRIDE = { items: [
+    { name: 'note_placeholder', portion: '', kcal: 0, protein: 0, carbs: 0, fat: 0, confidence: 'low' },
+  ], note: 'x' };
+  await estimate('看不出來的東西');
+  check('整批都是空殼時退回輸入頁，不是給一張空的結果頁', !!(await p.$('#i-text')));
+  OVERRIDE = null;
 
   console.log('\npageerrors:', errs.length ? errs : 'none');
   console.log(fail.length ? '\n❌ ' + fail.length + ' 項未過：\n  - ' + fail.join('\n  - ') : '\n✅ 全部通過');
