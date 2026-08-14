@@ -1,6 +1,6 @@
 ## 食物
 
-- {"id":"xms3xe4epmt8o","name":"水煮蛋","kcal":78,"p":6,"c":1,"f":5,"portion":"1顆，約一顆雞蛋大小（約50g）","star":true,"n":10,"mc":{"breakfast":9,"lunch":1}}
+- {"id":"xms3xe4epmt8o","name":"水煮蛋","kcal":78,"p":6,"c":1,"f":5,"portion":"1顆，約一顆雞蛋大小（約50g）","star":true,"n":11,"mc":{"breakfast":9,"lunch":1,"dinner":1}}
 - {"id":"xmrzxrybqo6vq","name":"無糖豆漿","kcal":30,"p":3,"c":1,"f":2,"portion":"半杯，約120ml","star":true,"n":10,"mc":{"breakfast":10}}
 - {"id":"xms2o2x82w45j","name":"全麥吐司","kcal":80,"p":3,"c":15,"f":1,"portion":"1片，約30克","star":true,"n":9,"mc":{"breakfast":9}}
 - {"id":"xms2o2x84vwps","name":"低脂起司片","kcal":50,"p":5,"c":1,"f":3,"portion":"1片，約20克","star":true,"n":8,"mc":{"breakfast":8}}
