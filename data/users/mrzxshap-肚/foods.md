@@ -50,6 +50,7 @@
 - {"id":"xmsphhgj1jgoc","name":"巧克力脆皮冰","kcal":96,"p":0.7,"c":6.5,"f":7.4,"portion":"一個","n":1,"mc":{"snack":1}}
 - {"id":"xms6072n2f1uk","name":"巧克力鬆餅","kcal":480,"p":8,"c":68,"f":18,"portion":"170克，無奶油，僅淋巧克力醬","n":1,"mc":{"dinner":1}}
 - {"id":"xms7fmghn0tvh","name":"巧克力麵包","kcal":140,"p":4,"c":20,"f":3.5,"n":1,"mc":{"lunch":1}}
+- {"id":"xmsse5p1ks99s","name":"巧克力Oreo","kcal":100,"p":1,"c":14,"f":4.5,"portion":"一包","n":1,"mc":{"snack":1}}
 - {"id":"xmssa91w2fyye","name":"玉米筍炒荷蘭豆","kcal":100,"p":2,"c":8,"f":6,"portion":"一格炒青菜（約100g）","n":1,"mc":{"lunch":1}}
 - {"id":"xmsfmdexnp58i","name":"生干貝壽司","kcal":50,"p":3,"c":9,"f":1,"portion":"1貫，醋飯約20g＋干貝約15g，共約35g","n":1,"mc":{"lunch":1}}
 - {"id":"xmse5mahonh6u","name":"生春捲（蝦）","kcal":180,"p":10,"c":26,"f":3,"portion":"2條切成4塊，每條約含蝦2-3隻、米皮、生菜冬粉，每條約60g，共約120g","n":1,"mc":{"dinner":1}}
@@ -199,4 +200,3 @@
 - {"id":"xms3ccpsc5uj0","name":"雞絲","kcal":90,"p":14,"f":4,"portion":"約50克手撕雞肉","n":1,"mc":{"lunch":1}}
 - {"id":"xmsktv8xvdvmn","name":"藜麥毛豆","kcal":40,"p":3,"c":4,"f":1,"portion":"一小撮，約30g","n":1,"mc":{"lunch":1}}
 - {"id":"xms1ii7e9qnvr","name":"藥膳鍋湯底","kcal":80,"p":2,"c":6,"f":5,"portion":"約400ml湯，含中藥材與少量油脂","n":1,"mc":{"dinner":1}}
-- {"id":"xms4rsmibyrbm","name":"糯米腸","kcal":120,"p":2,"c":22,"f":3,"portion":"一顆，約60克","n":1,"mc":{"snack":1}}
