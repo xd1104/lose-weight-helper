@@ -17,6 +17,7 @@
 - {"id":"xmspfgx675xea","name":"叉燒肉片","kcal":180,"p":10,"c":2,"f":15,"portion":"2片，每片約30g，共約60g","n":2,"mc":{"lunch":1,"dinner":1}}
 - {"id":"xms1iqck4o6ni","name":"水餃","kcal":320,"p":12,"c":40,"f":12,"portion":"8顆（豬肉高麗菜餡）","n":2,"mc":{"lunch":2}}
 - {"id":"xms1ijk5nrvux","name":"巧克力厚片吐司","kcal":280,"p":6,"c":38,"f":12,"portion":"整份約1片厚片吐司抹巧克力醬，此次吃3/4份","n":2,"mc":{"breakfast":2}}
+- {"id":"xmsse5p1ks99s","name":"巧克力Oreo","kcal":100,"p":1,"c":14,"f":4.5,"portion":"一包","n":2,"mc":{"snack":2}}
 - {"id":"xmsktv8xl9d5b","name":"玉米筍","kcal":6,"c":1,"portion":"一根，約20g","n":2,"mc":{"lunch":2}}
 - {"id":"xmsd45131pest","name":"生菓子","kcal":144,"p":2.9,"c":20.7,"f":5.5,"portion":"50g","n":2,"mc":{"snack":2}}
 - {"id":"xmsam86tbb4hl","name":"冷凍地瓜","kcal":90,"p":1,"c":22,"portion":"1條，約100g","n":2,"mc":{"dinner":2}}
@@ -54,7 +55,6 @@
 - {"id":"xmsphhgj1jgoc","name":"巧克力脆皮冰","kcal":96,"p":0.7,"c":6.5,"f":7.4,"portion":"一個","n":1,"mc":{"snack":1}}
 - {"id":"xms6072n2f1uk","name":"巧克力鬆餅","kcal":480,"p":8,"c":68,"f":18,"portion":"170克，無奶油，僅淋巧克力醬","n":1,"mc":{"dinner":1}}
 - {"id":"xms7fmghn0tvh","name":"巧克力麵包","kcal":140,"p":4,"c":20,"f":3.5,"n":1,"mc":{"lunch":1}}
-- {"id":"xmsse5p1ks99s","name":"巧克力Oreo","kcal":100,"p":1,"c":14,"f":4.5,"portion":"一包","n":1,"mc":{"snack":1}}
 - {"id":"xmssa91w2fyye","name":"玉米筍炒荷蘭豆","kcal":100,"p":2,"c":8,"f":6,"portion":"一格炒青菜（約100g）","n":1,"mc":{"lunch":1}}
 - {"id":"xmsfmdexnp58i","name":"生干貝壽司","kcal":50,"p":3,"c":9,"f":1,"portion":"1貫，醋飯約20g＋干貝約15g，共約35g","n":1,"mc":{"lunch":1}}
 - {"id":"xmse5mahonh6u","name":"生春捲（蝦）","kcal":180,"p":10,"c":26,"f":3,"portion":"2條切成4塊，每條約含蝦2-3隻、米皮、生菜冬粉，每條約60g，共約120g","n":1,"mc":{"dinner":1}}
