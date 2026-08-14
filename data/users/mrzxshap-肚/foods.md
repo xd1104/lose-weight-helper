@@ -3,7 +3,7 @@
 - {"id":"xmspevuid9xog","name":"壽桃","kcal":127,"p":2.6,"c":19.9,"f":6.5,"portion":"半顆","star":true,"n":4,"mc":{"breakfast":3}}
 - {"id":"xmslg4cgbeecv","name":"檸檬蛋糕","kcal":161,"p":3.2,"c":16,"f":9.4,"portion":"一顆","star":true,"n":2,"mc":{"breakfast":1,"snack":1}}
 - {"id":"xmsbxvrp17zif","name":"麻吉燒（花生口味）","kcal":60,"p":1,"c":10,"f":2,"portion":"1顆，約28g（西北麻糬燒市售規格：一包 200g 裝 7-8 顆）","star":true,"n":1,"mc":{"lunch":1}}
-- {"id":"xms474i6245tc","name":"水煮蛋","kcal":78,"p":6,"c":1,"f":5,"portion":"1顆，約一顆雞蛋大小（約50g）","n":13,"mc":{"breakfast":10,"lunch":3}}
+- {"id":"xms474i6245tc","name":"水煮蛋","kcal":78,"p":6,"c":1,"f":5,"portion":"1顆，約一顆雞蛋大小（約50g）","n":14,"mc":{"breakfast":10,"lunch":3,"dinner":1}}
 - {"id":"xmse5damc2n4m","name":"綜合堅果","kcal":90,"p":3,"c":3,"f":8,"portion":"6顆，綜合堅果（杏仁、腰果、核桃等）平均每顆約2.5g，共約15g","n":12,"mc":{"breakfast":11}}
 - {"id":"xms08zonowf7c","name":"白飯","kcal":130,"p":2,"c":29,"portion":"半碗（約140g）","n":7,"mc":{"lunch":2,"dinner":1,"snack":1}}
 - {"id":"xms3cawqebeag","name":"全麥吐司","kcal":80,"p":3,"c":15,"f":1,"portion":"1片，約一片吐司大小（約30g）","n":7,"mc":{"breakfast":7}}
@@ -114,6 +114,7 @@
 - {"id":"xmspldfr0lhjd","name":"紅蘿蔔炒蛋","kcal":110,"p":3,"c":7,"f":8,"portion":"約半碗份量（約100g，含少量蛋液）","n":1,"mc":{"lunch":1}}
 - {"id":"xmsq3v70bcvsz","name":"美乃滋淋醬","kcal":100,"f":11,"portion":"約1大匙，約15g","n":1,"mc":{"dinner":1}}
 - {"id":"xmspldfqvatj7","name":"韭菜炒豆芽菜","kcal":120,"p":3,"c":8,"f":8,"portion":"約一個拳頭份量（約150g），自助餐炒青菜份量","n":1,"mc":{"lunch":1}}
+- {"id":"xmsstt6x0qgrr","name":"香麻麵","kcal":391,"p":13.1,"c":67.3,"f":7.7,"n":1,"mc":{"dinner":1}}
 - {"id":"xmsn2l2a3ybs8","name":"香菇雞湯（雞腿肉2塊＋香菇3朵）","kcal":220,"p":24,"c":5,"f":12,"portion":"雞腿肉2塊約掌心大小共約120g，香菇3朵每朵約10g共30g，湯少量","n":1,"mc":{"dinner":1}}
 - {"id":"xmsn2l2a9hp7c","name":"香蕉","kcal":90,"p":1,"c":23,"portion":"1根，約100g","n":1,"mc":{"dinner":1}}
 - {"id":"xmse5ajg2t9ko","name":"悟饕 炭火烤肉便當（半飯）","kcal":640,"p":29,"c":102,"f":13.4,"portion":"一個","n":1,"mc":{"lunch":1}}
@@ -199,4 +200,3 @@
 - {"id":"xms3ccpsakgpv","name":"雞肉飯（白飯）","kcal":320,"p":6,"c":60,"f":6,"portion":"便當盒約1碗白飯，淋雞汁","n":1,"mc":{"lunch":1}}
 - {"id":"xms4rsmii0gmp","name":"雞屁股串燒","kcal":90,"p":4,"c":1,"f":8,"portion":"一支，約20克/顆","n":1,"mc":{"snack":1}}
 - {"id":"xms1ii7ebpzf5","name":"雞柳","kcal":90,"p":18,"f":2,"portion":"一些，估80克","n":1,"mc":{"dinner":1}}
-- {"id":"xmse5mahm4fr1","name":"雞胸肉河粉","kcal":450,"p":30,"c":60,"f":8,"portion":"一般碗，湯約400ml、河粉約1.5碗（約270g）、雞胸肉約一掌心（約100g）、蔥花香菜少許","n":1,"mc":{"dinner":1}}
