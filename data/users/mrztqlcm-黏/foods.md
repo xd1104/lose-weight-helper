@@ -91,6 +91,7 @@
 - {"id":"xmsq3xjlj95ad","name":"美乃滋淋醬","kcal":75,"f":8.3,"portion":"表面一條約1大匙（約15g）（實際約0.75倍）","n":1,"mc":{"dinner":1}}
 - {"id":"xms96rl6pedxp","name":"美乃滋與生菜番茄","kcal":80,"p":1,"c":4,"f":7,"portion":"少量生菜番茄夾層加美乃滋抹醬","n":1}
 - {"id":"xms0a5vclkgqx","name":"苦瓜排骨湯","kcal":150,"p":10,"c":6,"f":9,"portion":"約一碗，含少量排骨與苦瓜","n":1,"mc":{"dinner":1}}
+- {"id":"xmsstrq5jrarc","name":"香麻麵","kcal":391,"p":13.1,"c":67.3,"f":7.7,"n":1,"mc":{"dinner":1}}
 - {"id":"xmsbra5aeiip2","name":"香菇貢丸","kcal":75,"p":4,"c":3,"f":5,"portion":"1顆，約30g（包裝內容，兩張照片為同一份）","n":1,"mc":{"lunch":1}}
 - {"id":"xms33p56znhje","name":"香菇雞湯（含雞肉、香菇）","kcal":220,"p":22,"c":6,"f":11,"portion":"燉盅約550ml，含雞肉塊約100克、香菇約3朵","n":1,"mc":{"dinner":1}}
 - {"id":"xms05mh8p4qi0","name":"香蕉","kcal":70,"p":1,"c":18,"portion":"小根一根，約80克","n":1,"mc":{"dinner":1}}
