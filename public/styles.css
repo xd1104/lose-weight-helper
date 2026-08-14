@@ -200,6 +200,15 @@ input,textarea,select{font-family:inherit; font-size:16px; color:inherit;}
 textarea.ta{resize:none; overflow:hidden; min-height:52px; line-height:1.5;}
 .field .hint{font-size:11.5px; color:var(--muted); margin-top:5px; line-height:1.5;}
 .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+/* 「複製對方那一餐」的入口。只在對方真的有記東西時才出現，所以可以做得明顯一點 */
+.copy-bar{width:100%; display:flex; align-items:center; gap:10px; min-height:56px;
+  padding:10px 14px; margin-top:12px; border-radius:14px; text-align:left;
+  background:var(--acc-soft); border:1.5px solid var(--acc);}
+.copy-bar b{flex:1; min-width:0; font-size:14.5px; font-weight:800; color:var(--acc-deep);}
+.copy-bar b span{display:block; font-size:12.5px; font-weight:600; color:var(--acc-deep);
+  opacity:.8; margin-top:2px;}
+.copy-bar em{font-style:normal; font-size:19px; color:var(--acc);}
+
 /* 常吃清單的分組標題（整列可點＝折疊把手，48px 好按） */
 .fav-grp.fold{width:100%; display:flex; align-items:center; gap:9px; min-height:48px;
   padding:0 12px; margin-top:10px; border-radius:12px; background:#f1f4ee; text-align:left;}

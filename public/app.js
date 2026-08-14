@@ -1,7 +1,7 @@
 "use strict";
 
 /* 版本號。改前端時跟 sw.js 的 cache 版本號一起 +1。 */
-var APP_VER="6.0";
+var APP_VER="6.1";
 /*
  * 減重助手 — 前端主程式
  * 資料層在 store.js（LocalStore / GitHubStore 自動切）、AI 在 ai.js。
@@ -2023,17 +2023,147 @@ function openAddSheet(meal){
    * 清單還短、或還沒有任何「吃過兩次以上」的東西時不要濾，不然會看到一片空白。 */
   favAll=!favIsLong() || !db.foods.filter(isRegular).length;
   favOpen={};
+  refreshPartner();
   drawAddSheet(true);
 }
 function drawAddSheet(isNew){
   var tabs='<div class="tabs">'+
     tabBtn("text","📝 文字")+tabBtn("photo","📷 拍照")+tabBtn("fav","⭐ 常吃")+tabBtn("manual","✏️ 手動")+
   '</div>';
-  var body=mealPicker()+addTabBody();
+  var body=mealPicker()+copyBannerHtml()+addTabBody();
   var opts={ tabs:tabs, onDraw:wireAddSheet };
   if(isNew) openSheet("記一筆 · "+me.name, body, opts);
   else replaceSheet("記一筆 · "+me.name, body, opts);
 }
+/* ============ 從另一位使用者複製一餐 ============
+ * 他們常常一起吃，一個人記完另一個人不用再記一次。
+ *
+ * 實測他們 17 天的紀錄：早餐 14 次同時記、其中 12 次有重疊項目；
+ * 午餐 14 次同時記卻只有 1 次重疊（午餐各自在外面吃）。所以這個入口
+ * **只在對方那一餐真的有記東西、而且有你還沒記的項目時才出現**，
+ * 不然午餐會天天跳出來擋路。
+ *
+ * 方向刻意只做「拉」不做「推」：
+ *   - 拉＝她自己按、看得到要拿什麼、拿完才進她的紀錄。
+ *   - 推＝他按一下就寫進她的當天紀錄，她會莫名其妙多出東西。
+ * 沒有人可以寫進別人的紀錄，這條不要改。 */
+var partnerCache={};      /* "uid|date" -> entries；同一次開關 sheet 不重覆抓 */
+var partnerDay=null;      /* {uid, name, date, items} —— 目前這一餐可以複製的東西 */
+
+function otherUsers(){
+  return users.filter(function(u){ return u.id!==(me&&me.id); });
+}
+/* 對方有記、而我這一餐還沒有的項目。用 foodKey 比對，
+ * 因為 AI 每次寫的名字會有小差異（「白飯」／「白飯（便當盒）」）。 */
+function copyableItems(entries){
+  var d=dayOf(curDate);
+  var mine={};
+  (d.entries||[]).forEach(function(e){
+    if(e.meal===addMeal) mine[foodKey(e.name)]=true;
+  });
+  return (entries||[]).filter(function(e){
+    return e.meal===addMeal && !mine[foodKey(e.name)];
+  });
+}
+
+function loadPartnerDay(done){
+  partnerDay=null;
+  var list=otherUsers();
+  if(!list.length){ done(); return; }
+  /* 一次只看一位：兩個人的情況（也就是實際情況）不需要選人的 UI。
+   * 三人以上就挑「這一餐有記東西」的第一位，複製 sheet 裡再給切換。 */
+  var idx=0;
+  var tryNext=function(){
+    if(idx>=list.length){ done(); return; }
+    var u=list[idx++];
+    var ck=u.id+"|"+curDate;
+    var use=function(entries){
+      partnerCache[ck]=entries||[];
+      var items=copyableItems(entries);
+      if(items.length){ partnerDay={ uid:u.id, name:u.name, date:curDate, items:items }; done(); return; }
+      tryNext();
+    };
+    if(partnerCache[ck]) { use(partnerCache[ck]); return; }
+    STORE.loadDays(u.id,[curDate]).then(function(days){
+      use(((days||[])[0]||{}).entries||[]);
+    }).catch(function(){ use([]); });
+  };
+  tryNext();
+}
+
+function copyBannerHtml(){
+  if(!partnerDay) return "";
+  var t=0; partnerDay.items.forEach(function(e){ t+=num(e.kcal); });
+  return '<button type="button" class="copy-bar" data-copy="open">'+
+      '<b>'+esc(partnerDay.name)+' 的'+MEAL_INFO[addMeal].label+'記了 '+partnerDay.items.length+' 樣'+
+        '<span>共 '+kcal(t)+' 大卡 · 一起吃的話直接複製過來</span></b>'+
+      '<em>›</em></button>';
+}
+
+var copyPick={};
+var copyScale=1;
+function openCopySheet(){
+  if(!partnerDay) return;
+  if(!requireWrite()) return;
+  var src=partnerDay;
+  copyPick={}; copyScale=1;
+  src.items.forEach(function(e){ copyPick[e.id]=true; });   /* 預設全選：會按進來就是「我們吃一樣的」 */
+
+  function body(){
+    var picked=src.items.filter(function(e){ return copyPick[e.id]; });
+    var tot=0; picked.forEach(function(e){ tot+=num(e.kcal)*copyScale; });
+    var h='<p class="desc" style="margin-top:0">挑掉你沒吃的，份量不一樣就整批調倍數。</p>'+
+      '<div class="fav-list">'+
+      src.items.map(function(e){
+        var on=!!copyPick[e.id];
+        return '<div class="food-item"><button type="button" class="food-row'+(on?" on":"")+'" data-cp="'+esc(e.id)+'">'+
+            '<b>'+esc(e.name)+(e.portion?'<span>'+esc(e.portion)+'</span>':'')+'</b>'+
+            '<span class="k num">'+kcal(num(e.kcal)*copyScale)+'<i>大卡</i></span>'+
+          '</button></div>';
+      }).join("")+'</div>';
+    h+='<div class="field"><label>份量跟'+esc(src.name)+'一樣嗎</label><div class="chips">'+
+      [0.5,0.75,1,1.5].map(function(m){
+        return '<button type="button" class="chip'+(copyScale===m?" on":"")+'" data-cpscale="'+m+'">'+
+          (m===1?"一樣":"×"+(m===0.5?"½":m===0.75?"¾":m))+'</button>';
+      }).join("")+'</div>'+
+      '<div class="hint">之後還是可以點單筆再調。</div></div>';
+    h+=picked.length
+      ? '<button class="btn" type="button" data-cp-go="1">加入 '+picked.length+' 筆 · 共 '+kcal(tot)+' 大卡</button>'
+      : '<p class="empty">一樣都沒選</p>';
+    return h;
+  }
+  function draw(isNew){
+    var opts={ onDraw:function(root){
+      root.querySelectorAll("[data-cp]").forEach(function(b){
+        b.onclick=function(){
+          var id=b.getAttribute("data-cp");
+          if(copyPick[id]) delete copyPick[id]; else copyPick[id]=true;
+          draw(false);
+        };
+      });
+      root.querySelectorAll("[data-cpscale]").forEach(function(b){
+        b.onclick=function(){ copyScale=num(b.getAttribute("data-cpscale"))||1; draw(false); };
+      });
+      var go=root.querySelector("[data-cp-go]");
+      if(go) go.onclick=function(){
+        var picked=src.items.filter(function(e){ return copyPick[e.id]; });
+        if(!picked.length) return;
+        addEntries(picked.map(function(e){
+          return { name:e.name,
+                   kcal:num(e.kcal)*copyScale, p:num(e.p)*copyScale,
+                   c:num(e.c)*copyScale, f:num(e.f)*copyScale,
+                   /* 倍率記在份量欄，之後看得出來這筆是縮放過的（跟 v4.7 的調倍數同一套寫法） */
+                   portion:copyScale===1 ? (e.portion||"") : markScaled(e.portion||"", copyScale),
+                   src:"copy" };
+        }));
+      };
+    }};
+    var title="複製 "+src.name+" 的"+MEAL_INFO[addMeal].label;
+    if(isNew) openSheet(title, body(), opts); else replaceSheet(title, body(), opts);
+  }
+  draw(true);
+}
+
 function tabBtn(id,label){
   return '<button data-tab="'+id+'" class="'+(addTab===id?"on":"")+'">'+label+'</button>';
 }
@@ -2314,7 +2444,23 @@ function openFoodSheet(id){
   }});
 }
 
+/* 背景重算「對方這一餐記了什麼」。刻意不擋畫面：
+ * 慢的是網路，而使用者多半是要去打字或拍照，橫幅晚 0.5 秒出現沒關係。
+ * 回來時只有真的有東西才重畫，避免每次開 sheet 都閃一下。 */
+function refreshPartner(){
+  var meal=addMeal, date=curDate;
+  var had=!!partnerDay;
+  loadPartnerDay(function(){
+    if(meal!==addMeal || date!==curDate) return;   /* 等的時候已經換餐別了，這批結果作廢 */
+    if(!had && !partnerDay) return;                /* 本來就沒有、現在也沒有 -> 不用重畫 */
+    if(sheetStack.length) drawAddSheet(false);
+  });
+}
+
 function wireAddSheet(root){
+  var cp=root.querySelector('[data-copy="open"]');
+  if(cp) cp.onclick=function(){ openCopySheet(); };
+
   root.querySelectorAll("[data-tab]").forEach(function(b){
     b.onclick=function(){ addTab=b.getAttribute("data-tab"); drawAddSheet(false); };
   });
@@ -2323,6 +2469,7 @@ function wireAddSheet(root){
       addMeal=b.getAttribute("data-meal-pick");
       /* 換餐別不動折疊狀態：他自己點開的那幾組要留著 */
       drawAddSheet(false);
+      refreshPartner();   /* 可複製的東西是逐餐算的，換餐別要重算 */
     };
   });
   root.querySelectorAll('[data-act2="go-settings"]').forEach(function(b){
