@@ -2,8 +2,8 @@
 
 - {"id":"xmspevuid9xog","name":"壽桃","kcal":127,"p":2.6,"c":19.9,"f":6.5,"portion":"半顆","star":true,"n":4,"mc":{"breakfast":3}}
 - {"id":"xmslg4cgbeecv","name":"檸檬蛋糕","kcal":161,"p":3.2,"c":16,"f":9.4,"portion":"一顆","star":true,"n":2,"mc":{"breakfast":1,"snack":1}}
+- {"id":"xmsstvad3gfya","name":"鹹蛋黃方塊酥","kcal":103,"p":1.6,"c":12.8,"f":5.1,"portion":"一塊","star":true,"n":2,"mc":{"snack":1}}
 - {"id":"xmsbxvrp17zif","name":"麻吉燒（花生口味）","kcal":60,"p":1,"c":10,"f":2,"portion":"1顆，約28g（西北麻糬燒市售規格：一包 200g 裝 7-8 顆）","star":true,"n":1,"mc":{"lunch":1}}
-- {"id":"xmsstvad3gfya","name":"鹹蛋黃方塊酥","kcal":103,"p":1.6,"c":12.8,"f":5.1,"portion":"一塊","star":true,"n":1}
 - {"id":"xms474i6245tc","name":"水煮蛋","kcal":78,"p":6,"c":1,"f":5,"portion":"1顆，約一顆雞蛋大小（約50g）","n":14,"mc":{"breakfast":10,"lunch":3,"dinner":1}}
 - {"id":"xmse5damc2n4m","name":"綜合堅果","kcal":90,"p":3,"c":3,"f":8,"portion":"6顆，綜合堅果（杏仁、腰果、核桃等）平均每顆約2.5g，共約15g","n":12,"mc":{"breakfast":11}}
 - {"id":"xms08zonowf7c","name":"白飯","kcal":130,"p":2,"c":29,"portion":"半碗（約140g）","n":7,"mc":{"lunch":2,"dinner":1,"snack":1}}
@@ -200,4 +200,3 @@
 - {"id":"xms4rsmieixuj","name":"雞皮串（半串）","kcal":110,"p":4,"f":10,"portion":"約半串，30克","n":1,"mc":{"snack":1}}
 - {"id":"xms3ccpsakgpv","name":"雞肉飯（白飯）","kcal":320,"p":6,"c":60,"f":6,"portion":"便當盒約1碗白飯，淋雞汁","n":1,"mc":{"lunch":1}}
 - {"id":"xms4rsmii0gmp","name":"雞屁股串燒","kcal":90,"p":4,"c":1,"f":8,"portion":"一支，約20克/顆","n":1,"mc":{"snack":1}}
-- {"id":"xms1ii7ebpzf5","name":"雞柳","kcal":90,"p":18,"f":2,"portion":"一些，估80克","n":1,"mc":{"dinner":1}}
