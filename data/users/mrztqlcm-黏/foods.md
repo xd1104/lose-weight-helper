@@ -117,6 +117,7 @@
 - {"id":"xmsfy36dzaj1k","name":"番茄湯頭麵疙瘩","kcal":550,"p":15,"c":85,"f":15,"portion":"一般麵碗份量，湯底+麵疙瘩約400-450g（麵疙瘩約占150-180g，其餘為番茄湯底與少許配料如高麗菜、肉末）","n":1,"mc":{"lunch":1}}
 - {"id":"xms96u0t5m6yq","name":"番茄鍋燒湯底","kcal":120,"p":2,"c":10,"f":7,"portion":"約500ml湯，含番茄與油脂調味","n":1}
 - {"id":"xms2qc9zy3w0h","name":"紫米素粽","kcal":460,"p":9,"c":85,"f":9,"portion":"1顆約290克（含糯米、香菇、花生、素料餡）","n":1,"mc":{"lunch":1}}
+- {"id":"xmssg7tfdxdtz","name":"紫米素粽子","kcal":270,"p":6,"c":48,"f":7,"portion":"1顆，145g（使用者提供重量）","n":1,"mc":{"lunch":1}}
 - {"id":"xms1qj1udn9j7","name":"蛤蜊魚湯","kcal":100,"p":10,"c":4,"f":4,"portion":"約一碗，含少量魚肉與蛤蜊","n":1,"mc":{"dinner":1}}
 - {"id":"xmsdw4exewtcl","name":"越式生春捲（蝦）","kcal":180,"p":8,"c":30,"f":2,"portion":"2捲，每捲約80g（含米皮、蝦、生菜、米線），共約160g","n":1,"mc":{"dinner":1}}
 - {"id":"xms4rmubedrey","name":"黑輪串","kcal":70,"p":4,"c":9,"f":2,"portion":"1串，約60g","n":1,"mc":{"snack":1}}
