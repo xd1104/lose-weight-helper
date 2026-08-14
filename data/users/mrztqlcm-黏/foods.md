@@ -1,10 +1,10 @@
 ## 食物
 
+- {"id":"xms3xe4epmt8o","name":"水煮蛋","kcal":78,"p":6,"c":1,"f":5,"portion":"1顆，約一顆雞蛋大小（約50g）","star":true,"n":10,"mc":{"breakfast":9,"lunch":1}}
 - {"id":"xmrzxrybqo6vq","name":"無糖豆漿","kcal":30,"p":3,"c":1,"f":2,"portion":"半杯，約120ml","star":true,"n":10,"mc":{"breakfast":10}}
-- {"id":"xms3xe4epmt8o","name":"水煮蛋","kcal":78,"p":6,"c":1,"f":5,"portion":"1顆，約一顆雞蛋大小（約50g）","star":true,"n":9,"mc":{"breakfast":8,"lunch":1}}
-- {"id":"xms2o2x82w45j","name":"全麥吐司","kcal":80,"p":3,"c":15,"f":1,"portion":"1片，約30克","star":true,"n":8,"mc":{"breakfast":8}}
-- {"id":"xms2o2x84vwps","name":"低脂起司片","kcal":50,"p":5,"c":1,"f":3,"portion":"1片，約20克","star":true,"n":7,"mc":{"breakfast":7}}
-- {"id":"xmseghx8d5ytp","name":"堅果","kcal":70,"p":2,"c":3,"f":6,"portion":"6顆，以腰果大小估算，每顆約2g，共約12g","star":true,"n":7,"mc":{"breakfast":7}}
+- {"id":"xms2o2x82w45j","name":"全麥吐司","kcal":80,"p":3,"c":15,"f":1,"portion":"1片，約30克","star":true,"n":9,"mc":{"breakfast":9}}
+- {"id":"xms2o2x84vwps","name":"低脂起司片","kcal":50,"p":5,"c":1,"f":3,"portion":"1片，約20克","star":true,"n":8,"mc":{"breakfast":8}}
+- {"id":"xmseghx8d5ytp","name":"堅果","kcal":70,"p":2,"c":3,"f":6,"portion":"6顆，以腰果大小估算，每顆約2g，共約12g","star":true,"n":8,"mc":{"breakfast":8}}
 - {"id":"xms2pgsffun8t","name":"冷凍毛豆(茶豆)","kcal":180,"p":15,"c":13,"f":8,"portion":"150克，去殼後淨重約估算，含殼帶皮秤重","star":true,"n":6,"mc":{"lunch":2,"dinner":3,"snack":1}}
 - {"id":"xms3c39qv0iud","name":"芒果","kcal":180,"p":2,"c":45,"f":1,"portion":"約兩個拳頭大小，約300克果肉","star":true,"n":4,"mc":{"breakfast":3,"dinner":1}}
 - {"id":"xmscmgxcp5bih","name":"芭樂","kcal":51,"p":1,"c":12,"portion":"約3/4個拳頭大（約135g）","star":true,"n":4,"mc":{"breakfast":3,"lunch":1}}
@@ -13,6 +13,7 @@
 - {"id":"xmspg5x5hmbye","name":"水梨","kcal":45,"c":12,"portion":"半個拳頭大（約90g）","n":3,"mc":{"lunch":1,"dinner":2}}
 - {"id":"xms1k9j196fuo","name":"白飯","kcal":140,"p":3,"c":31,"portion":"約半碗（約100g熟飯）","n":3,"mc":{"lunch":2,"dinner":1}}
 - {"id":"xmsohhtkowace","name":"壽桃","kcal":255,"p":5.2,"c":39.8,"f":13.1,"portion":"一顆","n":3,"mc":{"breakfast":3}}
+- {"id":"xmspga1bdpoeg","name":"蘋果","kcal":52,"c":14,"portion":"半顆，中型蘋果約一個拳頭大（整顆約200g，此次約100g）","n":3,"mc":{"breakfast":3}}
 - {"id":"xms1k9j1735nj","name":"羊肉片","kcal":420,"p":34,"f":30,"portion":"中份約200-250g生肉片，火鍋涮煮","n":2,"mc":{"lunch":2}}
 - {"id":"xmsam01aplz46","name":"冷凍地瓜","kcal":90,"p":1,"c":21,"portion":"1條，約一根手指長（約100g）","n":2,"mc":{"dinner":2}}
 - {"id":"xms08qs8es0ij","name":"洋蔥炒魷魚","kcal":180,"p":15,"c":10,"f":8,"portion":"約一小盤，魷魚約80克、洋蔥約50克","n":2,"mc":{"dinner":1}}
@@ -26,7 +27,6 @@
 - {"id":"xms149v34zqbe","name":"豬肉餡餅","kcal":320,"p":11,"c":32,"f":17,"portion":"單顆，約7-8公分直徑，早餐店常見尺寸","n":2,"mc":{"breakfast":1,"lunch":1}}
 - {"id":"xms14b5m31ttj","name":"燒餅","kcal":280,"p":6,"c":40,"f":10,"portion":"一份約1個，普通厚燒餅","n":2,"mc":{"breakfast":1}}
 - {"id":"xms08qs8egfxf","name":"燙秋葵佐芝麻醬","kcal":90,"p":3,"c":8,"f":5,"portion":"約一小盤，含少量芝麻醬淋醬","n":2,"mc":{"dinner":1}}
-- {"id":"xmspga1bdpoeg","name":"蘋果","kcal":52,"c":14,"portion":"半顆，中型蘋果約一個拳頭大（整顆約200g，此次約100g）","n":2,"mc":{"breakfast":2}}
 - {"id":"xmsbra5akzelh","name":"三棵西北麻糬燒","kcal":180,"p":6,"c":20,"f":8,"portion":"3顆，火鍋料","n":1,"mc":{"lunch":1}}
 - {"id":"xmsq3xjle0uuw","name":"叉燒（半份）","kcal":150,"p":13,"c":2,"f":10,"portion":"約半個掌心大小的肉片，共約6-7片（約60g）","n":1,"mc":{"dinner":1}}
 - {"id":"xmsn2tg5yoeav","name":"大陸妹（燙青菜）","kcal":50,"p":1,"c":4,"f":3,"portion":"約半碗（約50g）","n":1,"mc":{"lunch":1}}
