@@ -76,6 +76,7 @@
 - {"id":"xmsrodlcfjyan","name":"空心菜","kcal":150,"p":4,"c":10,"f":10,"portion":"一大把燙青菜或炒青菜，約200g","n":1,"mc":{"dinner":1}}
 - {"id":"xmsalxqoz7xv3","name":"花枝握壽司","kcal":110,"p":8,"c":18,"f":1,"portion":"迴轉壽司1盤，2貫","n":1,"mc":{"lunch":1}}
 - {"id":"xmsbra5a7zooj","name":"花枝漿／麻吉魚漿糰","kcal":280,"p":18,"c":20,"f":14,"portion":"兩盤合計約7顆，每顆約30g","n":1,"mc":{"lunch":1}}
+- {"id":"xmssgc9jm59br","name":"金螃蟹泡麵","kcal":504,"p":11,"c":79,"f":16,"n":1,"mc":{"lunch":1}}
 - {"id":"xms1qj1ucoz44","name":"青江菜炒菇","kcal":80,"p":3,"c":6,"f":5,"portion":"約一人份，一小盤","n":1,"mc":{"dinner":1}}
 - {"id":"xms1qj1ualy9d","name":"青椒炒肉絲","kcal":180,"p":13,"c":8,"f":11,"portion":"約一人份，肉絲約60克","n":1,"mc":{"dinner":1}}
 - {"id":"xmsirwbjdf5rz","name":"南瓜玉米濃湯","kcal":400,"p":8,"c":50,"f":16,"portion":"1碗，約400ml（約400g）","n":1,"mc":{"lunch":1}}
