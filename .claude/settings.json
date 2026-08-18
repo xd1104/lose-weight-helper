@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "benson": {
+      "source": {
+        "source": "github",
+        "repo": "xd1104/claude-plugins"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "ai-team@benson": true
+  }
+}
