@@ -1,12 +1,12 @@
 ## 食物
 
-- {"id":"xms3xe4epmt8o","name":"水煮蛋","kcal":78,"p":6,"c":1,"f":5,"portion":"1顆，約一顆雞蛋大小（約50g）","star":true,"n":12,"mc":{"breakfast":10,"lunch":1,"dinner":1}}
-- {"id":"xms2o2x82w45j","name":"全麥吐司","kcal":80,"p":3,"c":15,"f":1,"portion":"1片，約30克","star":true,"n":10,"mc":{"breakfast":10}}
+- {"id":"xms3xe4epmt8o","name":"水煮蛋","kcal":78,"p":6,"c":1,"f":5,"portion":"1顆，約一顆雞蛋大小（約50g）","star":true,"n":13,"mc":{"breakfast":11,"lunch":1,"dinner":1}}
+- {"id":"xms2o2x82w45j","name":"全麥吐司","kcal":80,"p":3,"c":15,"f":1,"portion":"1片，約30克","star":true,"n":11,"mc":{"breakfast":11}}
+- {"id":"xms2o2x84vwps","name":"低脂起司片","kcal":50,"p":5,"c":1,"f":3,"portion":"1片，約20克","star":true,"n":10,"mc":{"breakfast":10}}
+- {"id":"xmseghx8d5ytp","name":"堅果","kcal":70,"p":2,"c":3,"f":6,"portion":"6顆，以腰果大小估算，每顆約2g，共約12g","star":true,"n":10,"mc":{"breakfast":10}}
 - {"id":"xmrzxrybqo6vq","name":"無糖豆漿","kcal":30,"p":3,"c":1,"f":2,"portion":"半杯，約120ml","star":true,"n":10,"mc":{"breakfast":10}}
-- {"id":"xms2o2x84vwps","name":"低脂起司片","kcal":50,"p":5,"c":1,"f":3,"portion":"1片，約20克","star":true,"n":9,"mc":{"breakfast":9}}
-- {"id":"xmseghx8d5ytp","name":"堅果","kcal":70,"p":2,"c":3,"f":6,"portion":"6顆，以腰果大小估算，每顆約2g，共約12g","star":true,"n":9,"mc":{"breakfast":9}}
 - {"id":"xms2pgsffun8t","name":"冷凍毛豆(茶豆)","kcal":180,"p":15,"c":13,"f":8,"portion":"150克，去殼後淨重約估算，含殼帶皮秤重","star":true,"n":6,"mc":{"lunch":2,"dinner":4}}
-- {"id":"xmscmgxcp5bih","name":"芭樂","kcal":51,"p":1,"c":12,"portion":"約3/4個拳頭大（約135g）","star":true,"n":5,"mc":{"breakfast":4,"lunch":1}}
+- {"id":"xmscmgxcp5bih","name":"芭樂","kcal":51,"p":1,"c":12,"portion":"約3/4個拳頭大（約135g）","star":true,"n":6,"mc":{"breakfast":5,"lunch":1}}
 - {"id":"xms3c39qv0iud","name":"芒果","kcal":180,"p":2,"c":45,"f":1,"portion":"約兩個拳頭大小，約300克果肉","star":true,"n":4,"mc":{"breakfast":3,"dinner":1}}
 - {"id":"xms08qs8ecwxz","name":"炒空心菜","kcal":216,"p":4,"c":9,"f":16,"portion":"1.5顆拳頭（約270g，含炒油）","n":4,"mc":{"lunch":1,"dinner":2}}
 - {"id":"xms08qs8bajwi","name":"糙米飯","kcal":180,"p":4,"c":38,"f":1,"portion":"約半碗到一碗之間（約120g）","n":4,"mc":{"lunch":2,"dinner":1}}
