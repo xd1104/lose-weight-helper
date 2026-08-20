@@ -77,9 +77,11 @@ input,textarea,select{font-family:inherit; font-size:16px; color:inherit;}
   box-shadow:var(--shadow); padding:16px 16px 10px;}
 .trend-top{display:flex; align-items:flex-start; justify-content:space-between; gap:12px;}
 .trend-top span{display:block; font-size:11.5px; color:var(--muted); font-weight:700;}
-.trend .rate{display:block; font-size:31px; font-weight:800; line-height:1.02;
-  margin-top:4px; letter-spacing:-.5px;}
-.trend .rate i{font-style:normal; font-size:13px; font-weight:700; margin-left:3px;}
+/* ⚠️ 左右兩個數字刻意同一個級數（Benson 要求「統一一點」）。
+ * 第一版把它放到 31px，變成整頁最大的字，而且是橘的——每天打開像被罵一次。
+ * 主次改用顏色分（在胖橘、在瘦綠），不要再靠字級去喊。 */
+.trend .rate{display:block; font-size:22px; font-weight:800; line-height:1.15; margin-top:3px;}
+.trend .rate i{font-style:normal; font-size:12px; font-weight:700; margin-left:2px;}
 .trend .rate.up{color:var(--warn);} .trend .rate.dn{color:var(--acc-deep);}
 .trend-now{text-align:right;}
 .trend-now b{display:block; font-size:22px; font-weight:800; margin-top:3px;}
