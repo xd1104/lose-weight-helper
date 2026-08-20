@@ -6,7 +6,7 @@
  * ⚠️ 會清掉本機 server 上的所有使用者資料（_setup.js 的 clearAll），跑之前先備份 data/。
  */
 const { chromium } = require('playwright');
-const { BASE, seedUser } = require('./_setup');
+const { BASE, seedUser, openMeals } = require('./_setup');
 
 const fail = [];
 function check(n, c, g) {
@@ -102,9 +102,10 @@ const getFoods = (u) => fetch(BASE + '/api/core?u=' + encodeURIComponent(u)).the
 
   await p.click('[data-fav-go]');
   await p.waitForTimeout(1800);
+  await openMeals(p);      /* v6.4：餐段預設收起來，細項要點開才在 DOM 裡 */
   const rows = await p.$$eval('.row-mid b', (e) => e.map((x) => x.textContent.trim()));
   check('兩筆一起寫進今天', rows.some((r) => /燒餅/.test(r)) && rows.some((r) => /無糖豆漿/.test(r)), rows);
-  check('熱量是 325', (await p.textContent('.kv.eat b')).trim() === '325');
+  check('熱量是 325', (await p.textContent('.eatcard .eatnow')).trim() === '325');
 
   console.log('\n[A2] 自己新增一筆（不用先讓 AI 估過）');
   await p.click('.fab');
@@ -154,6 +155,7 @@ const getFoods = (u) => fetch(BASE + '/api/core?u=' + encodeURIComponent(u)).the
   console.log('\n[A4b] 從今天記過的一筆，一鍵加入常吃（不用自己記碳水蛋白質）');
   await p.click('[data-sheet="close"]');
   await p.waitForTimeout(500);
+  await openMeals(p);
   await p.click('.row[data-act="edit-entry"]');
   await p.waitForTimeout(600);
   check('編輯那一筆時有「加入常吃清單」', !!(await p.$('#e-star')));
@@ -230,6 +232,7 @@ const getFoods = (u) => fetch(BASE + '/api/core?u=' + encodeURIComponent(u)).the
   const che = (dayNow.days[0].entries || []).filter((x) => x.name === '低脂起司片')[0];
   check('小數真的存進去了，沒有被進位', che && che.p === 4.5 && che.c === 1.2 && che.f === 2.8, che);
 
+  await openMeals(p);
   await p.click('.row[data-act="edit-entry"] >> nth=-1');
   await p.waitForTimeout(700);
   check('編輯時帶回來還是 4.5', (await p.inputValue('#e-p')) === '4.5', await p.inputValue('#e-p'));
@@ -237,8 +240,11 @@ const getFoods = (u) => fetch(BASE + '/api/core?u=' + encodeURIComponent(u)).the
   check('編輯欄位也是小數鍵盤', emodes.every((m) => m === 'decimal'), emodes);
   await p.click('[data-sheet="close"]');
   await p.waitForTimeout(500);
-  check('整數不會多印成 4.0', !/\d+\.0(?!\d)/.test((await p.textContent('.macros')) || ''),
-    await p.textContent('.macros'));
+  /* v6.4：三大營養素搬去營養頁，公克數的顯示規則要在那裡驗 */
+  await p.click('[data-nav="macros"]'); await p.waitForTimeout(800);
+  check('整數不會多印成 4.0', !/\d+\.0(?!\d)/.test((await p.textContent('.mcard')) || ''),
+    await p.textContent('.mcard'));
+  await p.click('[data-nav="today"]'); await p.waitForTimeout(600);
 
   console.log('\n[A5] 搜尋時不會把已勾選的狀態弄丟');
   await p.click('.fab');

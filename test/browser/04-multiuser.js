@@ -53,7 +53,7 @@ const MOCK = (items, note) => ({
   await p.waitForTimeout(900);
   await p.click('[data-ai="save"]');
   await p.waitForTimeout(900);
-  const bensonTotal = (await p.textContent('.kv.eat b')).trim();
+  const bensonTotal = (await p.textContent('.eatcard .eatnow')).trim();
   console.log('3. Benson 已攝取:', bensonTotal);
 
   // 切換 -> 建立小美
@@ -74,7 +74,7 @@ const MOCK = (items, note) => ({
   await p.click('[data-sheet="close"]').catch(() => {});
   await p.waitForTimeout(400);
   console.log('4. 切到小美，頁首:', (await p.textContent('.head h1')).trim());
-  console.log('   小美已攝取（應為 0）:', (await p.textContent('.kv.eat b')).trim());
+  console.log('   小美已攝取（應為 0）:', (await p.textContent('.eatcard .eatnow')).trim());
 
   // 小美設定：女性、不同體重 -> 目標應不同
   await openSet(p, 'body');
@@ -103,7 +103,7 @@ const MOCK = (items, note) => ({
   const bensonId = await p.$eval('.picker-tile[data-pick]', (el) => el.getAttribute('data-pick'));
   await p.click(`[data-pick="${bensonId}"]`);
   await p.waitForTimeout(1300);
-  console.log('7. 切回', (await p.textContent('.head h1')).trim(), '已攝取:', (await p.textContent('.kv.eat b')).trim());
+  console.log('7. 切回', (await p.textContent('.head h1')).trim(), '已攝取:', (await p.textContent('.eatcard .eatnow')).trim());
   await openSet(p, 'body');
   const b2 = await p.$$eval('.tdee-box .r b', (els) => els.map((e) => e.textContent.trim()));
   console.log('   Benson BMR/TDEE（應與小美不同）:', b2.join(' / '));

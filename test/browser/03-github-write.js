@@ -3,7 +3,7 @@
  * 逼出 GitHubStore 從來沒被跑過的「重取 sha 再試一次」那條路。
  */
 const { chromium } = require('playwright');
-const { clearAll, openSet, closeSet } = require('./_setup');
+const { clearAll, openSet, closeSet, openMeals } = require('./_setup');
 const fail = [];
 function check(n, c, g) {
   if (c) console.log('  ok  ' + n);
@@ -166,6 +166,7 @@ const unb64 = (s) => Buffer.from(s, 'base64').toString('utf8');
   check('foods.md（常吃）也被建立', files.has('data/users/' + uid + '/foods.md'));
 
   console.log('\n[6] 清空一整天 → 應該 DELETE 掉檔案，而不是留空殼');
+  await openMeals(p);
   await p.click('.row[data-act="edit-entry"]');
   await p.waitForTimeout(500);
   p.once('dialog', (d) => d.accept());

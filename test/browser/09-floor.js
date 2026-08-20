@@ -19,11 +19,10 @@ const fail=[]; const check=(n,c,g)=>{ if(c) console.log('  ok  '+n); else {conso
   await p.waitForTimeout(900);
   const t = await p.$('.picker-tile[data-pick]'); if(t){ await t.click(); await p.waitForTimeout(1600); }
 
-  console.log('\n[1] 首頁：減脂時標籤要叫「上限」（收在「看明細」裡）');
-  await p.click('[data-act="toggle-detail"]'); await p.waitForTimeout(500);
-  const labels = await p.$$eval('.kv span', e=>e.map(x=>x.textContent.trim()));
-  check('顯示「每日上限」而非「每日目標」', labels.includes('每日上限'), labels);
-  await p.click('[data-act="toggle-detail"]'); await p.waitForTimeout(400);
+  console.log('\n[1] 首頁：減脂時標籤要叫「上限」');
+  /* v6.4：這個標籤跟著熱量從圓環搬到那一條上，而且不用展開就看得到了 */
+  const foot = (await p.textContent('.eatfoot').catch(()=> '')||'').replace(/\s+/g,' ');
+  check('顯示「每日上限」而非「每日目標」', /每日上限/.test(foot) && !/每日目標/.test(foot), foot);
 
   console.log('\n[2] 設定索引就會亮警告（不用點進去才看得到）');
   await p.click('[data-nav="settings"]'); await p.waitForTimeout(700);
@@ -72,12 +71,12 @@ const fail=[]; const check=(n,c,g)=>{ if(c) console.log('  ok  '+n); else {conso
   await p.click('[data-set="goal"][data-val="0"]'); await p.waitForTimeout(1000);
   await p.click('[data-sheet="close"]'); await p.waitForTimeout(400);
   await p.click('[data-nav="today"]'); await p.waitForTimeout(700);
-  await p.click('[data-act="toggle-detail"]'); await p.waitForTimeout(500);
-  const labels2 = await p.$$eval('.kv span', e=>e.map(x=>x.textContent.trim()));
-  check('顯示「每日目標」', labels2.includes('每日目標'), labels2);
-  await p.click('[data-act="toggle-detail"]'); await p.waitForTimeout(400);
+  const foot2 = (await p.textContent('.eatfoot').catch(()=> '')||'').replace(/\s+/g,' ');
+  check('顯示「每日目標」', /每日目標/.test(foot2), foot2);
 
-  console.log('\n[5] 三段式圓環：超過減脂上限 ≠ 超過 TDEE');
+  console.log('\n[5] 三段語意：超過減脂上限 ≠ 超過 TDEE');
+  /* v6.4 起首頁的熱量從圓環換成一條（主角讓給體重趨勢），
+     但綠／黃／紅三段的語意一模一樣，這裡測的是語意不是形狀。 */
   // 27歲 168cm 80kg 久坐 -300 -> BMR 1720 / TDEE 2064 / 每日上限 1764
   await openSet(p, 'goal');
   await p.click('[data-set="goal"][data-val="-300"]'); await p.waitForTimeout(900);
@@ -89,15 +88,15 @@ const fail=[]; const check=(n,c,g)=>{ if(c) console.log('  ok  '+n); else {conso
     return {
       tag: (await p.textContent('.over-tag').catch(()=> '')||'').replace(/\s+/g,' ').trim(),
       cls: (await p.getAttribute('.over-tag','class').catch(()=> '')||''),
-      mid: (await p.textContent('.ring .mid').catch(()=> '')||'').replace(/\s+/g,' ').trim(),
-      stroke: await p.$eval('.ring circle:nth-child(2)', e=>e.getAttribute('stroke')).catch(()=> ''),
+      mid: (await p.textContent('.eattop .left').catch(()=> '')||'').replace(/\s+/g,' ').trim(),
+      bar: (await p.getAttribute('.eatbar i','class').catch(()=> '')||''),
     };
   };
 
   const green = await zone(1200, 0);   // 1,200 / 1,764 = 68%，還不到「快到上限」的 85%
   check('綠：正常範圍不再多印一條提示（跟圓環中央重複）', green.cls === '', green);
-  check('綠：圓環是綠色', /--acc/.test(green.stroke||''), green.stroke);
-  check('綠：中間寫「還可以吃 564」', /564/.test(green.mid) && /還可以吃/.test(green.mid), green.mid);
+  check('綠：進度條是綠的（沒有加深色的 class）', green.bar === '', green.bar);
+  check('綠：條上寫「564 可以吃」', /564/.test(green.mid) && /可以吃/.test(green.mid), green.mid);
 
   // Benson 2026-07-25 真實的一天：吃 2,288、運動 240 -> 淨 2,048
   const amber = await zone(2288, 240);
@@ -105,14 +104,14 @@ const fail=[]; const check=(n,c,g)=>{ if(c) console.log('  ok  '+n); else {conso
   check('黃：算出超過上限 284', /超過上限 284/.test(amber.tag), amber.tag);
   check('黃：算出距離 TDEE 還有 16', /距離 TDEE 還有 16/.test(amber.tag), amber.tag);
   check('黃：明講不會胖、只是缺口比計畫小', /不會胖/.test(amber.tag) && /缺口比計畫小/.test(amber.tag), amber.tag);
-  check('黃：圓環不是紅色', !/--bad/.test(amber.stroke||''), amber.stroke);
-  check('黃：中間寫「超過上限 284」', /284/.test(amber.mid) && /超過上限/.test(amber.mid), amber.mid);
-  await p.screenshot({ path:'/tmp/ring-amber.png', fullPage:false });
+  check('黃：進度條是黃的，不是紅的', amber.bar === 'mid', amber.bar);
+  check('黃：條上寫「284 超過」', /284/.test(amber.mid) && /超過/.test(amber.mid), amber.mid);
+  await p.screenshot({ path:'/tmp/eatbar-amber.png', fullPage:false });
 
   const red = await zone(2500, 0);
   check('紅：淨 2,500 真的超過 TDEE 2,064', /over/.test(red.cls) && !/mid/.test(red.cls), red);
   check('紅：算出超過上限 736、超出 TDEE 436', /超過上限 736/.test(red.tag) && /超出 TDEE 436/.test(red.tag), red.tag);
-  check('紅：圓環是紅色', /--bad/.test(red.stroke||''), red.stroke);
+  check('紅：進度條是紅的', red.bar === 'over', red.bar);
 
   console.log('\n[5b] 明細裡看得到 TDEE（「上限」是從哪來的）');
   check('收合時不顯示 TDEE（版面留給每天真的要看的東西）',
@@ -121,8 +120,17 @@ const fail=[]; const check=(n,c,g)=>{ if(c) console.log('  ok  '+n); else {conso
   const kvs = await p.$$eval('.kv', e=>e.map(x=>x.textContent.replace(/\s+/g,' ').trim()));
   check('展開後列出維持體重（TDEE）2,064', kvs.some(t=>/維持體重（TDEE）/.test(t) && /2,064/.test(t)), kvs);
   check('明細裡只有熱量的算式，營養素不重複放', (await p.$$('.detail .macro')).length === 0);
-  await p.click('[data-act="toggle-detail"]'); await p.waitForTimeout(400);
-  check('三大營養素固定在收合的卡上（每天都要看的東西）', (await p.$$('.macros .macro')).length === 3);
+  /* v6.4：三大營養素整組搬去「營養」頁（Benson 拍板），首頁只留一個入口。
+     ⚠️ 入口一定要在——不然蛋白質差多少就完全看不到了。 */
+  const link = await p.$('.detail [data-nav2="macros"]');
+  check('明細裡有到「營養」頁的入口', !!link);
+  check('入口就寫出蛋白質差多少（不用點進去才知道）',
+    /蛋白\s*\d+／\d+\s*g/.test(await p.textContent('.detail [data-nav2="macros"]').catch(()=> '')),
+    await p.textContent('.detail [data-nav2="macros"]').catch(()=> ''));
+  await p.click('.detail [data-nav2="macros"]'); await p.waitForTimeout(700);
+  check('點下去真的到營養頁', (await p.$$('.mcard .mrow')).length === 3, (await p.$$('.mcard .mrow')).length);
+  await p.click('[data-nav="today"]'); await p.waitForTimeout(600);
+  check('首頁收合的卡上不再放三大營養素', (await p.$$('.macro')).length === 0);
 
   console.log('\n[5c] 目標設成「維持」時沒有中間地帶（上限就是 TDEE）');
   await openSet(p, 'goal');

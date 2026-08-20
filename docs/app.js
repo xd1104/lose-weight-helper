@@ -1,7 +1,7 @@
 "use strict";
 
 /* 版本號。改前端時跟 sw.js 的 cache 版本號一起 +1。 */
-var APP_VER="6.3";
+var APP_VER="6.4";
 /*
  * 減重助手 — 前端主程式
  * 資料層在 store.js（LocalStore / GitHubStore 自動切）、AI 在 ai.js。
@@ -369,33 +369,125 @@ function viewPicker(){
   return h;
 }
 
-/* ---------- 熱量環 ---------- */
-/* 三段（定案）：
+/* ---------- 今天吃了多少（v6.4 取代原本的大圓環） ---------- */
+/* 三段語意原封不動搬過來（定案，別改回兩段）：
  *   綠 = 還在減脂上限內
- *   黃 = 超過減脂上限，但還沒超過 TDEE ← 今天不會胖，只是沒有減脂進度
+ *   黃 = 超過減脂上限，但還沒超過 TDEE ← 今天不會胖，只是這天沒有減脂進度
  *   紅 = 超過 TDEE ← 這才是真的會變胖的量
- * 中間那段以前跟「真的吃過頭」畫成同一種紅色，會讓人以為自己爆了。 */
-function ringHtml(net, target, tdee){
-  var pct = target>0 ? net/target : 0;
-  var shown = Math.max(0, Math.min(1, pct));
-  var R=58, C=2*Math.PI*R;
-  var over = net>target;
-  var hardOver = over && (!(tdee>0) || net>tdee);
-  var color = hardOver ? "var(--bad)" : ((over||pct>=0.85) ? "var(--warn)" : "var(--acc)");
-  var left = target-net;
-  return ''+
-  '<div class="ring">'+
-    '<svg width="132" height="132" viewBox="0 0 132 132">'+
-      '<circle cx="66" cy="66" r="'+R+'" fill="none" stroke="#eef1ea" stroke-width="12"/>'+
-      /* shown=0 時完全不畫：round linecap 會在 dasharray 0 的地方留一個小圓點 */
-      (shown>0 ? '<circle cx="66" cy="66" r="'+R+'" fill="none" stroke="'+color+'" stroke-width="12" stroke-linecap="round"'+
-        ' stroke-dasharray="'+(C*shown).toFixed(1)+' '+C.toFixed(1)+'"/>' : '')+
-    '</svg>'+
-    '<div class="mid">'+
-      '<b class="num" style="color:'+(hardOver?"var(--bad)":(over?"#a86d12":"var(--ink)"))+'">'+kcal(Math.abs(left))+'</b>'+
-      '<span>'+(over?"超過上限":"還可以吃")+'</span>'+
-    '</div>'+
-  '</div>';
+ * 只是從圓環換成一條——首頁的主角讓給體重趨勢了。 */
+function eatenTone(net, target, tdee){
+  if(!(net>target)) return "";
+  return (tdee>0 && net<=tdee) ? "mid" : "over";
+}
+function eatenHtml(eaten, burn, net, target, tdee, tag, lateEnough, m, mt){
+  var tone=eatenTone(net, target, tdee);
+  var pct=target>0 ? Math.max(0, Math.min(1, net/target)) : 0;
+  var left=target-net, over=net>target;
+  var goalLb=(num(db.profile.goal)<0?"每日上限":"每日目標");
+  return '<section class="sec"><div class="eatcard">'+
+      '<button class="eattop" data-act="toggle-detail" aria-expanded="'+(showDetail?"true":"false")+'">'+
+        '<h2>今天吃了</h2>'+
+        '<span class="left"><b class="num'+(tone?" "+tone:"")+'">'+kcal(Math.abs(left))+'</b>'+
+          (over?"超過":"可以吃")+'</span>'+
+        '<span class="more">'+(showDetail?"⌃":"⌄")+'</span>'+
+      '</button>'+
+      '<div class="eatbar"><i class="'+tone+'" style="width:'+(pct*100).toFixed(0)+'%"></i></div>'+
+      '<div class="eatfoot">'+
+        '<span><b class="eatnow num">'+kcal(net)+'</b> 大卡</span>'+
+        '<span class="num">'+goalLb+' '+kcal(target)+'</span>'+
+      '</div>'+
+      (showDetail
+        ? '<div class="detail">'+
+            /* 沒運動時「已攝取」跟條上那個數字是同一個，不重複講 */
+            (burn?'<div class="kv eat"><span>已攝取</span><b class="num">'+kcal(eaten)+'</b></div>':'')+
+            (burn?'<div class="kv burn"><span>運動消耗</span><b class="num">−'+kcal(burn)+'</b></div>':'')+
+            (burn?'<div class="kv net"><span>淨攝取（已扣運動）</span><b class="num">'+kcal(net)+'</b></div>':'')+
+            (num(db.profile.goal)<0
+              ? '<div class="kv tdee"><span>維持體重（TDEE）</span><b class="num">'+kcal(tdee)+'</b></div>'
+              : '')+
+            /* 三大營養素整組搬去「營養」頁（Benson 拍板）。這裡只留一個入口，
+             * 順便把當下最要緊的那一項（蛋白質）寫出來，不然點進去才知道差多少。 */
+            '<button class="kv macro-link" data-nav2="macros"><span>三大營養素</span>'+
+              '<b class="num">蛋白 '+gram(m.p)+'／'+kcal(mt.p)+' g ›</b></button>'+
+          '</div>'
+        : '')+
+      tag+
+      paceHtml(net, tdee, eaten, lateEnough)+
+     '</div></section>';
+}
+
+/* ---------- 體重趨勢（v6.4 起是首頁的主角） ---------- */
+/* 「這兩週體重怎麼走」比「今天還能吃幾大卡」更接近他們真正要的結果。
+ * 斜率一律用最小平方法、而且 x 是真實的日期間距——不是把每一筆當等距。
+ * 沒量的日子不補值，圖上就是不畫（補值會畫出一條看起來很平順的假線）。 */
+function trendPoints(){
+  var start=shiftDate(dateKey(), -(CALIB_WINDOW-1)), pts=[], i, k, d;
+  for(i=0;i<CALIB_WINDOW;i++){
+    k=shiftDate(start,i); d=db.days[k];
+    if(d && num(d.weight)>0) pts.push({ k:k, x:i, w:num(d.weight) });
+  }
+  return pts;
+}
+/* 兩個 yyyy-mm-dd 之間差幾天（歷史頁的點不是等距的） */
+function dayDiff(a, b){
+  return Math.round((parseDateKey(b)-parseDateKey(a))/86400000);
+}
+function trendSlope(pts){
+  var n=pts.length, sx=0, sy=0, sxx=0, sxy=0;
+  pts.forEach(function(p){ sx+=p.x; sy+=p.w; sxx+=p.x*p.x; sxy+=p.x*p.w; });
+  var den=n*sxx-sx*sx;
+  if(!den) return null;
+  var slope=(n*sxy-sx*sy)/den;
+  return { slope:slope, b:(sy-slope*sx)/n };
+}
+var TREND_W=330, TREND_H=88;
+function trendHtml(){
+  var pts=trendPoints();
+  /* 兩筆以下畫不出趨勢：那時候「今天量了沒」那一列本來就講得比較清楚 */
+  if(pts.length<3) return "";
+  var fit=trendSlope(pts);
+  if(!fit) return "";
+  var kgWeek=fit.slope*7;
+  var first=pts[0], last=pts[pts.length-1], diff=last.w-first.w;
+  var down=kgWeek<0;
+  var col=down?"var(--acc)":"var(--warn)";
+
+  var ws=pts.map(function(p){ return p.w; });
+  var min=Math.min.apply(null,ws), max=Math.max.apply(null,ws);
+  var span=Math.max(0.6, max-min);           /* 全部一樣重時不要變成一條貼邊的線 */
+  var mid=(max+min)/2, lo=mid-span/2, hi=mid+span/2;
+  var W=TREND_W, H=TREND_H;
+  var px=function(p,i){ return (i/(pts.length-1))*(W-8)+4; };
+  var py=function(w){ return H-4-((w-lo)/(hi-lo))*(H-12); };
+  var line=pts.map(function(p,i){ return px(p,i).toFixed(1)+","+py(p.w).toFixed(1); }).join(" ");
+  var band=px(first,0).toFixed(1)+","+py(fit.b+fit.slope*first.x).toFixed(1)+" "+
+           px(last,pts.length-1).toFixed(1)+","+py(fit.b+fit.slope*last.x).toFixed(1);
+  var month=kgWeek*30/7;
+
+  return '<section class="sec"><button class="trend" data-act="go-history">'+
+      '<div class="trend-top">'+
+        '<div><span>這 '+Math.round((last.x-first.x+1)/7)+' 週的趨勢</span>'+
+          '<b class="rate '+(down?"dn":"up")+' num">'+(down?"−":"+")+Math.abs(kgWeek).toFixed(1)+
+            '<i>kg／週</i></b></div>'+
+        '<div class="trend-now"><span>'+esc(fmtMD(first.k))+' 以來</span>'+
+          '<b class="num">'+(diff>0?"+":(diff<0?"−":""))+Math.abs(diff).toFixed(1)+'<i>kg</i></b></div>'+
+      '</div>'+
+      '<svg class="tchart" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" aria-hidden="true">'+
+        '<polyline points="'+band+'" fill="none" stroke="'+col+'" stroke-width="9" '+
+          'stroke-linecap="round" opacity=".18"/>'+
+        '<polyline points="'+line+'" fill="none" stroke="'+col+'" stroke-width="2.5" '+
+          'stroke-linecap="round" stroke-linejoin="round"/>'+
+        '<circle cx="'+px(last,pts.length-1).toFixed(1)+'" cy="'+py(last.w).toFixed(1)+'" r="4.5" fill="'+col+'"/>'+
+      '</svg>'+
+      '<div class="trend-foot">照這個速度，一個月 <b class="num">'+
+        (month>0?"+":"−")+Math.abs(month).toFixed(1)+' kg</b><span class="go">›</span></div>'+
+     '</button></section>';
+}
+
+/* 一列餐段的副標：前三樣的名字，多的用「…共 N 樣」帶過 */
+function mealSummary(list){
+  var names=list.slice(0,3).map(function(e){ return e.name; }).join("、");
+  return list.length>3 ? names+" …共 "+list.length+" 樣" : names;
 }
 
 function headHtml(title){
@@ -436,7 +528,7 @@ function viewToday(){
   }else if(target>0 && net/target>=0.85){
     tag='<div class="over-tag near">快到上限了，剩 '+kcal(target-net)+' 大卡</div>';
   }else{
-    /* 一切正常時刻意不顯示：「還在額度內，剩 X」跟圓環中央是同一句話，講兩次只是佔版面 */
+    /* 一切正常時刻意不顯示：「還在額度內，剩 X」跟那條上寫的是同一句話，講兩次只是佔版面 */
     tag='';
   }
 
@@ -450,34 +542,13 @@ function viewToday(){
       (isToday?"":'<button class="today-btn" data-act="go-today">今天</button>')+
      '</div>';
 
-  /* 熱量卡分兩層（定案）：
-   * 收合＝每天真的要看的三件事（還能吃多少／已經吃多少／營養素有沒有歪掉）；
-   * 展開＝解釋用的數字（每日上限、TDEE、淨攝取、營養素公克數）。
-   * 全部攤開的話一張卡上有九個數字，反而看不出重點。 */
-  var goalLb=(num(db.profile.goal)<0?"每日上限":"每日目標");
-  h+='<section class="ring-card">'+
-      '<button class="ring-wrap" data-act="toggle-detail" aria-expanded="'+(showDetail?"true":"false")+'">'+
-        ringHtml(net, target, tdee)+
-        '<div class="ring-side">'+
-          '<div class="kv eat"><span>已攝取</span><b class="num">'+kcal(eaten)+'</b></div>'+
-          (burn?'<div class="kv burn"><span>運動消耗</span><b class="num">−'+kcal(burn)+'</b></div>':'')+
-          '<div class="kv more"><span>'+(showDetail?"收起明細":"看明細")+'</span>'+
-            '<b>'+(showDetail?"⌃":"⌄")+'</b></div>'+
-        '</div>'+
-      '</button>'+
-      (showDetail
-        ? '<div class="detail">'+
-            '<div class="kv goal"><span>'+goalLb+'</span><b class="num">'+kcal(target)+'</b></div>'+
-            (num(db.profile.goal)<0
-              ? '<div class="kv tdee"><span>維持體重（TDEE）</span><b class="num">'+kcal(tdee)+'</b></div>'
-              : '')+
-            (burn?'<div class="kv net"><span>淨攝取（已扣運動）</span><b class="num">'+kcal(net)+'</b></div>':'')+
-          '</div>'
-        : '')+
-      tag+
-      paceHtml(net, tdee, eaten, lateEnough)+
-      macroRowHtml(m, mt)+
-     '</section>';
+  /* ① 主角是體重趨勢（v6.4 改版）。
+   * 以前首頁最上面是一個大熱量環——「今天還可以吃幾大卡」。
+   * 但他們兩個認真記了三週，體重反而各自 +0.54／+0.25 kg／週：
+   * 每天盯著的那個數字，跟真正要的結果沒有對上。所以主畫面換成
+   * 「這兩週體重怎麼走」，熱量降級成一條進度條。
+   * ⚠️ 這裡只是換順序與呈現，功能一個都沒有拿掉。 */
+  h+=trendHtml();
 
   /* 沒設過身體資料 -> TDEE 是用預設值算的，等於假的，一定要先講 */
   if(!db.profile.updatedAt){
@@ -487,73 +558,77 @@ function viewToday(){
        '</button></section>';
   }
 
-  /* 體重（減重 app 的主角，放在熱量環正下方） */
+  /* ② 今天量了沒（趨勢圖的原料，緊接在圖下面） */
   h+=weighHtml(d);
-  /* 校準摘要緊接在體重後面：校準的輸入就是體重，擺一起最好懂。
+  /* ③ 校準摘要：校準的輸入就是體重，擺一起最好懂。
    * 沒話要說的時候回空字串，不會每天佔一格。 */
   h+=calibBriefHtml();
 
-  /* 餐段：只列「有記東西」的。
-   * 以前四個餐段＋運動不管有沒有東西都各佔一張卡，一天有一半是空卡，
-   * 光滑過那些「＋ 記一筆晚餐」就要滑半頁。空的收成下面一列快速新增。 */
-  var empties=[];
+  /* ④ 今天吃了多少：從大圓環降級成一條。
+   * 明細（每日上限／TDEE／淨攝取）還在，點一下展開；
+   * 三大營養素搬去「營養」頁（Benson 拍板），這裡只留一個入口。 */
+  h+=eatenHtml(eaten, burn, net, target, tdee, tag, lateEnough, m, mt);
+
+  /* ⑤ 每一餐一列，點開才看細項（v6.4）。
+   * 以前四個餐段各是一張卡、逐項攤開，一天十幾筆就要滑兩三屏。
+   * 現在四餐＋運動收在同一張卡，每列一行：吃了什麼（前三樣）、多少大卡。
+   * ⚠️ 一律預設收起來——不照時間猜他現在要看哪一餐（猜錯反而多一次操作，
+   * 常吃清單那邊已經踩過一次）。展開後的每一筆還是原本的 .row／edit-entry。 */
+  h+='<section class="sec"><div class="list">';
   MEALS.forEach(function(mk){
     var list=(d.entries||[]).filter(function(e){ return e.meal===mk; });
     var info=MEAL_INFO[mk];
-    if(!list.length){ empties.push({ act:'data-act="add" data-meal="'+mk+'"', label:info.emoji+' '+info.label }); return; }
-    /* 一鍋火鍋 AI 會拆成十幾樣，整個午餐就變成一整頁。
-     * 平常要看的是「這一餐吃了多少」——那個數字在標題右邊已經有了。
-     * 所以超過門檻就先收起來，需要細節再展開。摺疊狀態只在記憶體，不落檔。 */
-    var open = mealOpen[mk] || list.length<=MEAL_FOLD;
-    var show = open ? list : list.slice(0, MEAL_FOLD-1);
-    h+='<section class="sec">'+
-        '<div class="sec-head"><h2>'+info.emoji+' '+info.label+'</h2>'+
-          '<span class="n">'+kcal(sumKcal(list))+' 大卡</span></div>'+
-        '<div class="list">';
-    show.forEach(function(e){
-      h+='<button class="row" data-act="edit-entry" data-id="'+esc(e.id)+'">'+
+    if(!list.length){
+      h+='<button class="meal-row none" data-act="add" data-meal="'+mk+'">'+
+          '<span class="em">'+info.emoji+'</span>'+
+          '<div class="mid"><b>'+info.label+'</b><span>還沒記</span></div>'+
+          '<span class="k add">＋</span></button>';
+      return;
+    }
+    var open=!!mealOpen[mk];
+    h+='<button class="meal-row'+(open?" on":"")+'" data-act="fold-meal" data-meal="'+mk+'"'+
+        ' aria-expanded="'+(open?"true":"false")+'">'+
+        '<span class="em">'+info.emoji+'</span>'+
+        '<div class="mid"><b>'+info.label+'</b><span>'+esc(mealSummary(list))+'</span></div>'+
+        '<span class="k num">'+kcal(sumKcal(list))+'<i>大卡</i></span></button>';
+    if(!open) return;
+    list.forEach(function(e){
+      h+='<button class="row sub" data-act="edit-entry" data-id="'+esc(e.id)+'">'+
           '<div class="row-mid"><b>'+esc(e.name)+'</b>'+
             (e.portion ? '<span>'+esc(e.portion)+'</span>' : '')+
           '</div>'+
           '<div class="row-kcal num">'+kcal(e.kcal)+'<i>大卡</i></div>'+
          '</button>';
     });
-    if(list.length>MEAL_FOLD){
-      var restN=list.length-show.length;
-      h+='<button class="row fold" data-act="fold-meal" data-meal="'+mk+'">'+
-          '<div class="row-mid"><b>'+(open
-            ? "收合這一餐"
-            : "還有 "+restN+" 項（共 "+kcal(sumKcal(list.slice(show.length)))+" 大卡）")+'</b></div>'+
-          '<div class="row-kcal"><i>'+(open?"⌃":"⌄")+'</i></div>'+
-         '</button>';
-    }
-    h+='</div></section>';
+    h+='<button class="row sub add" data-act="add" data-meal="'+mk+'">'+
+        '<div class="row-mid"><b>＋ 再記一筆</b></div></button>';
   });
 
-  /* 運動 */
+  /* 運動也是同一張卡的一列（以前空的時候會單獨變成一顆 chip，孤零零的） */
   if(!d.moves.length){
-    empties.push({ act:'data-act="add-move"', label:"🏃 運動" });
+    h+='<button class="meal-row none" data-act="add-move">'+
+        '<span class="em">🏃</span>'+
+        '<div class="mid"><b>運動</b><span>還沒記</span></div>'+
+        '<span class="k add">＋</span></button>';
   }else{
-    h+='<section class="sec">'+
-        '<div class="sec-head"><h2>🏃 運動</h2><span class="n">−'+kcal(burn)+' 大卡</span></div>'+
-        '<div class="list">';
-    d.moves.forEach(function(mv){
-      h+='<button class="row" data-act="edit-move" data-id="'+esc(mv.id)+'">'+
-          '<div class="row-mid"><b>'+esc(mv.name)+'</b>'+(mv.time?'<span>'+esc(mv.time)+'</span>':'')+'</div>'+
-          '<div class="row-kcal burn num">−'+kcal(mv.kcal)+'<i>大卡</i></div>'+
-         '</button>';
-    });
-    h+='<button class="row" data-act="add-move"><div class="row-mid">'+
-       '<b style="color:var(--muted);font-weight:600">＋ 再記一筆</b></div></button>'+
-      '</div></section>';
+    var mvOpen=!!mealOpen.__move;
+    h+='<button class="meal-row burn'+(mvOpen?" on":"")+'" data-act="fold-meal" data-meal="__move"'+
+        ' aria-expanded="'+(mvOpen?"true":"false")+'">'+
+        '<span class="em">🏃</span>'+
+        '<div class="mid"><b>運動</b><span>'+esc(mealSummary(d.moves))+'</span></div>'+
+        '<span class="k num">−'+kcal(sumKcal(d.moves))+'<i>大卡</i></span></button>';
+    if(mvOpen){
+      d.moves.forEach(function(mv){
+        h+='<button class="row sub" data-act="edit-move" data-id="'+esc(mv.id)+'">'+
+            '<div class="row-mid"><b>'+esc(mv.name)+'</b>'+(mv.time?'<span>'+esc(mv.time)+'</span>':'')+'</div>'+
+            '<div class="row-kcal burn num">−'+kcal(mv.kcal)+'<i>大卡</i></div>'+
+           '</button>';
+      });
+      h+='<button class="row sub add" data-act="add-move">'+
+          '<div class="row-mid"><b>＋ 再記一筆</b></div></button>';
+    }
   }
-
-  if(empties.length){
-    h+='<section class="sec"><div class="sec-head"><h2>還沒記</h2></div>'+
-        '<div class="chips addchips">'+
-          empties.map(function(x){ return '<button class="chip" '+x.act+'>＋ '+x.label+'</button>'; }).join("")+
-        '</div></section>';
-  }
+  h+='</div></section>';
 
   /* 營養師講評：手動按才打 AI（每按一次都要錢），有記東西才給按。
    * 已經評過的日子直接顯示總評，點進去看存下來的那份，不會再收一次費。 */
@@ -566,8 +641,8 @@ function viewToday(){
         '<span class="chev">›</span></button></section>';
   }
 
-  /* 最近 7 天 */
-  h+='<section class="sec"><div class="sec-head"><h2>最近 7 天</h2></div>'+sparkHtml(target)+'</section>';
+  /* 「最近 7 天」長條圖拿掉了（v6.4）：最上面那張趨勢圖講的是同一件事，而且講得更好。
+   * sparkHtml 一起刪了；goalLineHtml 留著給「營養」頁的蛋白質圖——目標線那條鐵律照樣成立。 */
 
   /* 備註 */
   h+='<section class="sec">'+
@@ -654,25 +729,7 @@ function fmtStamp(iso){
     String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
 }
 
-function macroRowHtml(m, mt){
-  return '<button class="macros" data-nav2="macros">'+
-    macroBox("蛋白","var(--p)",m.p,mt.p,1.2)+   /* 蛋白質吃多一點不是問題，門檻放寬 */
-    macroBox("碳水","var(--c)",m.c,mt.c,1.05)+
-    macroBox("脂肪","var(--f)",m.f,mt.f,1.05)+
-  '</button>';
-}
-function macroBox(label,color,v,target,overAt){
-  var pct = target>0 ? v/target : 0;
-  var over = target>0 && pct>(overAt||1.05);
-  return '<div class="macro'+(over?" over":"")+'">'+
-         '<div class="lb"><span class="dot" style="background:'+(over?"var(--warn)":color)+'"></span>'+label+
-           (over?'<em>超標</em>':'')+'</div>'+
-         '<b class="num">'+gram(v)+'<i>/'+kcal(target)+'g</i></b>'+
-         '<div class="mbar"><i style="width:'+(Math.min(1,pct)*100).toFixed(0)+'%;'+
-           'background:'+(over?"var(--warn)":color)+'"></i></div></div>';
-}
-
-/* 七天長條圖。
+/* 七天長條圖（v6.4 起只剩「營養」頁的蛋白質在用；首頁那張已被體重趨勢取代）。
  * ⚠️ 一定要畫目標線：高度是相對於「這七天的最大值」，沒有基準線的話，
  * 不管吃多少，最高那天都貼頂——七根滿格配上「0 天達標」的文字，圖等於在騙人。
  * 線的位置要跟 bar 用同一組數字算（BAR_H／底部 padding），改一個就要改另一個。 */
@@ -684,24 +741,6 @@ function goalLineHtml(target, max, label){
   return '<i class="goal-line" style="bottom:'+(BAR_BOT+pct*BAR_H).toFixed(1)+'px">'+
          '<b>'+esc(label)+'</b></i>';
 }
-function sparkHtml(target){
-  var keys=[], i;
-  for(i=6;i>=0;i--) keys.push(shiftDate(curDate,-i));
-  var vals=keys.map(function(k){ var d=db.days[k]; return d?netOf(d):0; });
-  var max=Math.max(target, Math.max.apply(null, vals), 1);
-  var h='<div class="spark">'+goalLineHtml(target, max, "上限 "+kcal(target));
-  keys.forEach(function(k,idx){
-    var v=vals[idx];
-    var pct=Math.max(0, Math.min(1, v/max));
-    var cls=v<=0 ? "none" : (v>target ? "over" : "");
-    h+='<div class="col'+(k===curDate?" today":"")+'">'+
-        '<div class="bar '+cls+'" style="height:'+(v<=0?3:Math.max(6, pct*BAR_H))+'px" title="'+kcal(v)+' 大卡"></div>'+
-        '<div class="lb">'+WD[parseDateKey(k).getDay()]+'</div>'+
-       '</div>';
-  });
-  return h+'</div>';
-}
-
 /* ---------- 營養 ---------- */
 /* 蛋白質換算成食物：差多少克時，給一兩個「等一下可以吃什麼」的具體建議。
  * 只給常見、好取得的。數字是每份的粗略蛋白質含量。 */
@@ -936,14 +975,23 @@ function weightTrendHtml(keys){
     var span=Math.max(0.6, max-min); /* 全部一樣重時不要變成一條貼邊的線 */
     var mid=(max+min)/2;
     var lo=mid-span/2, hi=mid+span/2;
-    var coords=pts.map(function(p,i){
-      var x=pts.length===1?W/2:(i/(pts.length-1))*(W-8)+4;
-      var y=H-4-((p.w-lo)/(hi-lo))*(H-12);
-      return x.toFixed(1)+','+y.toFixed(1);
-    }).join(' ');
-    chart='<svg class="wchart" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'+
-      '<polyline points="'+coords+'" fill="none" stroke="'+(diff<=0?"var(--acc)":"var(--warn)")+
+    var py=function(w){ return H-4-((w-lo)/(hi-lo))*(H-12); };
+    var px=function(i){ return pts.length===1?W/2:(i/(pts.length-1))*(W-8)+4; };
+    var coords=pts.map(function(p,i){ return px(i).toFixed(1)+','+py(p.w).toFixed(1); }).join(' ');
+    /* v6.4：跟首頁那張畫成同一個樣子——點進來看到的東西不該長得不一樣。
+     * 趨勢帶用真實日期間距的最小平方法（頭尾相減會被那兩天的水分決定）。 */
+    var fpts=pts.map(function(p,i){ return { x:dayDiff(pts[0].k, p.k), w:p.w, i:i }; });
+    var fit=trendSlope(fpts);
+    var band=fit ? '<polyline points="'+
+        px(0).toFixed(1)+','+py(fit.b+fit.slope*fpts[0].x).toFixed(1)+' '+
+        px(pts.length-1).toFixed(1)+','+py(fit.b+fit.slope*fpts[fpts.length-1].x).toFixed(1)+
+        '" fill="none" stroke="'+(fit.slope<=0?"var(--acc)":"var(--warn)")+
+        '" stroke-width="9" stroke-linecap="round" opacity=".18"/>' : '';
+    var col=fit ? (fit.slope<=0?"var(--acc)":"var(--warn)") : (diff<=0?"var(--acc)":"var(--warn)");
+    chart='<svg class="wchart" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'+band+
+      '<polyline points="'+coords+'" fill="none" stroke="'+col+
         '" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'+
+      '<circle cx="'+px(pts.length-1).toFixed(1)+'" cy="'+py(last.w).toFixed(1)+'" r="4" fill="'+col+'"/>'+
     '</svg>';
   }
   return '<div class="sec"><div class="wcard">'+
@@ -1799,6 +1847,10 @@ function doAct(act, el){
   if(act==="edit-move"){ if(requireWrite()) openMoveSheet(el.getAttribute("data-id")); return; }
   if(act==="edit-notes"){ if(requireWrite()) openNotesSheet(); return; }
   if(act==="edit-weight"){ if(requireWrite()) openWeightSheet(); return; }
+  if(act==="go-history"){
+    /* 首頁的趨勢圖點下去 = 看完整的歷史。跟 go-calib 一樣要自己叫 ensureHistory()。 */
+    view="history"; ensureHistory(); render(); window.scrollTo(0,0); return;
+  }
   if(act==="go-calib"){
     /* ⚠️ ensureHistory() 是掛在導覽列的點擊上的，程式自己切 view 不會觸發，
      * 少了這一行會停在「讀取紀錄中…」不動（測試抓到的）。 */

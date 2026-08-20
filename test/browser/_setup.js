@@ -46,4 +46,18 @@ async function closeSet(page) {
   await page.waitForTimeout(250);
 }
 
-module.exports = { BASE, clearAll, seedUser, openSet, closeSet };
+/* v6.4 起「今天」頁的每一餐都是收起來的一列，細項要點開才在 DOM 裡。
+ * 任何要點 .row[data-act="edit-entry"] 的測試，前面都要先叫這個。 */
+async function openMeals(page) {
+  /* ⚠️ 一次抓一個、每次重新查詢：點下去會整頁重畫，先抓好的那批 handle 會全部脫離 DOM。 */
+  const SEL = '.meal-row[data-act="fold-meal"][aria-expanded="false"]';
+  for (let i = 0; i < 6; i++) {
+    const f = await page.$(SEL);
+    if (!f) break;
+    await f.click().catch(() => {});
+    await page.waitForTimeout(260);
+  }
+  await page.waitForTimeout(200);
+}
+
+module.exports = { BASE, clearAll, seedUser, openSet, closeSet, openMeals };

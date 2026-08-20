@@ -71,10 +71,13 @@ function check(n, c, g) {
   await p.fill('#mv-kcal', '300');
   await p.click('#f-move button[type="submit"]');
   await p.waitForTimeout(1400);
-  const burn = await p.textContent('.row-kcal.burn').catch(() => '');
+  /* v6.4：運動也是「一列一項」的其中一列，預設收起來——摘要那一列就寫得出總消耗 */
+  const burn = await p.textContent('.meal-row.burn .k').catch(() => '');
   check('存進今天，且是改過的 300', /300/.test(burn || ''), burn);
+  check('寫成負的（是消耗不是攝取）', /−/.test(burn || ''), burn);
 
   console.log('\n[5] 做過的運動下次會出現在快速選擇');
+  await p.click('.meal-row.burn'); await p.waitForTimeout(400);   /* v6.4：先展開才有「＋ 再記一筆」 */
   await p.click('[data-act="add-move"]');
   await p.waitForTimeout(500);
   const chips = await p.$$eval('[data-mp]', (e) => e.map((x) => x.textContent.trim()));

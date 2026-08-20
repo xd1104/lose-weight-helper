@@ -10,7 +10,7 @@
  *    跑之前請先備份 data/。
  */
 const { chromium } = require('playwright');
-const { BASE, seedUser, openSet } = require('./_setup');
+const { BASE, seedUser, openSet, openMeals } = require('./_setup');
 
 const fail = [];
 function check(n, c, g) {
@@ -82,7 +82,7 @@ async function addManual(p, name, kcal) {
     /* 關鍵：再次進入那一天要「真的重讀」，而不是拿空殼直接顯示 */
     await row.click();
     await p.waitForTimeout(1600);
-    const eaten = (await p.textContent('.kv.eat b')).trim();
+    const eaten = (await p.textContent('.eatcard .eatnow')).trim();
     check('重新進入那一天會重讀，抓回真正的 700 大卡 ← 沒修的話會停在 0', eaten === '700', eaten);
 
     /* 那天的檔案不能被空白覆蓋掉 */
@@ -143,6 +143,7 @@ async function addManual(p, name, kcal) {
     /* 反向：整天清空後要從清單消失 */
     await p.click('[data-nav="today"]');
     await p.waitForTimeout(600);
+    await openMeals(p);
     await p.click('.row[data-act="edit-entry"]');
     await p.waitForTimeout(500);
     p.once('dialog', (d) => d.accept());
@@ -266,7 +267,7 @@ async function addManual(p, name, kcal) {
     /* 已經記進今天的飲食不受影響 */
     await p.click('[data-sheet="close"]').catch(() => {});
     await p.waitForTimeout(500);
-    const eaten = (await p.textContent('.kv.eat b')).trim();
+    const eaten = (await p.textContent('.eatcard .eatnow')).trim();
     check('已記錄的飲食不受影響（480+3=483）', eaten === '483', eaten);
     check('沒有 pageerror', p.__errs.length === 0, p.__errs);
     await p.context().close();

@@ -73,7 +73,7 @@ function check(n, c, g) {
   check('顯示 AI 結果', !!(await p.$('[data-ai="save"]')));
   await p.click('[data-ai="save"]');
   await p.waitForTimeout(1200);
-  const eaten = (await p.textContent('.kv.eat b')).trim();
+  const eaten = (await p.textContent('.eatcard .eatnow')).trim();
   check('850 大卡寫進今天', eaten === '850', eaten);
 
   console.log('\n[4] 同一張照片再選一次也要能觸發（value 有清掉）');

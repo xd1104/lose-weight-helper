@@ -177,7 +177,7 @@ const SIX = ['白飯', '叉燒肉', '油雞腿肉', '燒鴨肉', '燙青菜', '�
   const rows = ((saved.days[0] || {}).entries || []).map((e) => e.name);
   check('七項都寫進今天', rows.length === 7
     && ['糙米飯', '叉燒（3 片）', '例湯'].every((n) => rows.some((r) => r.indexOf(n) >= 0)), rows);
-  const eaten = (await p.textContent('.kv.eat b')).trim();
+  const eaten = (await p.textContent('.eatcard .eatnow')).trim();
   // 100(糙米飯) + 110 + 120 + 260(叉燒重估) + 140 + 150 + 60(例湯) = 940
   check('總熱量用重估後的數字（940）', eaten === '940', eaten);
 

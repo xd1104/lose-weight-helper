@@ -19,12 +19,16 @@ function check(n, c, g) {
   const t = await p.$('.picker-tile[data-pick]');
   if (t) { await t.click(); await p.waitForTimeout(1700); }
 
-  console.log('\n[1] 導覽列有「營養」，首頁三大方塊可點進去');
+  console.log('\n[1] 導覽列有「營養」；三大營養素的本體在營養頁（v6.4 搬家）');
   check('nav 有營養', !!(await p.$('[data-nav="macros"]')));
-  check('首頁三大方塊可點進營養頁', !!(await p.$('[data-nav2="macros"]')));
-  check('首頁不用展開就看得到三大營養素', (await p.$$('.macros .macro')).length === 3);
-  const boxTxt = await p.textContent('.macro b');
-  check('顯示 目前/目標 公克數', /\//.test(boxTxt || ''), boxTxt);
+  /* v6.4：首頁主角換成體重趨勢，三大營養素整組搬去營養頁（Benson 拍板）。
+     首頁只在熱量明細裡留一個入口，順便寫出蛋白質差多少。 */
+  check('首頁不再擺三大方塊', (await p.$$('.macro')).length === 0);
+  await p.click('[data-act="toggle-detail"]'); await p.waitForTimeout(500);
+  check('熱量明細裡有到營養頁的入口', !!(await p.$('.detail [data-nav2="macros"]')));
+  const linkTxt = await p.textContent('.detail [data-nav2="macros"]');
+  check('入口就寫出蛋白質 目前／目標 公克數', /蛋白\s*\d+／\d+\s*g/.test(linkTxt || ''), linkTxt);
+  await p.click('[data-act="toggle-detail"]'); await p.waitForTimeout(400);
 
   console.log('\n[2] 沒紀錄時的空狀態');
   await p.click('[data-nav="macros"]');
@@ -138,10 +142,12 @@ function check(n, c, g) {
   await p.fill('#m-c', '400');            // 遠超過碳水目標
   await p.click('#f-manual button[type="submit"]');
   await p.waitForTimeout(1500);
-  const carbBox = await p.$eval('.macros .macro:nth-child(2)', (e) => ({ cls: e.className, t: e.textContent.replace(/\s+/g, ' ') }));
-  check('碳水那格標成超標', /over/.test(carbBox.cls) && /超標/.test(carbBox.t), carbBox);
-  const protBox = await p.$eval('.macros .macro:nth-child(1)', (e) => e.className);
+  await p.click('[data-nav="macros"]'); await p.waitForTimeout(800);
+  const carbBox = await p.$eval('.mcard .mrow:nth-child(3)', (e) => ({ cls: e.className, t: e.textContent.replace(/\s+/g, ' ') }));
+  check('碳水那列標成超過', /over/.test(carbBox.cls) && /超過/.test(carbBox.t), carbBox);
+  const protBox = await p.$eval('.mcard .mrow:nth-child(1)', (e) => e.className);
   check('沒超的不會被誤標', !/over/.test(protBox), protBox);
+  await p.click('[data-nav="today"]'); await p.waitForTimeout(600);
   await p.screenshot({ path: '/tmp/mac-over.png' });
 
   console.log('\n[7] 設定頁可調目標，且會反映到營養頁');

@@ -13,7 +13,7 @@
  * ⚠️ 會清掉本機 server 上的所有使用者資料（_setup.js 的 clearAll），跑之前先備份 data/。
  */
 const { chromium } = require('playwright');
-const { BASE, seedUser, openSet } = require('./_setup');
+const { BASE, seedUser, openSet, openMeals } = require('./_setup');
 const path = require('path');
 
 const fail = [];
@@ -99,6 +99,7 @@ const TINYFONT = `(() => {
   await openAdd('fav'); await p.click('.food-item .food-row'); await p.waitForTimeout(300);
   await closeAll();
   await p.click('[data-nav="today"]'); await p.waitForTimeout(450);
+  await openMeals(p);
   await p.click('.row[data-act="edit-entry"]'); await p.waitForTimeout(500); await grab('編輯一筆');
   await closeAll();
   await p.click('[data-act="edit-weight"]'); await p.waitForTimeout(500); await grab('體重');
@@ -129,6 +130,7 @@ const TINYFONT = `(() => {
   check('手動：蛋白 2.5 合法', await valid('#m-p', '2.5'));
   await closeAll();
   await p.click('[data-nav="today"]'); await p.waitForTimeout(450);
+  await openMeals(p);
   await p.click('.row[data-act="edit-entry"]'); await p.waitForTimeout(500);
   check('編輯一筆：熱量 187.5 合法', await valid('#e-kcal', '187.5'));
   await closeAll();
@@ -173,14 +175,16 @@ const TINYFONT = `(() => {
     after.top > 0 && after.bottom < after.vh - 60, after);
   await closeAll();
 
-  /* ───────── F. 長條圖要有目標線 ───────── */
-  console.log('\n[F] 七天長條圖要有目標線');
-  const line = await p.$('.spark .goal-line');
-  check('今天頁的七天圖有目標線', !!line);
-  check('線上標了是什麼的目標', /上限/.test(await p.textContent('.spark .goal-line b')),
-    await p.textContent('.spark .goal-line b').catch(() => ''));
+  /* ───────── F. 圖表要有基準，不能讓最高那根永遠貼頂 ───────── */
+  console.log('\n[F] 圖表要有基準');
+  /* v6.4：首頁的七天長條圖拿掉了（最上面的體重趨勢講的是同一件事，而且講得更好）。
+     長條圖現在只剩營養頁的蛋白質在用，目標線那條鐵律照樣要成立。 */
   await p.click('[data-nav="macros"]'); await p.waitForTimeout(700);
-  check('營養頁的蛋白質圖也有目標線', !!(await p.$('.spark .goal-line')));
+  check('營養頁的蛋白質圖有目標線', !!(await p.$('.spark .goal-line')));
+  check('線上標了是什麼的目標', /目標/.test(await p.textContent('.spark .goal-line b')),
+    await p.textContent('.spark .goal-line b').catch(() => ''));
+  await p.click('[data-nav="today"]'); await p.waitForTimeout(700);
+  check('首頁不再有七天長條圖（跟趨勢圖講同一件事）', !(await p.$('.spark')));
 
   /* ───────── G. 同一頁不要講兩次 ───────── */
   console.log('\n[G] 設定頁的版本號只該出現一次');

@@ -68,32 +68,31 @@ const TOTAL = POT.reduce((a, x) => a + x[1], 0);   // 1,365
   await p.waitForTimeout(1500);
 
   console.log('\n[A] 11 樣不要整頁攤開');
-  const rows = await p.$$('.list .row[data-act="edit-entry"]');
-  check('只列 3 項（其餘收起來）', rows.length === 3, rows.length);
-  check('有摺疊列', !!(await p.$('.row.fold')));
-  const fold = await txt(p, '.row.fold');
-  check('講得出還有幾項', /還有 8 項/.test(fold), fold);
-  check('也講得出收起來的那些共多少大卡',
-    new RegExp('共 ' + (TOTAL - POT.slice(0, 3).reduce((a, x) => a + x[1], 0)).toLocaleString('zh-TW')).test(fold), fold);
-  check('標題的總熱量還是全部 11 樣的總和',
-    new RegExp(TOTAL.toLocaleString('zh-TW')).test(await txt(p, '.sec-head .n')), await txt(p, '.sec-head .n'));
+  /* v6.4 起不是「只列前 3 項」，而是整餐一律收成一列——首頁的主角是體重趨勢，
+     食物細項本來就不該預設佔版面。摘要那一列要自己講得出吃了什麼、幾樣、多少大卡。 */
+  check('預設一項都不攤開', (await p.$$('.list .row[data-act="edit-entry"]')).length === 0);
+  const mealRow = await txt(p, '.meal-row[data-meal="lunch"]');
+  check('那一列講得出共幾樣', /共 11 樣/.test(mealRow), mealRow);
+  check('也講得出前幾樣是什麼', new RegExp(POT[0][0]).test(mealRow), mealRow);
+  check('那一列的總熱量是全部 11 樣的總和',
+    new RegExp(TOTAL.toLocaleString('zh-TW')).test(mealRow), mealRow);
   await p.screenshot({ path: '/tmp/tidy-fold.png', clip: { x: 0, y: 330, width: 390, height: 514 } });
 
   console.log('\n[B] 展開／收合');
-  await p.click('.row.fold');
+  await p.click('.meal-row[data-meal="lunch"]');
   await p.waitForTimeout(500);
   check('展開後 11 項都在', (await p.$$('.list .row[data-act="edit-entry"]')).length === 11,
     (await p.$$('.list .row[data-act="edit-entry"]')).length);
-  check('摺疊列改口成「收合」', /收合/.test(await txt(p, '.row.fold')), await txt(p, '.row.fold'));
-  await p.click('.row.fold');
+  check('展開後底下有「＋ 再記一筆」', !!(await p.$('.row.sub.add')));
+  await p.click('.meal-row[data-meal="lunch"]');
   await p.waitForTimeout(500);
-  check('再點一次收回去', (await p.$$('.list .row[data-act="edit-entry"]')).length === 3);
+  check('再點一次收回去', (await p.$$('.list .row[data-act="edit-entry"]')).length === 0);
   await p.click('[data-act="prev-day"]');
   await p.waitForTimeout(700);
   await p.click('[data-act="next-day"]');
   await p.waitForTimeout(900);
   check('換過日期再回來是收合的（展開狀態不該黏著）',
-    (await p.$$('.list .row[data-act="edit-entry"]')).length === 3);
+    (await p.$$('.list .row[data-act="edit-entry"]')).length === 0);
 
   console.log('\n[C] AI 結果頁可以先合併成一筆');
   await p.click('.fab');

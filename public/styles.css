@@ -72,31 +72,76 @@ input,textarea,select{font-family:inherit; font-size:16px; color:inherit;}
 .swatch{width:44px; height:44px; border-radius:14px; border:3px solid transparent;}
 .swatch.on{border-color:var(--ink);}
 
-/* ---------- 熱量環 ---------- */
-.ring-card{margin:4px 16px 14px; background:var(--card); border-radius:22px; box-shadow:var(--shadow); padding:20px 18px 16px;}
-.ring-wrap{width:100%; text-align:left; display:flex; align-items:center; gap:18px;}
-.ring{width:132px; height:132px; flex:0 0 auto; position:relative;}
-.ring svg{transform:rotate(-90deg); display:block;}
-.ring .mid{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;}
-.ring .mid b{font-size:27px; font-weight:800; line-height:1.05;}
-.ring .mid span{font-size:11.5px; color:var(--muted); font-weight:700; margin-top:3px;}
-.ring-side{flex:1; min-width:0; display:flex; flex-direction:column; gap:9px;}
+/* ---------- 首頁主角：體重趨勢（v6.4） ---------- */
+.trend{width:100%; text-align:left; background:var(--card); border-radius:22px;
+  box-shadow:var(--shadow); padding:16px 16px 10px;}
+.trend-top{display:flex; align-items:flex-start; justify-content:space-between; gap:12px;}
+.trend-top span{display:block; font-size:11.5px; color:var(--muted); font-weight:700;}
+.trend .rate{display:block; font-size:31px; font-weight:800; line-height:1.02;
+  margin-top:4px; letter-spacing:-.5px;}
+.trend .rate i{font-style:normal; font-size:13px; font-weight:700; margin-left:3px;}
+.trend .rate.up{color:var(--warn);} .trend .rate.dn{color:var(--acc-deep);}
+.trend-now{text-align:right;}
+.trend-now b{display:block; font-size:22px; font-weight:800; margin-top:3px;}
+.trend-now b i{font-style:normal; font-size:12px; color:var(--muted); font-weight:700; margin-left:2px;}
+.tchart{width:100%; height:88px; display:block; margin-top:12px; overflow:visible;}
+.trend-foot{display:flex; align-items:center; gap:8px; border-top:1px solid #f1f4ee;
+  margin-top:10px; padding-top:10px; font-size:12.5px; color:var(--muted); font-weight:600;}
+.trend-foot b{color:var(--ink); font-weight:800;}
+.trend-foot .go{margin-left:auto; color:#c9d2c4; font-size:18px;}
+
+/* ---------- 今天吃了多少（v6.4 起是一條，不是圓環） ---------- */
+.eatcard{background:var(--card); border-radius:18px; box-shadow:var(--shadow); padding:13px 15px 14px;}
+.eattop{width:100%; display:flex; align-items:baseline; gap:8px; text-align:left;
+  min-height:44px; padding-top:2px;}   /* 觸控目標 ≥44px（22-audit／01-flow 會抓） */
+.eattop h2{margin:0; font-size:13.5px; font-weight:800;}
+.eattop .left{margin-left:auto; font-size:12.5px; color:var(--muted); font-weight:700;}
+.eattop .left b{font-size:16px; font-weight:800; color:var(--ink); margin-right:3px;}
+.eattop .left b.mid{color:#a86d12;} .eattop .left b.over{color:var(--bad);}
+.eattop .more{flex:0 0 auto; font-size:13px; font-weight:800; color:#c9d2c4; padding-left:2px;}
+.eatbar{height:9px; border-radius:99px; background:#eef1ea; margin-top:10px; overflow:hidden;}
+.eatbar i{display:block; height:100%; border-radius:99px; background:var(--acc); min-width:0;}
+.eatbar i.mid{background:var(--warn);}
+.eatbar i.over{background:var(--bad);}
+.eatfoot{display:flex; justify-content:space-between; margin-top:7px;
+  font-size:11.5px; color:var(--muted); font-weight:700;}
+.eatfoot .eatnow{color:var(--ink); font-weight:700;}
+
 .kv{display:flex; align-items:baseline; justify-content:space-between; gap:8px; font-size:13.5px;}
 .kv span{color:var(--muted); font-weight:600;}
 .kv b{font-size:16px; font-weight:800;}
 .kv.eat b{color:var(--ink);} .kv.burn b{color:var(--acc-deep);} .kv.goal b{color:var(--muted);}
 .kv.tdee{font-size:12px;} .kv.tdee b{font-size:13.5px; color:#b0b8ac;}
 .kv.net b{color:var(--ink);}
-.kv.more{gap:5px; color:var(--muted); margin-top:1px;}
-.kv.more span{font-size:12.5px; font-weight:700;}
-.kv.more b{font-size:13px; font-weight:800; color:#c9d2c4;}
+/* 三大營養素的入口（本體搬去「營養」頁了） */
+.kv.macro-link{width:100%; text-align:left; min-height:44px; align-items:center;}
+.kv.macro-link b{font-size:13.5px; color:var(--acc-deep);}
 
 /* 熱量卡的明細（展開才有）：解釋用的數字都收在這裡 */
 .detail{margin-top:13px; padding-top:13px; border-top:1px solid #f1f4ee;
   display:flex; flex-direction:column; gap:9px;}
-.detail .macros{margin-top:5px;}
 
-/* 還沒記的餐段：收成一列，不要每一餐都佔一張空卡 */
+/* ---------- 每一餐一列（v6.4） ---------- */
+/* 一律預設收起來，點一下才展開細項——首頁不該被十幾筆食物佔滿。 */
+.meal-row{width:100%; display:flex; align-items:center; gap:11px; text-align:left;
+  padding:13px 14px; border-top:1px solid #f1f4ee; min-height:56px;}
+.meal-row:first-child{border-top:none;}
+.meal-row .em{font-size:19px; line-height:1; flex:0 0 auto;}
+.meal-row .mid{flex:1; min-width:0;}
+.meal-row .mid b{display:block; font-size:14.5px; font-weight:700;}
+.meal-row .mid span{display:block; font-size:11.5px; color:var(--muted); margin-top:2px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.meal-row .k{flex:0 0 auto; font-size:15px; font-weight:800;}
+.meal-row .k i{font-style:normal; font-size:11px; color:var(--muted); font-weight:700; margin-left:2px;}
+.meal-row.burn .k{color:var(--acc-deep);}
+.meal-row.none .mid b{color:var(--muted); font-weight:600;}
+.meal-row.none .k.add{color:var(--acc); font-size:22px; font-weight:400; min-width:24px; text-align:center;}
+.meal-row.on{background:#fbfcfa;}
+/* 展開後的細項：還是原本的 .row，只是縮排一格 */
+.row.sub{padding-left:44px; background:#fcfdfb; min-height:52px;}
+.row.sub.add .row-mid b{color:var(--muted); font-weight:600;}
+
+/* .addchips 首頁已不再用（v6.4 起空的餐段就是卡上的一列），留著給別處的 chip 列 */
 .addchips .chip{background:var(--card); box-shadow:var(--shadow); color:var(--muted);}
 .over-tag{margin-top:12px; border-radius:14px; padding:9px 12px; font-size:13px; font-weight:700; text-align:center;}
 .over-tag.ok{background:var(--acc-soft); color:var(--acc-deep);}
@@ -104,17 +149,6 @@ input,textarea,select{font-family:inherit; font-size:16px; color:inherit;}
 .over-tag.over{background:var(--bad-soft); color:var(--bad);}
 .over-tag.mid{background:var(--warn-soft); color:#a86d12;}   /* 超過減脂上限、但還沒超過 TDEE */
 .over-tag span{display:block; font-size:11.5px; font-weight:600; opacity:.85; margin-top:3px;}
-
-/* 三大營養素 */
-.macros{display:flex; gap:10px; margin-top:14px;}
-.macro{flex:1; background:#fafbf8; border-radius:14px; padding:9px 10px;}
-.macro .lb{font-size:11.5px; color:var(--muted); font-weight:700; display:flex; align-items:center; gap:5px;}
-.macro .dot{width:8px; height:8px; border-radius:99px;}
-.macro b{display:block; font-size:16px; font-weight:800; margin-top:3px;}
-.macro b i{font-style:normal; font-size:11px; color:var(--muted); font-weight:700; margin-left:1px;}
-.macro.over{background:var(--warn-soft);}
-.macro.over b{color:#a86d12;}
-.macro .lb em{font-style:normal; font-size:10.5px; font-weight:800; color:#a86d12; margin-left:auto;}
 
 /* ---------- 區塊 ---------- */
 .sec{margin:0 16px 14px;}
@@ -555,11 +589,6 @@ body.has-sync #app{padding-top:58px;}
 .picker-note .btn{margin-top:12px;}
 
 /* ---------- 營養 ---------- */
-.macros{width:100%; text-align:left;}
-.macro .mbar{height:4px; border-radius:99px; background:#eef1ea; overflow:hidden; margin-top:6px;}
-.macro .mbar i{display:block; height:100%; border-radius:99px; transition:width .25s;}
-.macro b i{font-size:10.5px;}
-
 /* 三大營養素：一張卡、一列一個（本來三張獨立卡各佔 270px） */
 .mcard{background:var(--card); border-radius:18px; box-shadow:var(--shadow); overflow:hidden;}
 .mrow{padding:14px 16px 13px; border-top:1px solid #f1f4ee;}

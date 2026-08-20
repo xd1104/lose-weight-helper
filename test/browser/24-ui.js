@@ -10,7 +10,7 @@
  * ⚠️ 會清掉本機 server 上的所有使用者資料（_setup.js 的 clearAll），跑之前先備份 data/。
  */
 const { chromium } = require('playwright');
-const { BASE, seedUser, openSet } = require('./_setup');
+const { BASE, seedUser, openSet, openMeals } = require('./_setup');
 
 const fail = [];
 function check(n, c, g) {
@@ -79,14 +79,20 @@ const FOODS = ['排骨便當', '鮪魚蛋吐司', '大冰奶', '茶葉蛋'];
   await p.waitForTimeout(1800);
   const saved = ((await day(u)).days[0].entries || []).filter((e) => e.name === '自製沙拉')[0] || {};
   check('份量有存進去', saved.portion === '一大碗（約兩個拳頭）', saved.portion);
-  check('今天頁那一列就看得到份量',
+  /* v6.4：餐段預設收起來，份量在展開後的那一列上 */
+  await openMeals(p);
+  check('今天頁展開那一餐就看得到份量',
     /一大碗（約兩個拳頭）/.test(await p.textContent('#app')));
+  const sums = await p.$$eval('.meal-row .mid span', (e) => e.map((x) => x.textContent));
+  check('收起來的那一列也認得出這一樣（摘要寫得出名字）',
+    sums.some((t) => /自製沙拉/.test(t)), sums);
 
   console.log('\n[C] 編輯一筆不再有「時間」欄位');
   await closeAll();
   await p.click('[data-nav="today"]'); await p.waitForTimeout(420);
   /* 不要用「第一列」——列表照時間排，[B] 剛加的那筆是「現在」，
      中午前跑的話它會排到 12:30 那筆前面，就改到別人身上去了（時間相關的假失敗） */
+  await openMeals(p);
   await p.click('.row[data-act="edit-entry"]:has-text("鮪魚蛋吐司")'); await p.waitForTimeout(600);
   check('沒有時間欄位（列表早就不顯示了，留著只是孤兒）', !(await p.$('#e-time')));
   check('畫面上沒有 12 小時制的殘留', !/AM|PM/.test(await p.textContent('.sheet')));

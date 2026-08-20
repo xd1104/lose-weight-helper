@@ -11,7 +11,7 @@
  * ⚠️ 會清掉本機 server 上的所有使用者資料（_setup.js 的 clearAll），跑之前先備份 data/。
  */
 const { chromium } = require('playwright');
-const { BASE, seedUser } = require('./_setup');
+const { BASE, seedUser, openMeals } = require('./_setup');
 
 const fail = [];
 function check(n, c, g) {
@@ -53,6 +53,7 @@ const vals = (p) => p.evaluate(() => ['#e-kcal', '#e-p', '#e-c', '#e-f']
   await p.waitForTimeout(1500);
 
   console.log('\n[A] 編輯一筆：按 ×½，四個數字一起換算');
+  await openMeals(p);
   await p.click('.row[data-act="edit-entry"]');
   await p.waitForTimeout(600);
   check('有倍數按鈕', (await p.$$('[data-scale]')).length === 4, (await p.$$('[data-scale]')).length);
@@ -113,6 +114,7 @@ const vals = (p) => p.evaluate(() => ['#e-kcal', '#e-p', '#e-c', '#e-f']
   console.log('\n[E] 編輯一筆的營養素不再被進位成整數');
   await p.evaluate(() => closeAllSheets());
   await p.waitForTimeout(400);
+  await openMeals(p);
   await p.click('.row[data-act="edit-entry"]');
   await p.waitForTimeout(600);
   await p.fill('#e-p', '2.5');

@@ -123,17 +123,18 @@ function check(name, cond, got) {
   check('小美看得到「未設定身體資料」提醒', !!nudge2);
   await p.screenshot({ path: '/tmp/qc-newuser.png', fullPage: true });
 
-  console.log('\n[G0] 空的餐段不各佔一張卡，收成「還沒記」一列');
+  console.log('\n[G0] 四餐＋運動收在同一張卡，一餐一列（v6.4）');
   await p.click('[data-nav="today"]');
   await p.waitForTimeout(700);
-  const chips = await p.$$eval('.addchips .chip', (e) => e.map((x) => x.textContent.trim()));
-  check('四餐＋運動都還沒記時，五個都在「還沒記」裡', chips.length === 5, chips);
+  const rowsOf = () => p.$$eval('.meal-row', (e) => e.map((x) => x.textContent.replace(/\s+/g, ' ').trim()));
+  const blank = await p.$$eval('.meal-row.none', (e) => e.map((x) => x.textContent.trim()));
+  check('四餐＋運動都還沒記時，五列都寫「還沒記」', blank.length === 5, blank);
   check('沒有任何一張「＋ 記一筆◯◯」的空卡',
     !(await p.$$eval('.row', (e) => e.filter((x) => /記一筆/.test(x.textContent)).length)));
-  const chipH = await p.$$eval('.addchips .chip', (e) => e.map((x) => x.getBoundingClientRect().height));
-  check('每個都 ≥ 44px', chipH.every((x) => x >= 44), chipH);
+  const rowH = await p.$$eval('.meal-row', (e) => e.map((x) => x.getBoundingClientRect().height));
+  check('每一列都 ≥ 44px', rowH.every((x) => x >= 44), rowH);
 
-  await p.click('.addchips [data-meal="lunch"]');
+  await p.click('.meal-row[data-meal="lunch"]');
   await p.waitForTimeout(500);
   await p.click('[data-tab="manual"]');
   await p.waitForTimeout(300);
@@ -141,9 +142,16 @@ function check(name, cond, got) {
   await p.fill('#m-kcal', '480');
   await p.click('#f-manual button[type="submit"]');
   await p.waitForTimeout(1500);
-  const chips2 = await p.$$eval('.addchips .chip', (e) => e.map((x) => x.textContent.trim()));
-  check('記了午餐之後，午餐從「還沒記」消失', chips2.length === 4 && !chips2.some((t) => /午餐/.test(t)), chips2);
-  check('出現午餐的區塊', /午餐/.test(await p.textContent('.sec-head h2')));
+  const blank2 = await p.$$eval('.meal-row.none', (e) => e.map((x) => x.textContent.trim()));
+  check('記了午餐之後只剩四列寫「還沒記」', blank2.length === 4 && !blank2.some((t) => /午餐/.test(t)), blank2);
+  const lunchRow = (await rowsOf()).filter((t) => /午餐/.test(t))[0] || '';
+  check('午餐那一列直接寫出吃了什麼、多少大卡',
+    /滷肉飯/.test(lunchRow) && /480/.test(lunchRow), lunchRow);
+  /* 一律預設收起來（不照時間猜他要看哪一餐），細項要點開才出現 */
+  check('預設是收起來的', !(await p.$$('.row.sub[data-act="edit-entry"]')).length);
+  await p.click('.meal-row[data-meal="lunch"]');
+  await p.waitForTimeout(500);
+  check('點一下展開看得到那一筆', (await p.$$('.row.sub[data-act="edit-entry"]')).length === 1);
   /* v4.5 起列上不再印時間（那是「按下記錄」的時間、不是吃的時間，中午補記早餐會顯示 12:30
      在早餐底下，看起來像錯的），所以沒有份量的那一筆就只有一行。 */
   check('沒有份量的那一筆只有一行，不再印記錄時間', (await p.$$('.row-mid span')).length === 0,

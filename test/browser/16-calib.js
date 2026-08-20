@@ -109,7 +109,9 @@ const gotoHist = async (p) => { await p.click('[data-nav="history"]'); await p.w
   await p.waitForTimeout(400);
   const detail = await txt(p, '.detail');
   check('首頁 TDEE 變成 1,985', /1,985/.test(detail), detail);
-  check('每日上限變成 1,685', /1,685/.test(detail), detail);
+  /* v6.4：「每日上限」跟著熱量從圓環搬到那一條上，不用展開就看得到 */
+  const foot = await txt(p, '.eatfoot');
+  check('每日上限變成 1,685', /1,685/.test(foot), foot);
 
   console.log('\n[E] 套用後看得出已校準，也回得去公式');
   await gotoHist(p);
