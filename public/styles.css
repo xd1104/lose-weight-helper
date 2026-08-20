@@ -200,6 +200,19 @@ input,textarea,select{font-family:inherit; font-size:16px; color:inherit;}
 textarea.ta{resize:none; overflow:hidden; min-height:52px; line-height:1.5;}
 .field .hint{font-size:11.5px; color:var(--muted); margin-top:5px; line-height:1.5;}
 .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+/* 首頁的校準摘要。完整版在歷史頁，這裡只放最關鍵的那一句。 */
+.calib-brief{width:100%; display:block; text-align:left; margin-top:12px;
+  padding:13px 14px; border-radius:14px; background:var(--acc-soft);
+  border:1.5px solid var(--acc);}
+.calib-brief.bad{background:#fdf0e6; border-color:#d9a12c;}
+.calib-brief b{display:block; font-size:14.5px; font-weight:800; color:var(--acc-deep);}
+.calib-brief.bad b{color:#8a5a10;}
+.calib-brief span{display:block; font-size:13px; line-height:1.65; color:var(--ink);
+  margin-top:5px;}
+.calib-brief span b{display:inline; font-size:13px; color:inherit;}
+.calib-brief em{display:block; font-style:normal; font-size:12.5px; font-weight:700;
+  color:var(--muted); margin-top:7px;}
+
 /* 「複製對方那一餐」的入口。只在對方真的有記東西時才出現，所以可以做得明顯一點 */
 .copy-bar{width:100%; display:flex; align-items:center; gap:10px; min-height:56px;
   padding:10px 14px; margin-top:12px; border-radius:14px; text-align:left;

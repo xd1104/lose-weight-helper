@@ -103,8 +103,18 @@ const TOTAL = POT.reduce((a, x) => a + x[1], 0);   // 1,365
   await p.fill('#i-text', '火鍋 吃了很多料');
   await p.click('#f-text button[type="submit"]');
   await p.waitForTimeout(1600);
-  check('11 樣時會出現「合併成一項」', !!(await p.$('[data-ai="merge"]')));
-  check('按鈕上寫著幾樣', /11 樣併成一筆/.test(await txt(p, '[data-ai="merge"]')), await txt(p, '[data-ai="merge"]'));
+  /* v6.3 起 6 項以上「預設」就是合併的樣子——原本要自己找那顆合併鈕，
+     但會被 11 項嚇到的人多半不會去按。拆開的資料沒有不見，按「分開列出」回得去。 */
+  check('11 樣直接給合併好的樣子，不是攤出 11 張卡', (await p.$$('.ai-name')).length === 0);
+  check('只要填一個名字', !!(await p.$('#mg1-name')));
+  check('看得到裡面有什麼', /奶白湯底/.test(await txt(p, '.sheet')));
+  check('熱量是加總', new RegExp('共 ' + TOTAL.toLocaleString('zh-TW') + ' 大卡')
+    .test(await txt(p, '#f-mg1 button[type="submit"]')), await txt(p, '#f-mg1 button[type="submit"]'));
+  await p.click('[data-ai="expand"]');
+  await p.waitForTimeout(600);
+  check('「分開列出」回得去，11 項都還在', (await p.$$('.ai-name')).length === 11,
+    (await p.$$('.ai-name')).length);
+  check('攤開後還是有手動合併鈕', !!(await p.$('[data-ai="merge"]')));
   await p.click('[data-ai="merge"]');
   await p.waitForTimeout(600);
   check('要先給名字', !!(await p.$('#mg-name')));
@@ -113,8 +123,6 @@ const TOTAL = POT.reduce((a, x) => a + x[1], 0);   // 1,365
   await p.waitForTimeout(900);
   check('只剩一項', (await p.$$('.ai-item')).length === 1, (await p.$$('.ai-item')).length);
   check('名字是他打的', /涮涮鍋/.test(await txt(p, '.ai-name')), await txt(p, '.ai-name'));
-  check('熱量是加總', new RegExp('共 ' + TOTAL.toLocaleString('zh-TW') + ' 大卡').test(await txt(p, '[data-ai="save"]')),
-    await txt(p, '[data-ai="save"]'));
   check('份量欄留下裡面有什麼', /共 11 樣：奶白湯底/.test(await txt(p, '.ai-item .por')), await txt(p, '.ai-item .por'));
   check('併完就不再給合併鈕', !(await p.$('[data-ai="merge"]')));
   await p.click('[data-ai="save"]');

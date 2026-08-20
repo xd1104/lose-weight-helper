@@ -118,6 +118,10 @@ const unb64 = (s) => Buffer.from(s, 'base64').toString('utf8');
     await p.fill('#i-text', '燒臘便當');
     await p.click('#f-text button[type="submit"]');
     await p.waitForTimeout(1500);
+    /* v6.3 起 AI 回 6 項以上預設先合併成一筆（火鍋被拆成 11 項是他們放棄記錄的
+       直接原因）。這一段測的是逐項的行為，先按「分開列出」攤開。 */
+    await p.click('[data-ai="expand"]').catch(() => {});
+    await p.waitForTimeout(500);
     await p.click('[data-ai="save"]');
     await p.waitForTimeout(3500);
   };

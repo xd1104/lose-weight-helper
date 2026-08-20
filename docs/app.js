@@ -1,7 +1,7 @@
 "use strict";
 
 /* 版本號。改前端時跟 sw.js 的 cache 版本號一起 +1。 */
-var APP_VER="6.2";
+var APP_VER="6.3";
 /*
  * 減重助手 — 前端主程式
  * 資料層在 store.js（LocalStore / GitHubStore 自動切）、AI 在 ai.js。
@@ -489,6 +489,9 @@ function viewToday(){
 
   /* 體重（減重 app 的主角，放在熱量環正下方） */
   h+=weighHtml(d);
+  /* 校準摘要緊接在體重後面：校準的輸入就是體重，擺一起最好懂。
+   * 沒話要說的時候回空字串，不會每天佔一格。 */
+  h+=calibBriefHtml();
 
   /* 餐段：只列「有記東西」的。
    * 以前四個餐段＋運動不管有沒有東西都各佔一張卡，一天有一半是空卡，
@@ -1025,6 +1028,44 @@ function calibrate(){
   if(out.real<900 || out.real>6000){ out.wild=true; return out; }
   out.ok=true;
   return out;
+}
+
+/* 首頁的校準摘要。
+ * 完整的校準區塊在歷史頁最下面——他們兩個用了三週從來沒看過，
+ * 而那裡面正是「為什麼認真記卻沒瘦」的答案。所以把最關鍵的一句拉到首頁。
+ *
+ * ⚠️ 只在「有話要說」的時候出現：算不出來、或公式本來就估得準，就不要佔版面。
+ * 每天掛一張沒有新資訊的卡片，只會變成背景雜訊，跟沒有一樣。 */
+function calibBriefHtml(){
+  var c=calibrate();
+  if(!c.ok) return "";
+  var bmr=bmrOf(db.profile);
+  var target=targetOf(db.profile);
+  var trend=(c.kgWeek<0?"−":"+")+Math.abs(c.kgWeek).toFixed(2)+" kg／週";
+
+  var lead, msg, cls;
+  if(c.suspect){
+    /* 反推的 TDEE 低於基礎代謝＝生理上不可能，一定有漏記。
+     * 用 BMR 當下限講「至少漏了多少」，這是能站得住腳的最保守說法。 */
+    lead="紀錄對不上體重";
+    msg="體重 "+trend+"，但紀錄說你在赤字。平均每天<b>至少漏記 "+kcal(bmr-c.real)+" 大卡</b>。";
+    cls=" bad";
+  }else if(c.kgWeek>0.05 && c.avgNet>target){
+    lead="吃得比目標多";
+    msg="體重 "+trend+"。平均每天吃 "+kcal(c.avgNet)+"，目標是 "+kcal(target)+
+        "，<b>多了 "+kcal(c.avgNet-target)+" 大卡</b>。";
+    cls=" bad";
+  }else if(Math.abs(c.diff)>=150){
+    lead="你的真實 TDEE 約 "+kcal(c.real)+" 大卡";
+    msg="體重 "+trend+"。app 現在用的是 "+kcal(c.cur)+"，<b>差 "+
+        (c.diff>0?"+":"")+kcal(c.diff)+" 大卡</b>。";
+    cls="";
+  }else{
+    return "";   /* 公式估得準、體重也照計畫走 -> 沒事就不要出聲 */
+  }
+  return '<button class="calib-brief'+cls+'" data-act="go-calib">'+
+      '<b>⚖️ '+lead+'</b><span>'+msg+'</span>'+
+      '<em>看完整校準 ›</em></button>';
 }
 
 function calibRow(k, v, strong){
@@ -1758,6 +1799,11 @@ function doAct(act, el){
   if(act==="edit-move"){ if(requireWrite()) openMoveSheet(el.getAttribute("data-id")); return; }
   if(act==="edit-notes"){ if(requireWrite()) openNotesSheet(); return; }
   if(act==="edit-weight"){ if(requireWrite()) openWeightSheet(); return; }
+  if(act==="go-calib"){
+    /* ⚠️ ensureHistory() 是掛在導覽列的點擊上的，程式自己切 view 不會觸發，
+     * 少了這一行會停在「讀取紀錄中…」不動（測試抓到的）。 */
+    view="history"; ensureHistory(); render(); return;
+  }
   if(act==="weigh-today"){
     if(!requireWrite()) return;
     curDate=dateKey(); view="today"; ensureDays([curDate]);
@@ -1905,7 +1951,7 @@ function switchUser(id, after){
   me=u;
   setCurUserId(u.id);
   db={ profile:defaultProfile(), foods:[], days:{} };
-  histDates=[]; histLoaded=false;
+  histDates=[]; histLoaded=false; calibDaysLoaded=false;
   curDate=dateKey();
   view="today"; picking=false;
   $app.innerHTML='<div class="spin" style="padding-top:140px"><div class="dots"><i></i><i></i><i></i></div>載入 '+esc(u.name)+' 的紀錄…</div>';
@@ -1933,6 +1979,7 @@ function loadUserData(){
      * 所以刻意不接進上面那條鏈。讀完再重畫一次設定頁的摘要。 */
     loadPushState().then(function(){ if(view==="settings" && !picking) render(); })
       .catch(function(){});
+    ensureCalibDays();   /* 首頁的校準摘要要看 28 天，背景補齊 */
   }).catch(function(e){
     booted=true;
     toast(e.userMessage||"載入失敗，先用預設值", true);
@@ -2631,6 +2678,7 @@ function runAi(fn, photos){
   fn().then(function(res){
     if(!sheetAlive(sid)) return;   /* 等的時候被關掉了，不要自己彈回來 */
     aiResult=res;
+    aiExpanded=false; aiMergeName="";   /* 新的一批結果，回到預設的合併樣子 */
     /* 記住是哪張照片估出來的：之後「重估某一項」要把同一張圖再送一次 */
     aiResult.photos=(photos||[]).slice();
     drawAiResult();
@@ -2648,8 +2696,15 @@ function runAi(fn, photos){
 }
 
 var aiResult=null;
+/* 一次回這麼多項就預設先合併。實測：火鍋被拆成 11 項、自助餐 5-6 項，
+ * 一天下來 17-20 筆——這是他們兩個放棄記錄的直接原因之一。
+ * 拆開的資料沒有不見，按「分開列出」就回得去；只是預設不再是那個樣子。 */
+var AI_MERGE_AUTO=6;
+var aiExpanded=false;
+
 function drawAiResult(){
   var body='';
+  if(aiResult.items.length>=AI_MERGE_AUTO && !aiExpanded) return drawAiMerged();
   if(aiResult.note) body+='<div class="ai-note">💡 '+esc(aiResult.note)+'</div>';
   /* 「652 大卡」看起來像量過的，其實是估的。不講清楚，使用者會把兩次估算的差
    * 當成 app 壞掉；講清楚之後，同一個誤差就只是正常範圍。 */
@@ -2757,6 +2812,61 @@ function drawAiResult(){
 }
 
 /* 把整批合併成一筆。營養素直接加總，份量欄留下「裡面有什麼」當紀錄。 */
+/* 合併的預設畫面：一個名字、一個總熱量，就這樣。
+ * 刻意不列出每一項可以編輯——會走到這裡就是因為項目太多，
+ * 再把 11 個可編輯的欄位攤開等於沒解決問題。要細調就按「分開列出」。 */
+function drawAiMerged(){
+  var items=aiResult.items;
+  var k=0,p2=0,c2=0,f2=0, names=[];
+  items.forEach(function(it){
+    k+=num(it.kcal); p2+=num(it.p); c2+=num(it.c); f2+=num(it.f); names.push(it.name);
+  });
+  if(!aiMergeName){
+    aiMergeName=String(lastText||lastHint||"").trim().split(/[\s,，、。]/)[0].slice(0,20) || "";
+  }
+  var body='';
+  if(aiResult.note) body+='<div class="ai-note">💡 '+esc(aiResult.note)+'</div>';
+  body+=mealPicker();
+  body+='<form id="f-mg1">'+
+    '<div class="field"><label>這一餐叫什麼</label>'+
+      taHtml("mg1-name", aiMergeName, "例如：火鍋、自助餐、家庭聚餐", { enter:"submit", required:true })+'</div>'+
+    '<div class="tdee-box" style="margin-top:12px">'+
+      '<div class="r"><span>共 '+items.length+' 樣</span><b class="num">'+kcal(k)+' 大卡</b></div>'+
+      '<div class="r"><span>蛋白 '+gram(p2)+' · 碳水 '+gram(c2)+' · 脂肪 '+gram(f2)+'</span></div>'+
+    '</div>'+
+    '<p class="hint" style="padding:8px 4px 0">'+esc(names.slice(0,10).join("、"))+
+      (names.length>10?" 等":"")+'</p>'+
+    '<button class="btn" type="submit">加入 1 筆 · 共 '+kcal(k)+' 大卡</button>'+
+  '</form>'+
+  '<button class="btn ghost" type="button" data-ai="expand">分開列出 '+items.length+' 項</button>'+
+  '<button class="btn ghost" type="button" data-ai="retry">重新描述</button>';
+
+  replaceSheet("AI 估算結果 · "+me.name, body, { onDraw:function(root){
+    root.querySelectorAll("[data-meal-pick]").forEach(function(b){
+      b.onclick=function(){
+        aiMergeName=(root.querySelector("#mg1-name")||{}).value||aiMergeName;
+        addMeal=b.getAttribute("data-meal-pick"); drawAiResult();
+      };
+    });
+    root.querySelector('[data-ai="expand"]').onclick=function(){
+      aiMergeName=(root.querySelector("#mg1-name")||{}).value||aiMergeName;
+      aiExpanded=true; drawAiResult();
+    };
+    root.querySelector('[data-ai="retry"]').onclick=function(){
+      aiResult=null; drawAddSheet(false);
+    };
+    root.querySelector("#f-mg1").onsubmit=function(ev){
+      ev.preventDefault();
+      var nm=(root.querySelector("#mg1-name").value||"").replace(/[\r\n]+/g," ").trim();
+      if(!nm){ toast("先給這一餐一個名字", true); return; }
+      mergeAiItems(nm);
+      addEntries(aiResult.items);
+    };
+    wireTa($sheetLayer);
+  }});
+}
+var aiMergeName="";
+
 function openMergeSheet(){
   var items=aiResult.items;
   var total=0; items.forEach(function(i){ total+=num(i.kcal); });
@@ -3463,6 +3573,20 @@ function ensureDays(keys){
     toast(e.userMessage||"讀取紀錄失敗", true);
     if(booted && !picking) render();
   });
+}
+
+/* 校準要看 28 天，但「今天」頁開機只載 7 天。
+ * 差的那 21 天在背景補進來——不擋畫面，補完了首頁的校準摘要才會冒出來。
+ * 一次 session 只做一次（他們一天會開好幾次 app，每次都重抓 21 個檔太浪費）。
+ * 刻意不直接叫 ensureHistory()：那個會連 index 一起抓、而且載 60 天，
+ * 只為了首頁一句話不值得。 */
+var calibDaysLoaded=false;
+function ensureCalibDays(){
+  if(calibDaysLoaded || !me) return;
+  calibDaysLoaded=true;
+  var keys=[], i;
+  for(i=0;i<CALIB_WINDOW;i++) keys.push(shiftDate(dateKey(), -i));
+  ensureDays(keys).catch(function(){});
 }
 
 function ensureHistory(){

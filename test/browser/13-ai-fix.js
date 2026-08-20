@@ -81,6 +81,10 @@ const SIX = ['白飯', '叉燒肉', '油雞腿肉', '燒鴨肉', '燙青菜', '�
   await p.waitForTimeout(1500);
 
   console.log('\n[0] 照片估出六項');
+    /* v6.3 起 AI 回 6 項以上預設先合併成一筆（火鍋被拆成 11 項是他們放棄記錄的
+       直接原因）。這一段測的是逐項的行為，先按「分開列出」攤開。 */
+    await p.click('[data-ai="expand"]').catch(() => {});
+    await p.waitForTimeout(500);
   const names0 = await p.$$eval('.ai-name', (e) => e.map((x) => x.textContent.replace('✎', '').trim()));
   check('列出六項', names0.length === 6, names0);
   check('每一項的名稱都可以點（要能單獨修）', (await p.$$('[data-fix]')).length === 7, // 六項 + 補一項
@@ -95,9 +99,11 @@ const SIX = ['白飯', '叉燒肉', '油雞腿肉', '燒鴨肉', '燙青菜', '�
   check('上次的補充說明也留著', (await p.inputValue('#i-hint')) === '燒臘三寶飯');
   await p.screenshot({ path: '/tmp/aifix-photo.png' });
 
-  // 回到結果頁
+  // 回到結果頁（又是六項，所以要再攤開一次）
   await p.click('#b-photo');
   await p.waitForTimeout(1500);
+  await p.click('[data-ai="expand"]').catch(() => {});
+  await p.waitForTimeout(500);
 
   console.log('\n[B] 點某一項 → 可以改名字');
   const before = await p.$$eval('.ai-name', (e) => e.map((x) => x.textContent.replace('✎', '').trim()));
