@@ -161,6 +161,7 @@
 - {"id":"xmspfgx693wqp","name":"溏心蛋","kcal":40,"p":3,"f":3,"portion":"半顆，約一顆雞蛋一半大小（約25g）","n":1,"mc":{"lunch":1}}
 - {"id":"xms7flaa517xo","name":"蜂蜜麵包","kcal":100,"p":2,"c":15,"f":2,"n":1,"mc":{"lunch":1}}
 - {"id":"xmsam76qekzpi","name":"壽司醋飯","kcal":35,"p":1,"c":8,"portion":"藏於海苔下方，約半貫壽司飯量，約20g","n":1,"mc":{"lunch":1}}
+- {"id":"xmt2dh87uc521","name":"嫩煎雞柳漢堡不加醬（內含生菜","kcal":585,"p":39,"c":53,"f":26,"portion":"共 7 樣：漢堡麵包、嫩煎雞柳、生菜與番茄片、荷包蛋(蛋包)、薯餅、起司片、番茄醬","n":1,"mc":{"breakfast":1}}
 - {"id":"xmsq3v701m8kz","name":"嫩雞胸肉片","kcal":130,"p":26,"f":3,"portion":"3片，每片約40g，共約120g","n":1,"mc":{"dinner":1}}
 - {"id":"xmsn2tbd7r4ih","name":"榨菜","kcal":15,"p":1,"c":2,"portion":"約2小撮（約20g）","n":1,"mc":{"lunch":1}}
 - {"id":"xmsn2tbd4hkxi","name":"榨菜肉絲配料—肉絲","kcal":70,"p":7,"f":5,"portion":"約一個乒乓球大小的肉絲量（約30g）","n":1,"mc":{"lunch":1}}
@@ -199,4 +200,3 @@
 - {"id":"xmsfmdexv8tan","name":"醬油","kcal":8,"p":1,"c":1,"portion":"約1小碟，約10ml","n":1,"mc":{"lunch":1}}
 - {"id":"xms4rsmieixuj","name":"雞皮串（半串）","kcal":110,"p":4,"f":10,"portion":"約半串，30克","n":1,"mc":{"snack":1}}
 - {"id":"xms3ccpsakgpv","name":"雞肉飯（白飯）","kcal":320,"p":6,"c":60,"f":6,"portion":"便當盒約1碗白飯，淋雞汁","n":1,"mc":{"lunch":1}}
-- {"id":"xms4rsmii0gmp","name":"雞屁股串燒","kcal":90,"p":4,"c":1,"f":8,"portion":"一支，約20克/顆","n":1,"mc":{"snack":1}}
